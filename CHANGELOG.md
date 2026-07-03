@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-03
+
 ### Added
 
 - Click-to-move with A* pathfinding around water and trees
@@ -34,4 +36,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Map generation: replaced cascading noise algorithm with grass-first clustered obstacles so ~76% of the map is walkable (was ~5%)
 
+[1.1.0]: https://github.com/user/mmo001/releases/tag/v1.1.0
 [1.0.0]: https://github.com/user/mmo001/releases/tag/v1.0.0
