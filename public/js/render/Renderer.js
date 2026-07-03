@@ -1,5 +1,6 @@
 import { MapRenderer } from './MapRenderer.js';
 import { SpriteManager } from './SpriteManager.js';
+import { PlayerHud } from '../ui/PlayerHud.js';
 
 export class Renderer {
   constructor(canvas, camera) {
@@ -8,6 +9,7 @@ export class Renderer {
     this.camera = camera;
     this.mapRenderer = new MapRenderer();
     this.spriteManager = new SpriteManager();
+    this.playerHud = new PlayerHud();
   }
 
   resize() {
@@ -48,6 +50,8 @@ export class Renderer {
     if (aimTarget) {
       this.drawAimLine(displayPlayer, aimTarget);
     }
+
+    this.playerHud.draw(this.ctx, displayPlayer);
   }
 
   drawMoveTarget(target) {

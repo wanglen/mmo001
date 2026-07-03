@@ -13,7 +13,7 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 - [x] Replace colored squares with **sprite sheets** (walk, idle, attack animations)
 
 ### Combat basics
-- [ ] Add player stats: `HP`, `MP`, `STR`, `DEX`, `INT`, `VIT`, `level`, `xp`
+- [x] Add player stats: `HP`, `MP`, `STR`, `DEX`, `INT`, `VIT`, `level`, `xp`
 - [ ] Implement **basic attack** (click enemy or auto-attack nearest target)
 - [ ] Server-authoritative **damage calculation** and hit validation
 - [ ] Add **attack cooldowns** and swing animations

@@ -58,6 +58,16 @@ export class Game {
     this.displayPlayer.moving = server.moving;
     this.displayPlayer.characterClass = server.characterClass;
     this.displayPlayer.name = server.name;
+    this.displayPlayer.level = server.level;
+    this.displayPlayer.xp = server.xp;
+    this.displayPlayer.hp = server.hp;
+    this.displayPlayer.maxHp = server.maxHp;
+    this.displayPlayer.mp = server.mp;
+    this.displayPlayer.maxMp = server.maxMp;
+    this.displayPlayer.str = server.str;
+    this.displayPlayer.dex = server.dex;
+    this.displayPlayer.int = server.int;
+    this.displayPlayer.vit = server.vit;
   }
 
   handleClick() {

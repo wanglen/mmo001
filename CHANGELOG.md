@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-07-03
+
+### Added
+
+- Player stats: HP, MP, STR, DEX, INT, VIT, level, and XP
+- Class-based base stats (warrior, mage, ranger)
+- HUD with HP/MP bars and stat readout
+
 ## [1.4.0] - 2026-07-03
 
 ### Added
@@ -66,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Map generation: replaced cascading noise algorithm with grass-first clustered obstacles so ~76% of the map is walkable (was ~5%)
 
+[1.5.0]: https://github.com/user/mmo001/releases/tag/v1.5.0
 [1.4.0]: https://github.com/user/mmo001/releases/tag/v1.4.0
 [1.3.0]: https://github.com/user/mmo001/releases/tag/v1.3.0
 [1.2.0]: https://github.com/user/mmo001/releases/tag/v1.2.0
