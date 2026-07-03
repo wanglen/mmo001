@@ -37,3 +37,9 @@ server/
 - Async errors: catch and respond; do not crash the process on bad client input
 - Stateless handlers; game state lives in managers attached to the server instance
 - Import shared constants from `shared/` — do not duplicate magic numbers
+
+## Testing
+
+- Unit tests live in `tests/server/` mirroring `server/` layout
+- Test pure logic and managers; mock maps via `tests/helpers/fixtures.js`
+- Add regression tests for every bug fix in server modules

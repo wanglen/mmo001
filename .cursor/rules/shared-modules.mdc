@@ -13,3 +13,8 @@ alwaysApply: false
 - Cross-cutting algorithms (pathfinding) → dedicated files, fully pure
 
 When adding a constant used on both sides, add it here once — never duplicate in server and client.
+
+## Testing
+
+- Shared pure functions → `tests/shared/<module>.test.js`
+- Keep tests deterministic; no DOM or Node-only APIs in shared code

@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "start": "node server/index.js",
-    "dev": "node --watch server/index.js"
+    "dev": "node --watch server/index.js",
+    "test": "node scripts/run-tests.mjs",
+    "test:watch": "node --test --watch tests/shared/pathfinding.test.js tests/server/map/collision.test.js tests/server/map/MapGenerator.test.js tests/server/players/PlayerManager.test.js"
   },
   "dependencies": {
     "express": "^4.21.2",

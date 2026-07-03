@@ -38,6 +38,15 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+### Testing
+
+```bash
+npm test           # run all unit tests
+npm run test:watch # re-run on file changes
+```
+
+Tests use Node.js built-in test runner. Coverage includes pathfinding, collision, map generation, and player management.
+
 ### Controls
 
 - **Click** — move to location (A* pathfinding around obstacles)
@@ -57,6 +66,7 @@ mmo001/
 │   ├── js/           # Game loop, rendering, UI, network
 │   └── css/
 ├── shared/           # Constants and events (server + client)
+├── tests/            # Unit tests (mirrors server/ and shared/)
 ├── TODO.md           # Development roadmap
 ├── CHANGELOG.md      # Version history
 └── package.json
@@ -83,6 +93,7 @@ Contributors and AI agents should follow [AGENTS.md](AGENTS.md).
 |----------|---------|
 | [AGENTS.md](AGENTS.md) | Agent workflow and project conventions |
 | [.cursor/rules/](.cursor/rules/) | Cursor rules (workflow, code quality, Node/client standards) |
+| [.cursor/rules/unit-tests.mdc](.cursor/rules/unit-tests.mdc) | Unit testing standards |
 | [.cursor/skills/mmo-feature-development/](.cursor/skills/mmo-feature-development/) | Feature implementation skill |
 
 **Workflow:** pick a TODO item → plan → `feature/<name>` branch → implement → bump version + CHANGELOG → merge to `main`.

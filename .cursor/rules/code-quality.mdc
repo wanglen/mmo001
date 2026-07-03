@@ -12,6 +12,13 @@ alwaysApply: true
 - One module = one responsibility (map, players, network, render, etc.)
 - Prefer pure functions for game logic (pathfinding, collision, damage)
 
+## Testing
+
+- Run `npm test` before committing; all tests must pass
+- Add unit tests for new pure functions and bug fixes (see [unit-tests.mdc](unit-tests.mdc))
+- Use `tests/helpers/fixtures.js` for deterministic map data
+- Socket/UI-only changes: document manual smoke test if no unit test applies
+
 ## Documentation
 
 - **Public modules** (exported functions/classes): JSDoc on non-obvious APIs

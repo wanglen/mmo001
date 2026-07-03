@@ -28,6 +28,7 @@ TODO item → plan → feature/<name> branch → implement → test → docs + v
 
 ```bash
 npm install
+npm test       # run unit tests
 npm start      # http://localhost:3000
 npm run dev    # auto-reload
 ```
@@ -36,5 +37,6 @@ npm run dev    # auto-reload
 
 - Clean, modular code; server-authoritative gameplay
 - One feature per branch; bump semver + CHANGELOG on merge
+- **Unit tests required** for pure logic and bug fixes; run `npm test` before merge
 - JSDoc on public APIs; update README when behavior changes
 - Never commit `.env` or credentials

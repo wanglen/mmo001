@@ -1,0 +1,56 @@
+---
+description: Unit testing standards for MMO001
+globs: tests/**/*.js,**/*.test.js
+alwaysApply: false
+---
+
+# Unit Tests
+
+## Framework
+
+- Node.js built-in test runner (`node:test`) + `node:assert/strict`
+- Run: `npm test` (must pass before merge)
+- Watch mode: `npm run test:watch`
+- Runner: [scripts/run-tests.mjs](../../scripts/run-tests.mjs) discovers `tests/**/*.test.js`
+
+## Layout
+
+```
+tests/
+├── helpers/fixtures.js    # shared test maps and mocks
+├── shared/                # mirrors shared/
+└── server/                # mirrors server/
+```
+
+## When tests are required
+
+| Change | Tests |
+|--------|-------|
+| New pure function (pathfinding, combat, loot) | Required |
+| Bug fix | Regression test required |
+| Socket handler / Express route | Integration test when feasible |
+| UI-only render change | Manual smoke test acceptable |
+
+## Conventions
+
+- One `describe` block per module; one `it` per behavior
+- Use fixtures from `tests/helpers/` — avoid random data in assertions
+- Test names describe behavior: `'findPath routes around obstacles'`
+- No network or browser in unit tests; test pure logic and managers
+- Mirror source paths: `server/map/collision.js` → `tests/server/map/collision.test.js`
+
+## Example
+
+```javascript
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import { isWalkable } from '../../server/map/collision.js';
+import { createSimpleMap } from '../helpers/fixtures.js';
+
+describe('collision', () => {
+  it('isWalkable returns false for water', () => {
+    const map = createSimpleMap();
+    assert.equal(isWalkable(map, 1, 1), false);
+  });
+});
+```

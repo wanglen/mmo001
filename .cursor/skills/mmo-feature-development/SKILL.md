@@ -21,11 +21,12 @@ Copy and track progress:
 - [ ] 2. Plan scope (files, events, modules) before coding
 - [ ] 3. Create branch: feature/<short-name> from main
 - [ ] 4. Implement minimal correct diff
-- [ ] 5. Smoke test (npm start, manual or script)
-- [ ] 6. Update TODO.md, CHANGELOG.md, README.md, package.json version
-- [ ] 7. Commit with imperative message
-- [ ] 8. Merge to main when user approves
-- [ ] 9. Create next feature branch for following TODO item
+- [ ] 5. Add/update unit tests (`npm test` must pass)
+- [ ] 6. Smoke test (npm start, manual or script)
+- [ ] 7. Update TODO.md, CHANGELOG.md, README.md, package.json version
+- [ ] 8. Commit with imperative message
+- [ ] 9. Merge to main when user approves
+- [ ] 10. Create next feature branch for following TODO item
 ```
 
 ## Branch naming
@@ -70,7 +71,9 @@ Move items from `[Unreleased]` into the new version section on each release.
 
 ## Merge checklist
 
+- [ ] `npm test` passes
 - [ ] Feature works in browser
+- [ ] Unit tests added/updated for logic changes
 - [ ] No secrets committed
 - [ ] TODO item checked off
 - [ ] CHANGELOG + version updated

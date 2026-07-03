@@ -15,7 +15,7 @@ alwaysApply: true
 
 - One feature per branch from `main`: `feature/<short-kebab-name>`
 - Examples: `feature/click-to-move`, `feature/mouse-aim`, `feature/monster-combat`
-- Merge to `main` only when the feature is complete and smoke-tested
+- Merge to `main` only when the feature is complete, **`npm test` passes**, and smoke-tested
 - Never commit secrets (`.env`, credentials)
 
 ## Versioning (each merged feature)
