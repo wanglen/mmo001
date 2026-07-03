@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MMO001</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <canvas id="game-canvas"></canvas>
+
+  <div id="character-select" class="overlay">
+    <div class="panel">
+      <h1>Choose Your Hero</h1>
+      <div id="class-options" class="class-options"></div>
+      <label class="name-label">
+        Name
+        <input type="text" id="player-name" maxlength="20" placeholder="Hero" />
+      </label>
+      <button id="start-btn" disabled>Enter World</button>
+    </div>
+  </div>
+
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>
