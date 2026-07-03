@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Click-to-move with A* pathfinding around water and trees
 - Move target indicator on the map
 - WASD remains available and cancels an active click path
+- Cursor rules, agent skill, and AGENTS.md for development workflow
 
 ## [1.0.0] - 2026-07-03
 

@@ -1,0 +1,37 @@
+---
+description: Browser client and Canvas conventions for MMO001
+globs: public/js/**/*.js
+alwaysApply: false
+---
+
+# Game Client
+
+## Stack
+
+- Vanilla JS ES modules; no bundler unless explicitly added
+- Canvas 2D for rendering; Socket.IO client from `/socket.io/socket.io.esm.min.js`
+- Shared code imported from `/shared/` (constants, pathfinding, events)
+
+## Structure
+
+```
+public/js/
+├── main.js           # bootstrap, screen flow
+├── game/             # loop, input, camera, pathfinding
+├── render/           # canvas drawing
+├── network/          # socket wrapper
+└── ui/               # overlays, HUD, inventory (future)
+```
+
+## Client responsibilities
+
+- **Render** world state; **predict/interpolate** local player for smoothness
+- **Never trust** client for gameplay outcomes — send intent, server decides
+- Input → socket events; world updates → render pipeline
+- Screen ↔ world coords via `Camera.screenToWorld` / `worldToScreen`
+
+## Performance
+
+- Cull off-screen tiles and entities
+- Throttle network sends (movement ~20 Hz), not every animation frame
+- Reuse module instances; avoid allocations in the rAF loop where possible

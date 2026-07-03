@@ -1,0 +1,40 @@
+# Agent Instructions — MMO001
+
+Diablo-like MMORPG (HTML Canvas + Node.js + Socket.IO).
+
+## Before coding
+
+1. Read [TODO.md](TODO.md) for the next unchecked item
+2. Plan before implementing
+3. Follow [.cursor/rules/](.cursor/rules/) and the [mmo-feature-development skill](.cursor/skills/mmo-feature-development/SKILL.md)
+
+## Workflow
+
+```
+TODO item → plan → feature/<name> branch → implement → test → docs + version → merge main → next branch
+```
+
+## Key files
+
+| File | Purpose |
+|------|---------|
+| `TODO.md` | Roadmap checklist |
+| `CHANGELOG.md` | Version history (Keep a Changelog) |
+| `shared/` | Constants, events, shared algorithms |
+| `server/` | Express, Socket.IO, game logic |
+| `public/js/` | Client game loop, render, UI |
+
+## Commands
+
+```bash
+npm install
+npm start      # http://localhost:3000
+npm run dev    # auto-reload
+```
+
+## Rules summary
+
+- Clean, modular code; server-authoritative gameplay
+- One feature per branch; bump semver + CHANGELOG on merge
+- JSDoc on public APIs; update README when behavior changes
+- Never commit `.env` or credentials

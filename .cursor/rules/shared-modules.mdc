@@ -1,0 +1,15 @@
+---
+description: Shared module conventions for constants and cross-cutting logic
+globs: shared/**/*.js
+alwaysApply: false
+---
+
+# Shared Modules
+
+- Used by **both** server and browser — keep Node/browser compatible (no `fs`, no DOM)
+- Export named constants and pure functions only
+- Socket event names → [events.js](../../shared/events.js)
+- Game constants (tiles, sizes, speeds) → [constants.js](../../shared/constants.js)
+- Cross-cutting algorithms (pathfinding) → dedicated files, fully pure
+
+When adding a constant used on both sides, add it here once — never duplicate in server and client.

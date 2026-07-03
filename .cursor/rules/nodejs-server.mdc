@@ -1,0 +1,39 @@
+---
+description: Node.js and Express/Socket.IO conventions for MMO001 server
+globs: server/**/*.js
+alwaysApply: false
+---
+
+# Node.js Server
+
+## Stack
+
+- ESM only (`import`/`export`); `"type": "module"` in package.json
+- Express for static files; Socket.IO for real-time game events
+- No database in MVP — in-memory managers with clear interfaces for future adapters
+
+## Structure
+
+```
+server/
+├── index.js          # bootstrap only
+├── config.js         # env + constants
+├── map/              # generation, collision
+├── players/          # entity + manager
+├── network/          # socket handlers
+└── systems/          # future: combat, loot, quests
+```
+
+## Socket handlers
+
+- Event names from [shared/events.js](../../shared/events.js)
+- **Server is authoritative** for movement, combat, loot, and stats
+- Keep handlers thin; delegate to system modules
+- Multiplayer: broadcast via `io.emit`, not only `socket.emit`
+
+## Node best practices
+
+- Use `process.env.PORT` with fallback; never hardcode secrets
+- Async errors: catch and respond; do not crash the process on bad client input
+- Stateless handlers; game state lives in managers attached to the server instance
+- Import shared constants from `shared/` — do not duplicate magic numbers

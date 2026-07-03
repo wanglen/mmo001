@@ -75,6 +75,18 @@ mmo001/
 
 See [TODO.md](TODO.md) for the full Diablo-like MMORPG roadmap (combat, loot, skills, zones, multiplayer, and more).
 
+## Development
+
+Contributors and AI agents should follow [AGENTS.md](AGENTS.md).
+
+| Resource | Purpose |
+|----------|---------|
+| [AGENTS.md](AGENTS.md) | Agent workflow and project conventions |
+| [.cursor/rules/](.cursor/rules/) | Cursor rules (workflow, code quality, Node/client standards) |
+| [.cursor/skills/mmo-feature-development/](.cursor/skills/mmo-feature-development/) | Feature implementation skill |
+
+**Workflow:** pick a TODO item → plan → `feature/<name>` branch → implement → bump version + CHANGELOG → merge to `main`.
+
 ## License
 
 Private project — all rights reserved.

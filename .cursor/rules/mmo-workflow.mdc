@@ -1,0 +1,38 @@
+---
+description: MMO001 development workflow — todos, branches, versioning, and docs
+alwaysApply: true
+---
+
+# MMO001 Workflow
+
+## Before implementation
+
+1. Read [TODO.md](../../TODO.md) and identify the **next unchecked item**
+2. Summarize scope and approach before coding (plan mode or brief outline)
+3. Mark the item in progress; do not start unrelated work
+
+## Git branches
+
+- One feature per branch from `main`: `feature/<short-kebab-name>`
+- Examples: `feature/click-to-move`, `feature/mouse-aim`, `feature/monster-combat`
+- Merge to `main` only when the feature is complete and smoke-tested
+- Never commit secrets (`.env`, credentials)
+
+## Versioning (each merged feature)
+
+1. Bump `version` in [package.json](../../package.json) (semver: patch/minor by scope)
+2. Move [CHANGELOG.md](../../CHANGELOG.md) `[Unreleased]` entries into a dated version section
+3. Update [README.md](../../README.md) if behavior, setup, or controls changed
+4. Check off the completed item in [TODO.md](../../TODO.md)
+
+## Commit messages
+
+- Imperative mood, 1–2 sentences focusing on **why**
+- Example: `Add click-to-move with A* pathfinding`
+
+## Module layout
+
+- `server/` — backend logic only
+- `public/js/` — client rendering, input, UI
+- `shared/` — constants, events, algorithms used by both sides
+- New systems go in focused modules; avoid monolithic files

@@ -1,0 +1,39 @@
+---
+description: Code quality and documentation standards for MMO001
+alwaysApply: true
+---
+
+# Code Quality
+
+## General
+
+- Minimize scope: smallest correct diff; no drive-by refactors
+- Match existing naming, ESM imports, and file layout
+- One module = one responsibility (map, players, network, render, etc.)
+- Prefer pure functions for game logic (pathfinding, collision, damage)
+
+## Documentation
+
+- **Public modules** (exported functions/classes): JSDoc on non-obvious APIs
+- **Complex logic** (pathfinding, combat formulas): brief comment on *why*, not *what*
+- Do not add comments that restate the code
+- Update README, CHANGELOG, and TODO when user-facing behavior changes
+
+## Error handling
+
+- Validate socket payloads on the server; emit `error` event with clear message
+- Fail early on invalid input; never silently ignore bad client data
+- Log server errors with context; avoid logging secrets
+
+## Examples
+
+```javascript
+// ❌ BAD — vague, no validation
+socket.on('move', (data) => { player.x += data.x; });
+
+// ✅ GOOD — validated, server-authoritative
+socket.on(EVENTS.MOVE, ({ direction }) => {
+  if (!DIRECTION_DELTA[direction]) return;
+  // collision check, then update
+});
+```
