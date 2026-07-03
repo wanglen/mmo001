@@ -35,6 +35,17 @@ export class Input {
     canvas.addEventListener('mouseleave', () => {
       this.mouseScreen = null;
     });
+
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      this.zoomDelta = (this.zoomDelta ?? 0) + (e.deltaY > 0 ? -1 : 1);
+    }, { passive: false });
+  }
+
+  consumeZoomDelta() {
+    const delta = this.zoomDelta ?? 0;
+    this.zoomDelta = 0;
+    return delta;
   }
 
   consumeClick() {

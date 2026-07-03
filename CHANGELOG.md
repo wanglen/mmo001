@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-07-03
+
+### Added
+
+- Smooth camera follow with lerp (no instant snap)
+- Mouse wheel zoom (0.6×–1.8×)
+- Pseudo-isometric Y-axis compression for a Diablo-like view
+- Shared camera math module with unit tests
+
 ## [1.2.0] - 2026-07-03
 
 ### Added
@@ -45,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Map generation: replaced cascading noise algorithm with grass-first clustered obstacles so ~76% of the map is walkable (was ~5%)
 
+[1.3.0]: https://github.com/user/mmo001/releases/tag/v1.3.0
 [1.2.0]: https://github.com/user/mmo001/releases/tag/v1.2.0
 [1.1.0]: https://github.com/user/mmo001/releases/tag/v1.1.0
 [1.0.0]: https://github.com/user/mmo001/releases/tag/v1.0.0

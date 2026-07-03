@@ -17,7 +17,8 @@ export class SpriteManager {
     const screen = camera.worldToScreen(player.x, player.y);
     const cls = CHARACTER_CLASSES[player.characterClass];
     const bob = player.moving ? this.animFrame * 2 : 0;
-    const size = PLAYER_SIZE;
+    const scale = camera.zoom ?? 1;
+    const size = PLAYER_SIZE * scale;
     const half = size / 2;
 
     ctx.fillStyle = cls?.color || '#888';
@@ -28,7 +29,7 @@ export class SpriteManager {
     this.drawDirectionIndicator(ctx, screen.x, screen.y + bob, facing, half);
 
     ctx.fillStyle = '#fff';
-    ctx.font = '11px system-ui, sans-serif';
+    ctx.font = `${11 * scale}px system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.fillText(player.name, screen.x, screen.y - half - 6 + bob);
   }

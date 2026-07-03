@@ -3,6 +3,7 @@ import { Camera } from './Camera.js';
 import { PathFollower } from './PathFollower.js';
 import { Renderer } from '../render/Renderer.js';
 import { facingFromTarget } from '/shared/aim.js';
+import { CAMERA_ZOOM_STEP } from '../config.js';
 
 const LERP = 0.3;
 const MOVE_INTERVAL = 50;
@@ -94,9 +95,16 @@ export class Game {
     }
   }
 
+  handleZoom() {
+    const steps = this.input.consumeZoomDelta();
+    if (steps === 0) return;
+    this.camera.adjustZoom(steps * CAMERA_ZOOM_STEP);
+  }
+
   handleInput(timestamp) {
     this.handleClick();
     this.handleAim(timestamp);
+    this.handleZoom();
 
     const keyboardDirection = this.input.getDirection();
 

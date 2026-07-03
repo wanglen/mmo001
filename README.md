@@ -7,7 +7,7 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 - Procedural map generation with grass, water, and forest clusters
 - Character selection (Warrior, Mage, Ranger)
 - Server-authoritative movement with collision detection
-- Canvas rendering with camera follow and viewport culling
+- Canvas rendering with smooth camera, zoom, and pseudo-isometric view
 - Socket.IO architecture ready for multiplayer
 
 ## Tech stack
@@ -51,6 +51,7 @@ Tests use Node.js built-in test runner. Coverage includes pathfinding, collision
 
 - **Click** — move to location (A* pathfinding around obstacles)
 - **Mouse** — aim / facing direction (yellow dashed line toward cursor)
+- **Scroll wheel** — zoom in/out
 - **WASD** or **Arrow keys** — manual movement (cancels click path)
 - Choose a class and name on the character select screen before entering the world
 
