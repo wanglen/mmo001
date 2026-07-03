@@ -1,5 +1,6 @@
 import { Input } from './Input.js';
 import { Camera } from './Camera.js';
+import { PathFollower } from './PathFollower.js';
 import { Renderer } from '../render/Renderer.js';
 
 const LERP = 0.3;
@@ -9,14 +10,14 @@ export class Game {
   constructor(canvas, socketClient) {
     this.canvas = canvas;
     this.socketClient = socketClient;
-    this.input = new Input();
+    this.input = new Input(canvas);
     this.camera = new Camera(canvas);
+    this.pathFollower = new PathFollower();
     this.renderer = new Renderer(canvas, this.camera);
 
     this.worldState = null;
     this.displayPlayer = null;
     this.lastMoveTime = 0;
-    this.currentDirection = null;
 
     window.addEventListener('resize', () => this.renderer.resize());
     this.renderer.resize();
@@ -48,16 +49,52 @@ export class Game {
     this.displayPlayer.name = server.name;
   }
 
-  handleInput(timestamp) {
-    const direction = this.input.getDirection();
+  handleClick() {
+    const click = this.input.consumeClick();
+    if (!click || !this.worldState?.map || !this.displayPlayer) return;
 
-    if (direction && timestamp - this.lastMoveTime >= MOVE_INTERVAL) {
+    const world = this.camera.screenToWorld(click.screenX, click.screenY);
+    this.pathFollower.setPath(
+      this.worldState.map,
+      this.displayPlayer.x,
+      this.displayPlayer.y,
+      world.x,
+      world.y
+    );
+  }
+
+  handleInput(timestamp) {
+    this.handleClick();
+
+    const keyboardDirection = this.input.getDirection();
+
+    if (keyboardDirection) {
+      this.pathFollower.clear();
+      if (timestamp - this.lastMoveTime >= MOVE_INTERVAL) {
+        this.socketClient.sendMove(keyboardDirection);
+        this.lastMoveTime = timestamp;
+      }
+      return;
+    }
+
+    if (!this.pathFollower.isActive() || !this.displayPlayer) {
+      if (this.displayPlayer) this.displayPlayer.moving = false;
+      return;
+    }
+
+    const direction = this.pathFollower.getDirection(
+      this.displayPlayer.x,
+      this.displayPlayer.y
+    );
+
+    if (!direction) {
+      if (this.displayPlayer) this.displayPlayer.moving = false;
+      return;
+    }
+
+    if (timestamp - this.lastMoveTime >= MOVE_INTERVAL) {
       this.socketClient.sendMove(direction);
       this.lastMoveTime = timestamp;
-      this.currentDirection = direction;
-    } else if (!direction) {
-      this.currentDirection = null;
-      if (this.displayPlayer) this.displayPlayer.moving = false;
     }
   }
 
@@ -66,13 +103,19 @@ export class Game {
       this.handleInput(timestamp);
       this.updateDisplayPlayer();
       this.camera.follow(this.displayPlayer.x, this.displayPlayer.y);
-      this.renderer.draw(this.worldState, this.displayPlayer, timestamp);
+      this.renderer.draw(
+        this.worldState,
+        this.displayPlayer,
+        timestamp,
+        this.pathFollower.target
+      );
     }
 
     requestAnimationFrame((t) => this.loop(t));
   }
 
   start() {
+    this.canvas.classList.add('game-active');
     requestAnimationFrame((t) => this.loop(t));
   }
 }

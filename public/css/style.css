@@ -19,6 +19,10 @@ html, body {
   height: 100vh;
 }
 
+#game-canvas.game-active {
+  cursor: crosshair;
+}
+
 .overlay {
   position: fixed;
   inset: 0;

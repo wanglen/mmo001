@@ -40,7 +40,8 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### Controls
 
-- **WASD** or **Arrow keys** — move your character
+- **Click** — move to location (A* pathfinding around obstacles)
+- **WASD** or **Arrow keys** — manual movement (cancels click path)
 - Choose a class and name on the character select screen before entering the world
 
 ## Project structure

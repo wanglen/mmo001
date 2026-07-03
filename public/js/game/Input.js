@@ -1,7 +1,8 @@
 export class Input {
-  constructor() {
+  constructor(canvas) {
+    this.canvas = canvas;
     this.keys = new Set();
-    this.lastDirection = null;
+    this.clickTarget = null;
 
     window.addEventListener('keydown', (e) => {
       this.keys.add(e.key.toLowerCase());
@@ -10,6 +11,23 @@ export class Input {
     window.addEventListener('keyup', (e) => {
       this.keys.delete(e.key.toLowerCase());
     });
+
+    canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    canvas.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      const rect = canvas.getBoundingClientRect();
+      this.clickTarget = {
+        screenX: e.clientX - rect.left,
+        screenY: e.clientY - rect.top,
+      };
+    });
+  }
+
+  consumeClick() {
+    const target = this.clickTarget;
+    this.clickTarget = null;
+    return target;
   }
 
   getDirection() {
@@ -20,12 +38,7 @@ export class Input {
     return null;
   }
 
-  consumeDirection() {
-    const direction = this.getDirection();
-    if (direction !== this.lastDirection) {
-      this.lastDirection = direction;
-      return direction;
-    }
-    return direction;
+  isKeyboardActive() {
+    return this.getDirection() !== null;
   }
 }

@@ -7,7 +7,7 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 ## Phase 1 — Core Game Feel (Diablo foundation)
 
 ### Movement & camera
-- [ ] Switch from WASD-only to **click-to-move** (pathfind toward cursor)
+- [x] Switch from WASD-only to **click-to-move** (pathfind toward cursor)
 - [ ] Add **mouse aim** for attacks/skills (direction from player to cursor)
 - [ ] Improve camera: smooth follow, zoom, optional slight isometric tilt
 - [ ] Replace colored squares with **sprite sheets** (walk, idle, attack animations)

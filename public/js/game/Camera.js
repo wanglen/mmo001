@@ -16,4 +16,11 @@ export class Camera {
       y: worldY - this.y,
     };
   }
+
+  screenToWorld(screenX, screenY) {
+    return {
+      x: screenX + this.x,
+      y: screenY + this.y,
+    };
+  }
 }
