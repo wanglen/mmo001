@@ -8,7 +8,7 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 
 ### Movement & camera
 - [x] Switch from WASD-only to **click-to-move** (pathfind toward cursor)
-- [ ] Add **mouse aim** for attacks/skills (direction from player to cursor)
+- [x] Add **mouse aim** for attacks/skills (direction from player to cursor)
 - [ ] Improve camera: smooth follow, zoom, optional slight isometric tilt
 - [ ] Replace colored squares with **sprite sheets** (walk, idle, attack animations)
 

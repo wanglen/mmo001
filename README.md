@@ -50,6 +50,7 @@ Tests use Node.js built-in test runner. Coverage includes pathfinding, collision
 ### Controls
 
 - **Click** — move to location (A* pathfinding around obstacles)
+- **Mouse** — aim / facing direction (yellow dashed line toward cursor)
 - **WASD** or **Arrow keys** — manual movement (cancels click path)
 - Choose a class and name on the character select screen before entering the world
 
@@ -78,6 +79,7 @@ mmo001/
 |--------------|-----------|--------------------------------------|
 | `join`       | Client → Server | Join with character class and name |
 | `move`       | Client → Server | Send movement direction          |
+| `aim`        | Client → Server | Send cursor world position for facing |
 | `worldState` | Server → Client | Map, player, and entity state    |
 | `error`      | Server → Client | Error messages                   |
 

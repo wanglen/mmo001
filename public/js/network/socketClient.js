@@ -31,4 +31,8 @@ export class SocketClient {
   sendMove(direction) {
     this.socket.emit(EVENTS.MOVE, { direction });
   }
+
+  sendAim({ x, y }) {
+    this.socket.emit(EVENTS.AIM, { x, y });
+  }
 }

@@ -24,7 +24,8 @@ export class SpriteManager {
     ctx.fillRect(screen.x - half, screen.y - half + bob, size, size);
 
     ctx.fillStyle = '#fff';
-    this.drawDirectionIndicator(ctx, screen.x, screen.y + bob, player.direction, half);
+    const facing = player.facing || player.direction;
+    this.drawDirectionIndicator(ctx, screen.x, screen.y + bob, facing, half);
 
     ctx.fillStyle = '#fff';
     ctx.font = '11px system-ui, sans-serif';

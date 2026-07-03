@@ -2,9 +2,11 @@ import { Input } from './Input.js';
 import { Camera } from './Camera.js';
 import { PathFollower } from './PathFollower.js';
 import { Renderer } from '../render/Renderer.js';
+import { facingFromTarget } from '/shared/aim.js';
 
 const LERP = 0.3;
 const MOVE_INTERVAL = 50;
+const AIM_INTERVAL = 50;
 
 export class Game {
   constructor(canvas, socketClient) {
@@ -18,6 +20,8 @@ export class Game {
     this.worldState = null;
     this.displayPlayer = null;
     this.lastMoveTime = 0;
+    this.lastAimTime = 0;
+    this.aimTarget = null;
 
     window.addEventListener('resize', () => this.renderer.resize());
     this.renderer.resize();
@@ -28,12 +32,17 @@ export class Game {
 
     if (!this.displayPlayer && state.player) {
       this.displayPlayer = { ...state.player };
+      this.aimTarget = { x: state.player.aimX, y: state.player.aimY };
     } else if (state.player) {
       this.displayPlayer = {
         ...state.player,
         x: this.displayPlayer?.x ?? state.player.x,
         y: this.displayPlayer?.y ?? state.player.y,
+        facing: state.player.facing ?? this.displayPlayer?.facing,
       };
+      if (!this.input.getMouseScreen()) {
+        this.aimTarget = { x: state.player.aimX, y: state.player.aimY };
+      }
     }
   }
 
@@ -44,6 +53,7 @@ export class Game {
     this.displayPlayer.x += (server.x - this.displayPlayer.x) * LERP;
     this.displayPlayer.y += (server.y - this.displayPlayer.y) * LERP;
     this.displayPlayer.direction = server.direction;
+    this.displayPlayer.facing = this.displayPlayer.facing ?? server.facing;
     this.displayPlayer.moving = server.moving;
     this.displayPlayer.characterClass = server.characterClass;
     this.displayPlayer.name = server.name;
@@ -63,8 +73,30 @@ export class Game {
     );
   }
 
+  handleAim(timestamp) {
+    const mouse = this.input.getMouseScreen();
+    if (!mouse || !this.displayPlayer) return;
+
+    const world = this.camera.screenToWorld(mouse.screenX, mouse.screenY);
+    this.aimTarget = world;
+
+    const facing = facingFromTarget(
+      this.displayPlayer.x,
+      this.displayPlayer.y,
+      world.x,
+      world.y
+    );
+    if (facing) this.displayPlayer.facing = facing;
+
+    if (timestamp - this.lastAimTime >= AIM_INTERVAL) {
+      this.socketClient.sendAim({ x: world.x, y: world.y });
+      this.lastAimTime = timestamp;
+    }
+  }
+
   handleInput(timestamp) {
     this.handleClick();
+    this.handleAim(timestamp);
 
     const keyboardDirection = this.input.getDirection();
 
@@ -107,7 +139,10 @@ export class Game {
         this.worldState,
         this.displayPlayer,
         timestamp,
-        this.pathFollower.target
+        {
+          moveTarget: this.pathFollower.target,
+          aimTarget: this.aimTarget,
+        }
       );
     }
 

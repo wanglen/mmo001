@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-07-03
+
+### Added
+
+- Mouse aim: character facing follows cursor for future attacks/skills
+- Aim line visual from player to cursor
+- Server `aim` socket event with authoritative facing state
+- Unit tests for shared aim helpers
+
 ## [1.1.0] - 2026-07-03
 
 ### Added
@@ -36,5 +45,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Map generation: replaced cascading noise algorithm with grass-first clustered obstacles so ~76% of the map is walkable (was ~5%)
 
+[1.2.0]: https://github.com/user/mmo001/releases/tag/v1.2.0
 [1.1.0]: https://github.com/user/mmo001/releases/tag/v1.1.0
 [1.0.0]: https://github.com/user/mmo001/releases/tag/v1.0.0

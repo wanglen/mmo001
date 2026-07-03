@@ -15,6 +15,7 @@ describe('PlayerManager', () => {
 
     assert.equal(player.name, 'Hero');
     assert.equal(player.characterClass, 'warrior');
+    assert.equal(player.facing, 'down');
     assert.equal(manager.get('p1'), player);
   });
 

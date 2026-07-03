@@ -3,6 +3,7 @@ export class Input {
     this.canvas = canvas;
     this.keys = new Set();
     this.clickTarget = null;
+    this.mouseScreen = null;
 
     window.addEventListener('keydown', (e) => {
       this.keys.add(e.key.toLowerCase());
@@ -22,12 +23,28 @@ export class Input {
         screenY: e.clientY - rect.top,
       };
     });
+
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      this.mouseScreen = {
+        screenX: e.clientX - rect.left,
+        screenY: e.clientY - rect.top,
+      };
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      this.mouseScreen = null;
+    });
   }
 
   consumeClick() {
     const target = this.clickTarget;
     this.clickTarget = null;
     return target;
+  }
+
+  getMouseScreen() {
+    return this.mouseScreen;
   }
 
   getDirection() {
