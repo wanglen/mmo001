@@ -10,7 +10,7 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 - [x] Switch from WASD-only to **click-to-move** (pathfind toward cursor)
 - [x] Add **mouse aim** for attacks/skills (direction from player to cursor)
 - [x] Improve camera: smooth follow, zoom, optional slight isometric tilt
-- [ ] Replace colored squares with **sprite sheets** (walk, idle, attack animations)
+- [x] Replace colored squares with **sprite sheets** (walk, idle, attack animations)
 
 ### Combat basics
 - [ ] Add player stats: `HP`, `MP`, `STR`, `DEX`, `INT`, `VIT`, `level`, `xp`

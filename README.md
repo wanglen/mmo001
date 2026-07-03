@@ -7,7 +7,7 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 - Procedural map generation with grass, water, and forest clusters
 - Character selection (Warrior, Mage, Ranger)
 - Server-authoritative movement with collision detection
-- Canvas rendering with smooth camera, zoom, and pseudo-isometric view
+- Animated sprite sheets per class (idle, walk, attack) with direction-facing frames
 - Socket.IO architecture ready for multiplayer
 
 ## Tech stack

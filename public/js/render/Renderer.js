@@ -22,7 +22,11 @@ export class Renderer {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     this.mapRenderer.draw(this.ctx, map, this.camera);
-    this.spriteManager.updateAnim(timestamp);
+
+    const anyMoving = players.some((p) =>
+      p.id === displayPlayer.id ? displayPlayer.moving : p.moving
+    );
+    this.spriteManager.updateAnim(timestamp, anyMoving);
 
     if (moveTarget) {
       this.drawMoveTarget(moveTarget);
