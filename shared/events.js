@@ -6,6 +6,7 @@ export const EVENTS = {
   PICKUP: 'pickup',
   EQUIP: 'equip',
   UNEQUIP: 'unequip',
+  ALLOCATE_STAT: 'allocateStat',
   WORLD_STATE: 'worldState',
   ERROR: 'error',
 };

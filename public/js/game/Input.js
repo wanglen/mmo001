@@ -1,5 +1,7 @@
 import { directionFromKeys } from '/shared/movement.js';
 
+const GAME_SHORTCUT_KEYS = new Set(['c', 'i']);
+
 export class Input {
   constructor(canvas) {
     this.canvas = canvas;
@@ -7,20 +9,28 @@ export class Input {
     this.keyPresses = new Set();
     this.clickTarget = null;
     this.mouseScreen = null;
+    this.gameActive = false;
 
-    window.addEventListener('keydown', (e) => {
+    const onKeyDown = (e) => {
       const key = e.key.toLowerCase();
       this.keys.add(key);
       if (!e.repeat) this.keyPresses.add(key);
-    });
+      if (this.gameActive && GAME_SHORTCUT_KEYS.has(key)) {
+        e.preventDefault();
+      }
+    };
 
-    window.addEventListener('keyup', (e) => {
+    const onKeyUp = (e) => {
       this.keys.delete(e.key.toLowerCase());
-    });
+    };
+
+    document.addEventListener('keydown', onKeyDown, true);
+    document.addEventListener('keyup', onKeyUp, true);
 
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
     canvas.addEventListener('mousedown', (e) => {
+      if (this.gameActive) this.canvas.focus();
       if (e.button !== 0) return;
       const rect = canvas.getBoundingClientRect();
       this.clickTarget = {
@@ -45,6 +55,10 @@ export class Input {
       e.preventDefault();
       this.zoomDelta = (this.zoomDelta ?? 0) + (e.deltaY > 0 ? -1 : 1);
     }, { passive: false });
+  }
+
+  setGameActive(active) {
+    this.gameActive = active;
   }
 
   consumeZoomDelta() {

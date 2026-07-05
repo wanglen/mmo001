@@ -48,6 +48,7 @@ export class CharacterSelect {
     if (!this.selectedClass) return;
 
     const name = this.nameInput.value.trim() || 'Hero';
+    this.nameInput.blur();
     this.overlay.classList.add('hidden');
     this.onStart({ characterClass: this.selectedClass, name });
   }

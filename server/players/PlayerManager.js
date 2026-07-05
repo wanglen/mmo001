@@ -1,12 +1,14 @@
-import { createPlayer } from './Player.js';
+import { createPlayer, createPlayerFromSave } from './Player.js';
 
 export class PlayerManager {
   constructor() {
     this.players = new Map();
   }
 
-  create({ id, name, characterClass, spawn }) {
-    const player = createPlayer({ id, name, characterClass, spawn });
+  create({ id, name, characterClass, spawn, map, saved = null }) {
+    const player = saved
+      ? createPlayerFromSave({ id, name, characterClass, spawn, map, saved })
+      : createPlayer({ id, name, characterClass, spawn });
     this.players.set(id, player);
     return player;
   }
@@ -23,7 +25,9 @@ export class PlayerManager {
   }
 
   remove(id) {
+    const player = this.players.get(id);
     this.players.delete(id);
+    return player ?? null;
   }
 
   getAll() {

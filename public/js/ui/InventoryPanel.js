@@ -24,7 +24,7 @@ export class InventoryPanel {
     this.root.innerHTML = `
       <div class="inventory-header">
         <span>Inventory</span>
-        <span class="inventory-hint">I to toggle</span>
+        <span class="inventory-hint">I toggle · C stats</span>
       </div>
       <div class="inventory-body">
         <div class="equipment-slots" id="equipment-slots"></div>

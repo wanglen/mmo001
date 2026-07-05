@@ -5,6 +5,7 @@ import {
   createEmptyEquipment,
   addItemToInventory,
   findLootAt,
+  isInPickupRange,
   getEquipmentBonuses,
   getEffectiveCombatStats,
   INVENTORY_SIZE,
@@ -49,6 +50,11 @@ describe('inventory', () => {
     ];
     const found = findLootAt(drops, 104, 100);
     assert.equal(found.id, 'l2');
+  });
+
+  it('isInPickupRange checks distance threshold', () => {
+    assert.equal(isInPickupRange(0, 0, 30, 0), true);
+    assert.equal(isInPickupRange(0, 0, 50, 0), false);
   });
 
   it('getEquipmentBonuses sums stat bonuses', () => {

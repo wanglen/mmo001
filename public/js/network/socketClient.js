@@ -51,4 +51,8 @@ export class SocketClient {
   sendUnequip(slot) {
     this.socket.emit(EVENTS.UNEQUIP, { slot });
   }
+
+  sendAllocateStat(stat) {
+    this.socket.emit(EVENTS.ALLOCATE_STAT, { stat });
+  }
 }

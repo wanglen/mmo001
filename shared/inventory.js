@@ -7,6 +7,10 @@ export const INVENTORY_SIZE = INVENTORY_COLS * INVENTORY_ROWS;
 export const PICKUP_RANGE = 40;
 export const LOOT_HIT_RADIUS = 14;
 
+export function isInPickupRange(x1, y1, x2, y2, range = PICKUP_RANGE) {
+  return Math.hypot(x2 - x1, y2 - y1) <= range;
+}
+
 export function createEmptyInventory() {
   return new Array(INVENTORY_SIZE).fill(null);
 }

@@ -5,7 +5,7 @@ import { Renderer } from '../render/Renderer.js';
 import { CursorManager } from '../ui/CursorManager.js';
 import { facingFromTarget } from '/shared/aim.js';
 import { findMonsterAt, isInRange, ATTACK_COOLDOWN_MS } from '/shared/combat.js';
-import { findLootAt } from '/shared/inventory.js';
+import { findLootAt, isInPickupRange } from '/shared/inventory.js';
 import { CAMERA_ZOOM_STEP } from '../config.js';
 
 const LERP = 0.3;
@@ -13,10 +13,11 @@ const MOVE_INTERVAL = 50;
 const AIM_INTERVAL = 50;
 
 export class Game {
-  constructor(canvas, socketClient, inventoryPanel = null) {
+  constructor(canvas, socketClient, inventoryPanel = null, levelUpPanel = null) {
     this.canvas = canvas;
     this.socketClient = socketClient;
     this.inventoryPanel = inventoryPanel;
+    this.levelUpPanel = levelUpPanel;
     this.input = new Input(canvas);
     this.camera = new Camera(canvas);
     this.cursorManager = new CursorManager(canvas);
@@ -31,7 +32,9 @@ export class Game {
     this.lastChasePathTime = 0;
     this.aimTarget = null;
     this.attackTargetId = null;
+    this.lootTargetId = null;
     this.inventoryVisible = true;
+    this.gamePaused = false;
 
     window.addEventListener('resize', () => this.renderer.resize());
     this.renderer.resize();
@@ -55,6 +58,7 @@ export class Game {
         this.aimTarget = { x: state.player.aimX, y: state.player.aimY };
       }
       this.inventoryPanel?.update(state.player);
+      this.levelUpPanel?.update(state.player);
     }
   }
 
@@ -72,6 +76,8 @@ export class Game {
     this.displayPlayer.name = server.name;
     this.displayPlayer.level = server.level;
     this.displayPlayer.xp = server.xp;
+    this.displayPlayer.statPoints = server.statPoints;
+    this.displayPlayer.skillPoints = server.skillPoints;
     this.displayPlayer.hp = server.hp;
     this.displayPlayer.maxHp = server.maxHp;
     this.displayPlayer.mp = server.mp;
@@ -82,7 +88,50 @@ export class Game {
     this.displayPlayer.vit = server.vit;
   }
 
+  onGamePause(paused) {
+    this.gamePaused = paused;
+    if (paused) {
+      this.pathFollower.clear();
+      this.attackTargetId = null;
+      this.lootTargetId = null;
+    }
+  }
+
+  focusCanvas() {
+    this.canvas.focus();
+  }
+
+  isStatKey(e) {
+    return e.key.toLowerCase() === 'c' || e.code === 'KeyC';
+  }
+
+  onStatKeyDown(e) {
+    if (!this.input.gameActive || e.repeat) return;
+    if (!this.isStatKey(e)) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (!this.worldState?.player) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    this.toggleStatPanel();
+  }
+
+  toggleStatPanel() {
+    if (!this.levelUpPanel) return;
+
+    if (this.levelUpPanel.isVisible()) {
+      this.levelUpPanel.hide();
+      return;
+    }
+
+    const player = this.worldState?.player ?? this.displayPlayer;
+    if (player) {
+      this.levelUpPanel.openForStatPoints(player);
+    }
+  }
+
   handleClick() {
+    if (this.gamePaused) return;
     const click = this.input.consumeClick();
     if (!click || !this.worldState?.map || !this.displayPlayer) return;
 
@@ -90,7 +139,8 @@ export class Game {
     const loot = findLootAt(this.worldState.loot ?? [], world.x, world.y);
 
     if (loot) {
-      this.socketClient.sendPickup(loot.id);
+      this.lootTargetId = loot.id;
+      this.attackTargetId = null;
       return;
     }
 
@@ -99,10 +149,12 @@ export class Game {
 
     if (target) {
       this.attackTargetId = target.id;
+      this.lootTargetId = null;
       return;
     }
 
     this.attackTargetId = null;
+    this.lootTargetId = null;
     this.pathFollower.setPath(
       this.worldState.map,
       this.displayPlayer.x,
@@ -113,6 +165,7 @@ export class Game {
   }
 
   handleAim(timestamp) {
+    if (this.gamePaused) return;
     const mouse = this.input.getMouseScreen();
     if (!mouse || !this.displayPlayer) return;
 
@@ -138,6 +191,31 @@ export class Game {
     const steps = this.input.consumeZoomDelta();
     if (steps === 0) return;
     this.camera.adjustZoom(steps * CAMERA_ZOOM_STEP);
+  }
+
+  handleLootChase(timestamp) {
+    if (!this.lootTargetId || !this.displayPlayer || !this.worldState) return;
+
+    const drop = (this.worldState.loot ?? []).find((l) => l.id === this.lootTargetId);
+    if (!drop) {
+      this.lootTargetId = null;
+      return;
+    }
+
+    const px = this.displayPlayer.x;
+    const py = this.displayPlayer.y;
+
+    if (isInPickupRange(px, py, drop.x, drop.y)) {
+      this.pathFollower.clear();
+      this.socketClient.sendPickup(drop.id);
+      this.lootTargetId = null;
+      return;
+    }
+
+    if (timestamp - this.lastChasePathTime >= MOVE_INTERVAL) {
+      this.pathFollower.setPath(this.worldState.map, px, py, drop.x, drop.y);
+      this.lastChasePathTime = timestamp;
+    }
   }
 
   handleAttackChase(timestamp) {
@@ -168,12 +246,17 @@ export class Game {
   }
 
   handleInventoryToggle() {
+    if (this.gamePaused) return;
     if (!this.input.consumeKeyPress('i')) return;
     this.inventoryVisible = !this.inventoryVisible;
     this.inventoryPanel?.setVisible(this.inventoryVisible);
   }
 
   handleInput(timestamp) {
+    if (this.gamePaused) {
+      return;
+    }
+
     this.handleClick();
     this.handleInventoryToggle();
     this.handleAim(timestamp);
@@ -183,6 +266,7 @@ export class Game {
 
     if (keyboardDirection) {
       this.attackTargetId = null;
+      this.lootTargetId = null;
       this.pathFollower.clear();
       if (timestamp - this.lastMoveTime >= MOVE_INTERVAL) {
         this.socketClient.sendMove(keyboardDirection);
@@ -191,6 +275,7 @@ export class Game {
       return;
     }
 
+    this.handleLootChase(timestamp);
     this.handleAttackChase(timestamp);
 
     if (!this.pathFollower.isActive() || !this.displayPlayer) {
@@ -232,6 +317,14 @@ export class Game {
 
   start() {
     this.canvas.classList.add('game-active', 'cursor-move');
+    this.input.setGameActive(true);
+    this.focusCanvas();
+
+    if (!this._statKeyBound) {
+      this._statKeyBound = (e) => this.onStatKeyDown(e);
+      document.addEventListener('keydown', this._statKeyBound, true);
+    }
+
     requestAnimationFrame((t) => this.loop(t));
   }
 }

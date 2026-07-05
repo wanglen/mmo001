@@ -35,6 +35,11 @@ export class PlayerHud {
       y + (barHeight + 8) * 2 + 19
     );
 
+    if ((player.statPoints ?? 0) > 0) {
+      ctx.fillStyle = '#f1c40f';
+      ctx.fillText(`+${player.statPoints} pts (C)`, x + 6, y + (barHeight + 8) * 2 + 32);
+    }
+
     const xpY = y + (barHeight + 8) * 3 + 8;
     const xpNeeded = xpToNextLevel(player.level);
     this.drawBar(ctx, x, xpY, barWidth, 10, player.xp, xpNeeded, '#f1c40f', '#5a4a0a', 'XP');

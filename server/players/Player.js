@@ -1,10 +1,11 @@
-import { tileToPixel } from '../map/collision.js';
+import { tileToPixel, canMoveTo } from '../map/collision.js';
 import { createPlayerStats, statsToJSON } from '../../shared/stats.js';
-import { createEmptyInventory, createEmptyEquipment, getEffectiveCombatStats } from '../../shared/inventory.js';
+import { createEmptyInventory, createEmptyEquipment, getEffectiveCombatStats, refreshPlayerDerivedStats } from '../../shared/inventory.js';
 import { itemToJSON } from '../../shared/items.js';
+import { restoreItems } from '../persistence/CharacterStore.js';
 
 export class Player {
-  constructor({ id, name, characterClass, x, y, stats }) {
+  constructor({ id, name, characterClass, x, y, stats, inventory, equipment }) {
     this.id = id;
     this.name = name;
     this.characterClass = characterClass;
@@ -17,8 +18,8 @@ export class Player {
     this.moving = false;
     this.attacking = false;
     this.lastAttackAt = 0;
-    this.inventory = createEmptyInventory();
-    this.equipment = createEmptyEquipment();
+    this.inventory = inventory ?? createEmptyInventory();
+    this.equipment = equipment ?? createEmptyEquipment();
 
     Object.assign(this, stats);
   }
@@ -57,4 +58,43 @@ export function createPlayer({ id, name, characterClass, spawn }) {
   const { x, y } = tileToPixel(spawn.x, spawn.y);
   const stats = createPlayerStats(characterClass);
   return new Player({ id, name, characterClass, x, y, stats });
+}
+
+export function createPlayerFromSave({ id, name, characterClass, spawn, map, saved }) {
+  const spawnPos = tileToPixel(spawn.x, spawn.y);
+  let x = typeof saved.x === 'number' ? saved.x : spawnPos.x;
+  let y = typeof saved.y === 'number' ? saved.y : spawnPos.y;
+
+  if (!canMoveTo(map, x, y)) {
+    x = spawnPos.x;
+    y = spawnPos.y;
+  }
+
+  const stats = createPlayerStats(characterClass, saved.level ?? 1, {
+    xp: saved.xp,
+    statPoints: saved.statPoints,
+    skillPoints: saved.skillPoints,
+    str: saved.str,
+    dex: saved.dex,
+    int: saved.int,
+    vit: saved.vit,
+    hp: saved.hp,
+    mp: saved.mp,
+  });
+
+  const { inventory, equipment } = restoreItems(saved);
+
+  const player = new Player({
+    id,
+    name,
+    characterClass,
+    x,
+    y,
+    stats,
+    inventory,
+    equipment,
+  });
+
+  refreshPlayerDerivedStats(player, player.equipment);
+  return player;
 }

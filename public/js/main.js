@@ -1,5 +1,6 @@
 import { CharacterSelect } from './ui/CharacterSelect.js';
 import { InventoryPanel } from './ui/InventoryPanel.js';
+import { LevelUpPanel } from './ui/LevelUpPanel.js';
 import { SocketClient } from './network/socketClient.js';
 import { Game } from './game/Game.js';
 
@@ -9,7 +10,15 @@ const inventoryPanel = new InventoryPanel(document.getElementById('inventory-pan
 inventoryPanel.onEquip = (index) => socketClient.sendEquip(index);
 inventoryPanel.onUnequip = (slot) => socketClient.sendUnequip(slot);
 
-const game = new Game(canvas, socketClient, inventoryPanel);
+const levelUpPanel = new LevelUpPanel(
+  document.getElementById('level-up-panel'),
+  document.getElementById('level-up-flash')
+);
+levelUpPanel.onAllocate = (stat) => socketClient.sendAllocateStat(stat);
+levelUpPanel.onRequestCanvasFocus = () => canvas.focus();
+
+const game = new Game(canvas, socketClient, inventoryPanel, levelUpPanel);
+levelUpPanel.onPauseChange = (paused) => game.onGamePause(paused);
 
 socketClient.onWorldState((state) => {
   game.setWorldState(state);

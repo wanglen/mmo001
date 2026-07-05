@@ -39,13 +39,16 @@ html, body {
   position: fixed;
   right: 16px;
   bottom: 16px;
-  width: 340px;
+  width: min(388px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: auto;
   background: rgba(22, 33, 62, 0.92);
   border: 2px solid #0f3460;
   border-radius: 10px;
   padding: 10px;
   z-index: 5;
   font-size: 12px;
+  box-sizing: border-box;
 }
 
 .inventory-panel.hidden {
@@ -66,41 +69,67 @@ html, body {
 
 .inventory-body {
   display: flex;
-  gap: 10px;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 8px;
 }
 
+/* Diablo-style paper doll (left) + grid (right) */
 .equipment-slots {
   display: grid;
-  grid-template-columns: repeat(2, 44px);
-  gap: 4px;
-  width: 92px;
+  grid-template-columns: repeat(3, 38px);
+  grid-template-rows: repeat(5, 38px);
+  grid-template-areas:
+    ". helm ."
+    "amulet chest weapon"
+    ". gloves ."
+    ". boots ."
+    "ring . .";
+  gap: 3px;
+  flex-shrink: 0;
 }
+
+.equip-slot[data-slot='helm'] { grid-area: helm; }
+.equip-slot[data-slot='amulet'] { grid-area: amulet; }
+.equip-slot[data-slot='chest'] { grid-area: chest; }
+.equip-slot[data-slot='weapon'] { grid-area: weapon; }
+.equip-slot[data-slot='gloves'] { grid-area: gloves; }
+.equip-slot[data-slot='boots'] { grid-area: boots; }
+.equip-slot[data-slot='ring'] { grid-area: ring; }
 
 .inventory-grid {
   display: grid;
   grid-template-columns: repeat(10, 22px);
   gap: 3px;
-  flex: 1;
+  flex-shrink: 0;
 }
 
-.equip-slot,
-.inv-slot {
-  width: 44px;
-  height: 44px;
+.equip-slot {
+  width: 38px;
+  height: 38px;
   background: #1a1a2e;
   border: 2px solid #333;
   border-radius: 4px;
   color: #aaa;
-  font-size: 9px;
+  font-size: 8px;
   cursor: pointer;
   padding: 2px;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .inv-slot {
   width: 22px;
   height: 22px;
+  background: #1a1a2e;
+  border: 2px solid #333;
+  border-radius: 4px;
+  color: #aaa;
   font-size: 7px;
+  cursor: pointer;
+  padding: 1px;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .equip-slot.has-item,
@@ -111,6 +140,137 @@ html, body {
 .equip-slot:hover,
 .inv-slot:hover {
   filter: brightness(1.2);
+}
+
+.level-up-flash {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(241, 196, 15, 0.45), transparent 70%);
+  opacity: 0;
+  z-index: 20;
+  transition: opacity 0.15s ease-out;
+}
+
+.level-up-flash.levelup-flash-active {
+  opacity: 1;
+}
+
+.level-up-panel {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 25;
+}
+
+.level-up-panel.hidden {
+  display: none;
+}
+
+.levelup-inner {
+  background: #16213e;
+  border: 2px solid #f1c40f;
+  border-radius: 12px;
+  padding: 1.5rem;
+  min-width: 280px;
+  text-align: center;
+  box-shadow: 0 0 24px rgba(241, 196, 15, 0.35);
+}
+
+.levelup-title {
+  color: #f1c40f;
+  margin-bottom: 0.5rem;
+}
+
+.levelup-level {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.levelup-summary {
+  font-size: 0.9rem;
+  color: #bdc3c7;
+  margin-bottom: 0.75rem;
+}
+
+.levelup-points {
+  margin-bottom: 0.75rem;
+  color: #ddd;
+}
+
+.levelup-current-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.levelup-stat-readout {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  padding: 0.4rem 0.25rem;
+}
+
+.levelup-stat-readout-label {
+  display: block;
+  font-size: 0.7rem;
+  color: #95a5a6;
+  letter-spacing: 0.04em;
+}
+
+.levelup-stat-readout-value {
+  display: block;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #f1c40f;
+}
+
+.levelup-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.levelup-stat-btn {
+  padding: 0.6rem;
+  background: #0f3460;
+  border: 1px solid #2980b9;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.levelup-stat-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.levelup-stat-btn:not(:disabled):hover {
+  background: #1a5276;
+}
+
+.levelup-hint {
+  font-size: 0.85rem;
+  color: #aaa;
+  margin-bottom: 1rem;
+  line-height: 1.35;
+}
+
+.levelup-close {
+  width: 100%;
+  padding: 0.65rem;
+  background: #e94560;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
 }
 
 .overlay {

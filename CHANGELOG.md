@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-07-05
+
+### Added
+
+- Accelerating XP curve per level (`50·L² + 50·L`)
+- +5 stat points per level-up; manual STR/DEX/INT/VIT allocation (reopen with **C**)
+- Level-up panel with flash, sound, current stats readout, and stat buttons
+- Character persistence to `data/characters/*.json` (stats, position, inventory, equipment)
+
+### Changed
+
+- Level-up no longer auto-increases stats; spend points via UI or `allocateStat` socket event
+
+### Fixed
+
+- **C** key reliably opens stat panel (keyboard focus, direct key handler)
+- Unspent stat points persist after **Continue**; no separate “skill points” counter
+- Legacy saves with `skillPoints` merge into `statPoints` on load
+- Loot click chases pickup when out of range; inventory/equipment layout improvements
+
 ## [1.8.0] - 2026-07-05
 
 ### Added

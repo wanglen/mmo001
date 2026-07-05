@@ -40,10 +40,10 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 - [x] Stat bonuses from equipped gear applied server-side
 
 ### Leveling
-- [ ] XP curve per level
-- [ ] Level-up grants stat/skill points
-- [ ] Level-up UI feedback (flash, sound, stat allocation screen)
-- [ ] Persist character progress (JSON file or SQLite to start)
+- [x] XP curve per level
+- [x] Level-up grants stat points (+5 per level)
+- [x] Level-up UI feedback (flash, sound, stat allocation screen)
+- [x] Persist character progress (JSON file or SQLite to start)
 
 ### Skills
 - [ ] Skill bar (6–8 slots, hotkeys 1–8)

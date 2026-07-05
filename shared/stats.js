@@ -5,50 +5,92 @@ export const BASE_STATS = {
 };
 
 export const STAT_NAMES = ['hp', 'mp', 'str', 'dex', 'int', 'vit'];
+export const ALLOCATABLE_STATS = ['str', 'dex', 'int', 'vit'];
+
+export const STAT_POINTS_PER_LEVEL = 5;
+/** Reserved for the future skills system; not granted on level-up yet. */
+export const SKILL_POINTS_PER_LEVEL = 1;
+
+/**
+ * XP required to reach the next level from the current level.
+ * Quadratic curve: steeper requirements at higher levels.
+ */
+export function xpToNextLevel(level) {
+  const l = Math.max(1, level);
+  return Math.floor(50 * l * l + 50 * l);
+}
+
+/** Recompute max HP/MP from class base and current vit/int. */
+export function recalculateDerivedStats(stats, characterClass) {
+  const base = BASE_STATS[characterClass] ?? BASE_STATS.warrior;
+  stats.maxHp = base.hp + stats.vit * 5;
+  stats.maxMp = base.mp + stats.int * 3;
+}
 
 /**
  * Create initial stats for a new character.
+ * @param {object} [options] - Optional persisted fields (xp, stats, hp, inventory state)
  */
-export function createPlayerStats(characterClass, level = 1) {
+export function createPlayerStats(characterClass, level = 1, options = {}) {
   const base = BASE_STATS[characterClass] ?? BASE_STATS.warrior;
-  const levelBonus = level - 1;
 
   const stats = {
     level,
-    xp: 0,
-    str: base.str + levelBonus * 2,
-    dex: base.dex + levelBonus,
-    int: base.int + levelBonus,
-    vit: base.vit + levelBonus * 2,
+    xp: options.xp ?? 0,
+    statPoints: options.statPoints ?? 0,
+    skillPoints: options.skillPoints ?? 0,
+    str: options.str ?? base.str,
+    dex: options.dex ?? base.dex,
+    int: options.int ?? base.int,
+    vit: options.vit ?? base.vit,
   };
 
-  stats.maxHp = base.hp + stats.vit * 5;
-  stats.hp = stats.maxHp;
-  stats.maxMp = base.mp + stats.int * 3;
-  stats.mp = stats.maxMp;
+  recalculateDerivedStats(stats, characterClass);
+  stats.hp = options.hp ?? stats.maxHp;
+  stats.mp = options.mp ?? stats.maxMp;
+
+  normalizeSavedProgression(stats);
 
   return stats;
 }
 
-/** XP required to reach the next level from current level. */
-export function xpToNextLevel(level) {
-  return 100 + (level - 1) * 50;
+/** Merge legacy skillPoints into statPoints (old saves confused the two). */
+export function normalizeSavedProgression(stats) {
+  const legacy = stats.skillPoints ?? 0;
+  if (legacy > 0) {
+    stats.statPoints = (stats.statPoints ?? 0) + legacy;
+    stats.skillPoints = 0;
+  }
 }
 
-/** Apply one level-up: scale stats and refill HP/MP. */
+/** Apply one level-up: grant points and refill HP/MP (stats allocated manually). */
 export function applyLevelUp(stats, characterClass) {
-  const base = BASE_STATS[characterClass] ?? BASE_STATS.warrior;
   stats.level += 1;
-  const levelBonus = stats.level - 1;
-
-  stats.str = base.str + levelBonus * 2;
-  stats.dex = base.dex + levelBonus;
-  stats.int = base.int + levelBonus;
-  stats.vit = base.vit + levelBonus * 2;
-  stats.maxHp = base.hp + stats.vit * 5;
+  stats.statPoints = (stats.statPoints ?? 0) + STAT_POINTS_PER_LEVEL;
+  recalculateDerivedStats(stats, characterClass);
   stats.hp = stats.maxHp;
-  stats.maxMp = base.mp + stats.int * 3;
   stats.mp = stats.maxMp;
+}
+
+/** Spend one stat point on str/dex/int/vit. */
+export function allocateStatPoint(stats, statName, characterClass) {
+  if (!ALLOCATABLE_STATS.includes(statName)) {
+    return { ok: false, reason: 'invalid_stat' };
+  }
+  if ((stats.statPoints ?? 0) < 1) {
+    return { ok: false, reason: 'no_points' };
+  }
+
+  const prevMaxHp = stats.maxHp;
+  const prevMaxMp = stats.maxMp;
+
+  stats.statPoints -= 1;
+  stats[statName] += 1;
+  recalculateDerivedStats(stats, characterClass);
+  stats.hp = Math.min(stats.maxHp, stats.hp + (stats.maxHp - prevMaxHp));
+  stats.mp = Math.min(stats.maxMp, stats.mp + (stats.maxMp - prevMaxMp));
+
+  return { ok: true, stat: statName };
 }
 
 /** Grant XP and level up while threshold is met. Returns summary for combat feedback. */
@@ -73,6 +115,8 @@ export function statsToJSON(stats) {
   return {
     level: stats.level,
     xp: stats.xp,
+    statPoints: stats.statPoints ?? 0,
+    skillPoints: stats.skillPoints ?? 0,
     hp: stats.hp,
     maxHp: stats.maxHp,
     mp: stats.mp,

@@ -1,3 +1,5 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { EVENTS } from '../../shared/events.js';
 import { CHARACTER_CLASSES } from '../../shared/constants.js';
 import { facingFromTarget } from '../../shared/aim.js';
@@ -5,6 +7,11 @@ import { DIRECTION_DELTA, isValidDirection } from '../../shared/movement.js';
 import { canMoveTo } from '../map/collision.js';
 import { processAttack, clearAttackAnim } from '../systems/combat.js';
 import { pickupLoot, equipFromInventory, unequipSlot } from '../systems/inventory.js';
+import { allocateStat } from '../systems/progression.js';
+import { CharacterStore } from '../persistence/CharacterStore.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const dataDir = path.join(__dirname, '..', '..', 'data', 'characters');
 
 function buildWorldState(map, playerManager, monsterManager, lootManager, playerId) {
   const player = playerManager.get(playerId);
@@ -61,21 +68,30 @@ function updatePlayerAim(player, x, y) {
   return true;
 }
 
+async function persistPlayer(characterStore, player) {
+  if (player) await characterStore.save(player);
+}
+
 export function registerSocketHandlers(io, map, playerManager, monsterManager, lootManager) {
+  const characterStore = new CharacterStore(dataDir);
+
   io.on('connection', (socket) => {
-    socket.on(EVENTS.JOIN, ({ characterClass, name }) => {
+    socket.on(EVENTS.JOIN, async ({ characterClass, name }) => {
       if (!CHARACTER_CLASSES[characterClass]) {
         socket.emit(EVENTS.ERROR, { message: 'Invalid character class' });
         return;
       }
 
       const playerName = (name || 'Hero').trim().slice(0, 20) || 'Hero';
+      const saved = await characterStore.load(playerName, characterClass);
 
       const player = playerManager.create({
         id: socket.id,
         name: playerName,
         characterClass,
         spawn: map.spawn,
+        map,
+        saved,
       });
 
       player.aimX = player.x + 1;
@@ -93,17 +109,18 @@ export function registerSocketHandlers(io, map, playerManager, monsterManager, l
       }
     });
 
-    socket.on(EVENTS.ATTACK, ({ targetId }) => {
+    socket.on(EVENTS.ATTACK, async ({ targetId }) => {
       const player = playerManager.get(socket.id);
       if (!player || typeof targetId !== 'string') return;
 
       const result = processAttack({ player, targetId, monsterManager, lootManager });
       if (!result.ok && result.reason === 'cooldown') return;
 
+      if (result.ok) await persistPlayer(characterStore, player);
       broadcastWorldStateToSocket(io, socket, map, playerManager, monsterManager, lootManager);
     });
 
-    socket.on(EVENTS.PICKUP, ({ lootId }) => {
+    socket.on(EVENTS.PICKUP, async ({ lootId }) => {
       const player = playerManager.get(socket.id);
       if (!player || typeof lootId !== 'string') return;
 
@@ -113,10 +130,11 @@ export function registerSocketHandlers(io, map, playerManager, monsterManager, l
         return;
       }
 
+      await persistPlayer(characterStore, player);
       broadcastWorldStateToSocket(io, socket, map, playerManager, monsterManager, lootManager);
     });
 
-    socket.on(EVENTS.EQUIP, ({ inventoryIndex }) => {
+    socket.on(EVENTS.EQUIP, async ({ inventoryIndex }) => {
       const player = playerManager.get(socket.id);
       if (!player || !Number.isInteger(inventoryIndex)) return;
 
@@ -126,10 +144,11 @@ export function registerSocketHandlers(io, map, playerManager, monsterManager, l
         return;
       }
 
+      await persistPlayer(characterStore, player);
       broadcastWorldStateToSocket(io, socket, map, playerManager, monsterManager, lootManager);
     });
 
-    socket.on(EVENTS.UNEQUIP, ({ slot }) => {
+    socket.on(EVENTS.UNEQUIP, async ({ slot }) => {
       const player = playerManager.get(socket.id);
       if (!player || typeof slot !== 'string') return;
 
@@ -139,6 +158,21 @@ export function registerSocketHandlers(io, map, playerManager, monsterManager, l
         return;
       }
 
+      await persistPlayer(characterStore, player);
+      broadcastWorldStateToSocket(io, socket, map, playerManager, monsterManager, lootManager);
+    });
+
+    socket.on(EVENTS.ALLOCATE_STAT, async ({ stat }) => {
+      const player = playerManager.get(socket.id);
+      if (!player || typeof stat !== 'string') return;
+
+      const result = allocateStat(player, stat);
+      if (!result.ok) {
+        socket.emit(EVENTS.ERROR, { message: `Cannot allocate stat: ${result.reason}` });
+        return;
+      }
+
+      await persistPlayer(characterStore, player);
       broadcastWorldStateToSocket(io, socket, map, playerManager, monsterManager, lootManager);
     });
 
@@ -164,8 +198,9 @@ export function registerSocketHandlers(io, map, playerManager, monsterManager, l
       broadcastWorldStateToSocket(io, socket, map, playerManager, monsterManager, lootManager);
     });
 
-    socket.on('disconnect', () => {
-      playerManager.remove(socket.id);
+    socket.on('disconnect', async () => {
+      const player = playerManager.remove(socket.id);
+      await persistPlayer(characterStore, player);
     });
   });
 

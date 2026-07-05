@@ -11,6 +11,7 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 - Combat: click enemies to attack, 3 mob types, HP bars, monster chase AI, XP on kill
 - Loot: items drop on kill (rarity-colored), click to pick up
 - Inventory: 10×4 grid, 7 equip slots, stat bonuses from gear (server-side)
+- Leveling: XP curve, +5 stat points per level-up, allocation UI (reopen with C), JSON character save
 - Socket.IO architecture ready for multiplayer
 
 ## Tech stack
@@ -56,6 +57,7 @@ Tests use Node.js built-in test runner. Coverage includes pathfinding, collision
 - **Mouse** — aim / facing direction (character faces cursor)
 - **Scroll wheel** — zoom in/out
 - **I** — toggle inventory panel
+- **C** — open character stats / spend stat points (when available)
 - **WASD** / **Arrow keys** — move including diagonals (e.g. W+D); cancels click path
 - **Inventory** — click item to equip; click equipped slot to unequip
 - Choose a class and name on the character select screen before entering the world
@@ -70,6 +72,7 @@ mmo001/
 │   ├── players/      # Player model and manager
 │   ├── monsters/     # Monster entities and AI
 │   ├── items/        # Ground loot manager
+│   ├── persistence/  # Character JSON save/load
 │   ├── systems/      # Combat, inventory, game loop
 │   └── network/      # Socket event handlers
 ├── public/           # Static client files
@@ -93,6 +96,7 @@ mmo001/
 | `pickup`     | Client → Server | Pick up ground loot by id           |
 | `equip`      | Client → Server | Equip item from inventory index     |
 | `unequip`    | Client → Server | Unequip item from slot              |
+| `allocateStat` | Client → Server | Spend stat point (str/dex/int/vit) |
 | `worldState` | Server → Client | Map, player, monsters, loot, inventory |
 | `error`      | Server → Client | Error messages                   |
 
