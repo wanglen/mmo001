@@ -10,6 +10,7 @@ const socketClient = new SocketClient();
 const inventoryPanel = new InventoryPanel(document.getElementById('inventory-panel'));
 inventoryPanel.onEquip = (index) => socketClient.sendEquip(index);
 inventoryPanel.onUnequip = (slot) => socketClient.sendUnequip(slot);
+inventoryPanel.onUseConsumable = (index) => socketClient.sendUseConsumable(index);
 
 const skillBar = new SkillBar(document.getElementById('skill-bar'));
 

@@ -2,10 +2,12 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   createItem,
+  createPotion,
   rollLoot,
   rollRarity,
   resetItemIdCounter,
   RARITY,
+  POTION_TEMPLATES,
   getRarityColor,
 } from '../../shared/items.js';
 
@@ -37,12 +39,37 @@ describe('items', () => {
     const random = () => {
       call += 1;
       if (call === 1) return 0;
-      if (call === 2) return 0;
+      if (call === 2) return 0.99;
+      if (call === 3) return 0;
       return 0.1;
     };
     const item = rollLoot('skeleton', random);
     assert.ok(item);
     assert.ok(item.slot);
+  });
+
+  it('rollLoot can drop health and mana potions', () => {
+    resetItemIdCounter();
+    let call = 0;
+    const random = () => {
+      call += 1;
+      if (call === 1) return 0;
+      if (call === 2) return 0;
+      if (call === 3) return 0;
+      return 0.5;
+    };
+    const item = rollLoot('goblin', random);
+    assert.equal(item.type, 'consumable');
+    assert.ok(item.consumableKind === 'health' || item.consumableKind === 'mana');
+    assert.ok(item.restoreAmount >= 1);
+  });
+
+  it('createPotion scales restore with rarity', () => {
+    resetItemIdCounter();
+    const common = createPotion(POTION_TEMPLATES[0], RARITY.COMMON);
+    const rare = createPotion(POTION_TEMPLATES[0], RARITY.RARE);
+    assert.equal(common.restoreAmount, 50);
+    assert.equal(rare.restoreAmount, 100);
   });
 
   it('getRarityColor returns color per tier', () => {

@@ -1,4 +1,5 @@
 import { INVENTORY_COLS, INVENTORY_ROWS } from '/shared/inventory.js';
+import { isConsumable } from '/shared/consumables.js';
 import { getRarityColor } from '/shared/items.js';
 import { EQUIP_SLOTS } from '/shared/items.js';
 import { buildSlotIconHtml } from './itemIcons.js';
@@ -15,6 +16,7 @@ export class InventoryPanel {
     this.root = rootEl;
     this.onEquip = null;
     this.onUnequip = null;
+    this.onUseConsumable = null;
     this.player = null;
     this.build();
   }
@@ -63,6 +65,11 @@ export class InventoryPanel {
       el.className = 'inv-slot';
       el.dataset.index = String(i);
       el.addEventListener('click', () => {
+        const item = this.player?.inventory?.[i] ?? null;
+        if (isConsumable(item) && this.onUseConsumable) {
+          this.onUseConsumable(i);
+          return;
+        }
         if (this.onEquip) this.onEquip(i);
       });
       el.addEventListener('mouseenter', () => this.inspectSlot(el));
@@ -104,9 +111,11 @@ export class InventoryPanel {
     slotEl.classList.add('slot-inspect');
 
     if (item) {
-      const actionHint = slotEl.classList.contains('equip-slot')
-        ? 'Click to unequip'
-        : 'Click to equip';
+      const actionHint = isConsumable(item)
+        ? 'Click to use'
+        : slotEl.classList.contains('equip-slot')
+          ? 'Click to unequip'
+          : 'Click to equip';
       this.showInspect(buildItemInspectHtml(item, { actionHint }));
       return;
     }

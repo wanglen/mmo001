@@ -41,6 +41,18 @@ const ICON_SHAPES = {
     <path d="M8 6l-3 4h6L8 6z" />
     <rect x="7" y="8" width="2" height="2" opacity="0.4" />
   `,
+  health_potion: `
+    <rect x="6" y="2" width="4" height="2" rx="0.5" />
+    <rect x="7" y="1" width="2" height="1" />
+    <path d="M5 4h6l-1 10H6L5 4z" />
+    <rect x="6" y="7" width="4" height="4" rx="1" opacity="0.45" />
+  `,
+  mana_potion: `
+    <rect x="6" y="2" width="4" height="2" rx="0.5" />
+    <rect x="7" y="1" width="2" height="1" />
+    <path d="M5 4h6l-1 10H6L5 4z" />
+    <rect x="6" y="8" width="4" height="3" rx="0.5" opacity="0.5" />
+  `,
 };
 
 const DEFAULT_ICON = 'chest';
@@ -51,6 +63,8 @@ const DEFAULT_ICON = 'chest';
  * @param {string} [fallbackSlot]
  */
 export function resolveIconType(item, fallbackSlot = '') {
+  if (item?.consumableKind === 'health') return 'health_potion';
+  if (item?.consumableKind === 'mana') return 'mana_potion';
   return item?.slot ?? item?.type ?? (fallbackSlot || DEFAULT_ICON);
 }
 

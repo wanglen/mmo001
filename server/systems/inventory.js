@@ -5,6 +5,7 @@ import {
   refreshPlayerDerivedStats,
 } from '../../shared/inventory.js';
 import { EQUIP_SLOTS } from '../../shared/items.js';
+import { applyConsumable } from '../../shared/consumables.js';
 
 export function pickupLoot({ player, lootId, lootManager }) {
   const drop = lootManager.get(lootId);
@@ -19,6 +20,21 @@ export function pickupLoot({ player, lootId, lootManager }) {
 
   lootManager.remove(lootId);
   return { ok: true, index: result.index };
+}
+
+export function useConsumableFromInventory(player, inventoryIndex) {
+  if (!Number.isInteger(inventoryIndex) || inventoryIndex < 0 || inventoryIndex >= player.inventory.length) {
+    return { ok: false, reason: 'invalid_index' };
+  }
+
+  const item = player.inventory[inventoryIndex];
+  if (!item) return { ok: false, reason: 'empty_slot' };
+
+  const result = applyConsumable(player, item);
+  if (!result.ok) return result;
+
+  player.inventory[inventoryIndex] = null;
+  return result;
 }
 
 export function equipFromInventory(player, inventoryIndex) {

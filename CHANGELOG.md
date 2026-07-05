@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-07-05
+
+### Added
+
+- Health and mana potions drop from monsters (~38% of successful loot rolls); click in inventory to use
+
 ## [1.10.2] - 2026-07-05
 
 ### Changed

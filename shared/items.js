@@ -6,6 +6,7 @@ export const ITEM_TYPES = {
   BOOTS: 'boots',
   RING: 'ring',
   AMULET: 'amulet',
+  CONSUMABLE: 'consumable',
 };
 
 export const EQUIP_SLOTS = [
@@ -51,6 +52,15 @@ export const LOOT_TEMPLATES = [
   { key: 'jade_amulet', name: 'Jade Amulet', type: 'amulet', slot: 'amulet', baseStats: { int: 1 } },
 ];
 
+/** Health / mana potions — dropped as loot and used from inventory. */
+export const POTION_TEMPLATES = [
+  { key: 'health_potion', name: 'Health Potion', consumableKind: 'health', baseRestore: 50 },
+  { key: 'mana_potion', name: 'Mana Potion', consumableKind: 'mana', baseRestore: 45 },
+];
+
+/** When a drop succeeds, chance the item is a potion instead of gear. */
+export const POTION_LOOT_WEIGHT = 0.38;
+
 const DROP_CHANCE = {
   goblin: 0.35,
   skeleton: 0.45,
@@ -89,6 +99,22 @@ export function createItem(template, rarity = RARITY.COMMON) {
   };
 }
 
+/** Build a consumable potion instance. */
+export function createPotion(template, rarity = RARITY.COMMON) {
+  const mult = RARITY_MULTIPLIER[rarity] ?? 1;
+  const restoreAmount = Math.max(1, Math.floor((template.baseRestore ?? 1) * mult));
+  const prefix = rarity === RARITY.COMMON ? '' : `${capitalize(rarity)} `;
+
+  return {
+    id: `item${itemIdCounter++}`,
+    name: `${prefix}${template.name}`,
+    type: ITEM_TYPES.CONSUMABLE,
+    consumableKind: template.consumableKind,
+    rarity,
+    restoreAmount,
+  };
+}
+
 /** Roll Diablo-style rarity from a 0–1 value. */
 export function rollRarity(random = Math.random) {
   const r = random();
@@ -102,6 +128,11 @@ export function rollRarity(random = Math.random) {
 export function rollLoot(monsterType, random = Math.random) {
   if (random() > (DROP_CHANCE[monsterType] ?? 0.3)) return null;
 
+  if (random() < POTION_LOOT_WEIGHT) {
+    const template = POTION_TEMPLATES[Math.floor(random() * POTION_TEMPLATES.length)];
+    return createPotion(template, rollRarity(random));
+  }
+
   const templateIndex = Math.floor(random() * LOOT_TEMPLATES.length);
   const template = LOOT_TEMPLATES[templateIndex];
   const rarity = rollRarity(random);
@@ -110,14 +141,21 @@ export function rollLoot(monsterType, random = Math.random) {
 
 export function itemToJSON(item) {
   if (!item) return null;
-  return {
+  const json = {
     id: item.id,
     name: item.name,
     type: item.type,
     rarity: item.rarity,
     slot: item.slot,
-    stats: { ...item.stats },
+    stats: item.stats ? { ...item.stats } : undefined,
+    consumableKind: item.consumableKind,
+    restoreAmount: item.restoreAmount,
   };
+  if (!json.stats) delete json.stats;
+  if (!json.slot) delete json.slot;
+  if (!json.consumableKind) delete json.consumableKind;
+  if (json.restoreAmount == null) delete json.restoreAmount;
+  return json;
 }
 
 export function getRarityColor(rarity) {

@@ -7,7 +7,7 @@ import { canMoveTo } from '../map/collision.js';
 import { processAttack, clearAttackAnim } from '../systems/combat.js';
 import { processSkill, clearSkillAnim, collectActiveSkillFx } from '../systems/skills.js';
 import { collectCombatFx } from '../systems/combatFx.js';
-import { pickupLoot, equipFromInventory, unequipSlot } from '../systems/inventory.js';
+import { pickupLoot, equipFromInventory, unequipSlot, useConsumableFromInventory } from '../systems/inventory.js';
 import { allocateStat } from '../systems/progression.js';
 import { respawnPlayer, syncDeathState } from '../systems/playerDeath.js';
 import { isPlayerAlive } from '../../shared/playerLife.js';
@@ -215,6 +215,21 @@ export function registerSocketHandlers(io, map, playerManager, monsterManager, l
       if (!result.ok && (result.reason === 'cooldown' || result.reason === 'no_mp')) return;
 
       if (result.ok) await persistPlayer(characterStore, player);
+      broadcastWorldStateToSocket(io, socket, map, playerManager, monsterManager, lootManager);
+    });
+
+    socket.on(EVENTS.USE_CONSUMABLE, async ({ inventoryIndex }) => {
+      const player = getLivingPlayer(playerManager, socket.id);
+      if (!player || !Number.isInteger(inventoryIndex)) return;
+
+      const result = useConsumableFromInventory(player, inventoryIndex);
+      if (!result.ok) {
+        if (result.reason === 'full_hp' || result.reason === 'full_mp') return;
+        socket.emit(EVENTS.ERROR, { message: `Cannot use item: ${result.reason}` });
+        return;
+      }
+
+      await persistPlayer(characterStore, player);
       broadcastWorldStateToSocket(io, socket, map, playerManager, monsterManager, lootManager);
     });
 

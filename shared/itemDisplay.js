@@ -1,4 +1,5 @@
 import { getRarityColor } from './items.js';
+import { isConsumable } from './consumables.js';
 
 const STAT_LABELS = {
   str: 'Strength',
@@ -19,6 +20,7 @@ const SLOT_LABELS = {
   boots: 'Boots',
   ring: 'Ring',
   amulet: 'Amulet',
+  consumable: 'Consumable',
 };
 
 /** Ordered stat bonus lines for an item. */
@@ -30,6 +32,19 @@ export function getItemStatLines(item) {
     label: STAT_LABELS[key] ?? key.toUpperCase(),
     value: item.stats[key],
   }));
+}
+
+/** Restore amount lines for potions and other consumables. */
+export function getConsumableLines(item) {
+  if (!isConsumable(item)) return [];
+
+  if (item.consumableKind === 'health') {
+    return [{ label: 'Restores', value: `${item.restoreAmount} HP` }];
+  }
+  if (item.consumableKind === 'mana') {
+    return [{ label: 'Restores', value: `${item.restoreAmount} MP` }];
+  }
+  return [];
 }
 
 export function capitalizeWord(value) {
@@ -50,8 +65,10 @@ export function buildItemInspectHtml(item, { actionHint = '' } = {}) {
   if (!item) return '';
 
   const color = getRarityColor(item.rarity);
-  const statLines = getItemStatLines(item);
-  const slotLabel = formatSlotType(item.slot ?? item.type);
+  const statLines = isConsumable(item) ? getConsumableLines(item) : getItemStatLines(item);
+  const slotLabel = isConsumable(item)
+    ? 'Consumable'
+    : formatSlotType(item.slot ?? item.type);
   const rarityLabel = capitalizeWord(item.rarity);
 
   const statsHtml =
@@ -59,7 +76,7 @@ export function buildItemInspectHtml(item, { actionHint = '' } = {}) {
       ? `<ul class="item-stat-list">${statLines
           .map(
             (line) =>
-              `<li><span class="item-stat-label">${line.label}</span><span class="item-stat-value">+${line.value}</span></li>`
+              `<li><span class="item-stat-label">${line.label}</span><span class="item-stat-value">${typeof line.value === 'number' ? `+${line.value}` : escapeHtml(String(line.value))}</span></li>`
           )
           .join('')}</ul>`
       : '<p class="item-inspect-no-stats">No stat bonuses</p>';

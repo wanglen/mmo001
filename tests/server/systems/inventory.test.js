@@ -1,8 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { pickupLoot, equipFromInventory, unequipSlot } from '../../../server/systems/inventory.js';
+import { pickupLoot, equipFromInventory, unequipSlot, useConsumableFromInventory } from '../../../server/systems/inventory.js';
 import { LootManager, resetLootIdCounter } from '../../../server/items/LootManager.js';
-import { createItem, RARITY, resetItemIdCounter } from '../../../shared/items.js';
+import { createItem, createPotion, POTION_TEMPLATES, RARITY, resetItemIdCounter } from '../../../shared/items.js';
 import { createPlayerStats } from '../../../shared/stats.js';
 import { createEmptyInventory, createEmptyEquipment } from '../../../shared/inventory.js';
 
@@ -92,5 +92,34 @@ describe('unequipSlot', () => {
     assert.equal(result.ok, true);
     assert.equal(player.equipment.weapon, null);
     assert.equal(player.inventory[0], item);
+  });
+});
+
+describe('useConsumableFromInventory', () => {
+  it('consumes potion and restores hp', () => {
+    resetItemIdCounter();
+    const player = createMockPlayer();
+    player.hp = 40;
+    const potion = createPotion(POTION_TEMPLATES[0], RARITY.COMMON);
+    player.inventory[2] = potion;
+
+    const result = useConsumableFromInventory(player, 2);
+
+    assert.equal(result.ok, true);
+    assert.equal(result.kind, 'health');
+    assert.ok(player.hp > 40);
+    assert.equal(player.inventory[2], null);
+  });
+
+  it('rejects use when hp is full', () => {
+    resetItemIdCounter();
+    const player = createMockPlayer();
+    player.hp = player.maxHp;
+    player.inventory[0] = createPotion(POTION_TEMPLATES[0], RARITY.COMMON);
+
+    const result = useConsumableFromInventory(player, 0);
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'full_hp');
+    assert.ok(player.inventory[0]);
   });
 });

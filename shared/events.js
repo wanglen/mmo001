@@ -12,6 +12,7 @@ export const EVENTS = {
   UNEQUIP: 'unequip',
   ALLOCATE_STAT: 'allocateStat',
   USE_SKILL: 'useSkill',
+  USE_CONSUMABLE: 'useConsumable',
   RESPAWN: 'respawn',
   WORLD_STATE: 'worldState',
   ERROR: 'error',
