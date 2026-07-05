@@ -1,0 +1,12 @@
+services:
+  mmo001:
+    build: .
+    image: mmo001:latest
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

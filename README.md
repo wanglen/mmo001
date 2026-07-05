@@ -32,9 +32,11 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 
 ## Requirements
 
-- [Node.js](https://nodejs.org/) 18 or later
+- [Node.js](https://nodejs.org/) 18 or later, **or** [Docker](https://www.docker.com/) with Docker Compose v2
 
 ## Getting started
+
+### Local (Node.js)
 
 ```bash
 # Install dependencies
@@ -48,6 +50,35 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Docker
+
+Build and run with Docker Compose (character saves persist in the local `data/` directory):
+
+```bash
+mkdir -p data/characters
+docker compose up --build
+```
+
+Open [http://localhost:3000](http://localhost:3000). Stop with `Ctrl+C`, or run detached:
+
+```bash
+docker compose up --build -d
+docker compose down
+```
+
+To use a different host port, set `PORT` when starting (maps host → container port 3000):
+
+```bash
+PORT=8080 docker compose up --build
+```
+
+Build the image only:
+
+```bash
+docker build -t mmo001:latest .
+docker run --rm -p 3000:3000 -v "$(pwd)/data:/app/data" mmo001:latest
+```
 
 ### Testing
 
@@ -89,6 +120,8 @@ mmo001/
 │   └── css/
 ├── shared/           # Constants and events (server + client)
 ├── tests/            # Unit tests (mirrors server/ and shared/)
+├── Dockerfile        # Production server image
+├── docker-compose.yml
 ├── TODO.md           # Development roadmap
 ├── CHANGELOG.md      # Version history
 └── package.json
