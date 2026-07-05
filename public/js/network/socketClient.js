@@ -93,4 +93,12 @@ export class SocketClient {
   sendRespawn() {
     this.socket.emit(EVENTS.RESPAWN);
   }
+
+  sendUsePortal(portalId) {
+    this.socket.emit(EVENTS.USE_PORTAL, { portalId });
+  }
+
+  sendCastTownRecall() {
+    this.socket.emit(EVENTS.CAST_TOWN_RECALL);
+  }
 }

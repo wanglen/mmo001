@@ -1,6 +1,6 @@
 import { directionFromKeys } from '/shared/movement.js';
 
-const GAME_SHORTCUT_KEYS = new Set(['c', 'i', '1', '2', '3', '4', '5', '6', '7', '8']);
+const GAME_SHORTCUT_KEYS = new Set(['c', 'i', 't', '1', '2', '3', '4', '5', '6', '7', '8']);
 
 export class Input {
   constructor(canvas) {
@@ -88,6 +88,10 @@ export class Input {
 
   isKeyboardActive() {
     return this.getDirection() !== null;
+  }
+
+  isKeyHeld(key) {
+    return this.keys.has(key.toLowerCase());
   }
 
   consumeKeyPress(key) {

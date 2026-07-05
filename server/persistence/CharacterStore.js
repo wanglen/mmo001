@@ -4,6 +4,7 @@ import { itemToJSON } from '../../shared/items.js';
 import { createEmptyInventory, createEmptyEquipment } from '../../shared/inventory.js';
 import { createPlayerStats } from '../../shared/stats.js';
 import { tileToPixel } from '../map/collision.js';
+import { DEFAULT_MAP_ID } from '../../shared/worldMaps.js';
 
 export function slugifyCharacterName(name) {
   const slug = name.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
@@ -14,6 +15,7 @@ export function playerToSaveData(player) {
   return {
     name: player.name,
     characterClass: player.characterClass,
+    mapId: player.mapId ?? DEFAULT_MAP_ID,
     x: player.x,
     y: player.y,
     level: player.level,
@@ -42,6 +44,7 @@ export function createNewCharacterData(name, characterClass, spawn) {
   return {
     name,
     characterClass,
+    mapId: DEFAULT_MAP_ID,
     x,
     y,
     level: stats.level,

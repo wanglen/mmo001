@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.18.0] - 2026-07-05
+
+### Added
+
+- Town hub: entire town map is a safe zone with full HP/MP recovery
+- NPCs Mira (innkeeper) and Eldon (guide) with click-to-talk dialogue
+- Press **T** outside town to start a 6-second recall cast to town (interruptible; progress ring + glow)
+
+## [1.17.0] - 2026-07-05
+
+### Added
+
+- Zone transitions: separate instanced maps for town, wilderness, and dungeon
+- Clickable portals between areas with loading overlay; `mapId` persisted on character save
+- Portal glow markers and labels on the map; respawn always returns to town
+
+### Changed
+
+- Server runs per-map monster and loot managers; players only see others on the same map
+
+## [1.16.0] - 2026-07-05
+
+### Added
+
+- Multiple map zones: town (safe hub), wilderness (default), and a distant dungeon pocket with stone arch marker
+- Zone badge in HUD showing current area; dungeon has higher monster density (+35% spawns)
+
 ## [1.15.0] - 2026-07-05
 
 ### Added

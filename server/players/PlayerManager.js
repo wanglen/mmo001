@@ -1,14 +1,15 @@
 import { createPlayer, createPlayerFromSave } from './Player.js';
+import { DEFAULT_MAP_ID } from '../../shared/worldMaps.js';
 
 export class PlayerManager {
   constructor() {
     this.players = new Map();
   }
 
-  create({ id, name, characterClass, spawn, map, saved = null }) {
+  create({ id, name, characterClass, spawn, map, saved = null, mapId = DEFAULT_MAP_ID }) {
     const player = saved
-      ? createPlayerFromSave({ id, name, characterClass, spawn, map, saved })
-      : createPlayer({ id, name, characterClass, spawn });
+      ? createPlayerFromSave({ id, name, characterClass, spawn, map, saved, mapId })
+      : createPlayer({ id, name, characterClass, spawn, mapId });
     this.players.set(id, player);
     return player;
   }

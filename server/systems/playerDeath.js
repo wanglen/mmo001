@@ -1,6 +1,7 @@
 import { tileToPixel } from '../map/collision.js';
 import { refreshPlayerDerivedStats } from '../../shared/inventory.js';
 import { isPlayerAlive } from '../../shared/playerLife.js';
+import { DEFAULT_MAP_ID } from '../../shared/worldMaps.js';
 
 /**
  * Mark player dead when joining with 0 HP from a saved character.
@@ -23,6 +24,7 @@ export function syncDeathState(player) {
 export function respawnPlayer(player, map) {
   const { x, y } = tileToPixel(map.spawn.x, map.spawn.y);
 
+  player.mapId = map.mapId ?? DEFAULT_MAP_ID;
   player.x = x;
   player.y = y;
   player.aimX = x + 1;

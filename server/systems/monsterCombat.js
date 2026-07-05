@@ -10,6 +10,7 @@ import {
 import { isPlayerAlive, applyPlayerDamage } from '../../shared/playerLife.js';
 import { getEffectiveCombatStats } from '../../shared/inventory.js';
 import { pushDamageFx } from './combatFx.js';
+import { interruptTownRecall } from './townHub.js';
 
 /** Monster retaliates against the player who damaged it. */
 export function provokeMonster(monster, player) {
@@ -77,6 +78,7 @@ export function monsterAttackPlayer(monster, player, map = null, now = Date.now(
   const vit = getEffectiveCombatStats(player, player.equipment).vit;
   const damage = calculateMonsterDamage(monster.damage, vit);
   const result = applyPlayerDamage(player, damage, now);
+  if (result.damage > 0) interruptTownRecall(player);
   monster.lastAttackAt = now;
   pushDamageFx({ x: player.x, y: player.y, damage: result.damage, now });
 

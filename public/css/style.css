@@ -35,6 +35,66 @@ html, body {
   cursor: grab;
 }
 
+#game-canvas.cursor-portal {
+  cursor: cell;
+}
+
+.map-loading-overlay {
+  z-index: 12;
+  pointer-events: none;
+  background: rgba(8, 10, 18, 0.82);
+}
+
+.map-loading-panel {
+  min-width: 240px;
+  padding: 1.25rem 1.75rem;
+}
+
+.map-loading-text {
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  color: #c8d8f0;
+}
+
+.dialogue-panel {
+  position: fixed;
+  left: 50%;
+  bottom: 96px;
+  transform: translateX(-50%);
+  z-index: 11;
+  width: min(420px, calc(100vw - 32px));
+}
+
+.dialogue-panel.hidden {
+  display: none;
+}
+
+.dialogue-panel-inner {
+  background: rgba(22, 33, 62, 0.95);
+  border: 2px solid #0f3460;
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.dialogue-name {
+  font-weight: 600;
+  color: #87ceeb;
+  margin-bottom: 0.5rem;
+}
+
+.dialogue-text {
+  line-height: 1.45;
+  margin-bottom: 0.85rem;
+  min-height: 2.5rem;
+}
+
+.dialogue-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
 .inventory-panel {
   position: fixed;
   right: 16px;

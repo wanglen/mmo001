@@ -66,9 +66,9 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 ## Phase 3 — World & Content
 
 ### Maps & zones
-- [ ] Multiple zones (town, wilderness, dungeon)
-- [ ] Zone transitions (portals, doors, loading new map)
-- [ ] Town hub: safe zone, no combat, NPCs
+- [x] Multiple zones (town, wilderness, dungeon)
+- [x] Zone transitions (portals, doors, loading new map)
+- [x] Town hub: safe zone, full hp/mp recovery, no combat, NPCs, teleportation using "T" key after 6 seconds continuous press.
 - [ ] Dungeon maps: tighter layouts, higher mob density, boss room
 
 ### Map generation improvements

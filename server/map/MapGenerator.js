@@ -1,7 +1,14 @@
 import { TILE, TILE_WALKABLE, MAP_WIDTH, MAP_HEIGHT } from '../../shared/constants.js';
-import { createTownZone, spawnSafeRadiusTiles } from '../../shared/zones.js';
+import {
+  createDungeonZone,
+  createTownZone,
+  DUNGEON_RADIUS_TILES,
+  isTileInZone,
+  spawnSafeRadiusTiles,
+} from '../../shared/zones.js';
 
 const MAX_GENERATION_ATTEMPTS = 10;
+const DUNGEON_MIN_DISTANCE_FROM_SPAWN = 35;
 
 /** Minimum walkable region size scales with map area (~35% of interior). */
 export function minConnectedTiles(width, height) {
@@ -64,6 +71,7 @@ function clearArea(tiles, centerX, centerY, radius) {
 
   for (let y = Math.max(0, centerY - radius); y <= Math.min(height - 1, centerY + radius); y++) {
     for (let x = Math.max(0, centerX - radius); x <= Math.min(width - 1, centerX + radius); x++) {
+      if (x === 0 || y === 0 || x === width - 1 || y === height - 1) continue;
       tiles[y][x] = TILE.GRASS;
     }
   }
@@ -129,7 +137,37 @@ function placeRockBorder(tiles, width, height) {
   }
 }
 
-function buildMap(width, height) {
+/** Pick a walkable site far from spawn for a dungeon pocket. */
+export function pickDungeonCenter(tiles, width, height, spawn, townZone, minDistance = DUNGEON_MIN_DISTANCE_FROM_SPAWN) {
+  const candidates = [];
+
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      if (!TILE_WALKABLE[tiles[y][x]]) continue;
+      if (Math.hypot(x - spawn.x, y - spawn.y) < minDistance) continue;
+      if (townZone && isTileInZone(townZone, x, y)) continue;
+      candidates.push({ x, y });
+    }
+  }
+
+  if (candidates.length === 0) return null;
+  return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
+export function buildMapZones(tiles, width, height, spawn) {
+  const townZone = createTownZone(spawn, width);
+  const zones = [townZone];
+
+  const dungeonCenter = pickDungeonCenter(tiles, width, height, spawn, townZone);
+  if (dungeonCenter) {
+    clearArea(tiles, dungeonCenter.x, dungeonCenter.y, DUNGEON_RADIUS_TILES);
+    zones.push(createDungeonZone(dungeonCenter));
+  }
+
+  return zones;
+}
+
+function buildMap(width, height, zoneLayout = 'combined') {
   const tiles = createGrassGrid(width, height);
   placeRockBorder(tiles, width, height);
   placeObstacleClusters(tiles, width, height);
@@ -141,16 +179,31 @@ function buildMap(width, height) {
 
   const { spawn, connectedSize } = findLargestWalkableRegion(tiles, width, height);
   clearArea(tiles, spawn.x, spawn.y, spawnSafeRadiusTiles(width));
-  const zones = [createTownZone(spawn, width)];
+
+  let zones = [];
+  if (zoneLayout === 'combined') {
+    zones = buildMapZones(tiles, width, height, spawn);
+  } else if (zoneLayout === 'town-only') {
+    zones = [createTownZone(spawn, width)];
+  } else if (zoneLayout === 'dungeon-only') {
+    const dungeonCenter = {
+      x: spawn.x,
+      y: Math.max(3, spawn.y - Math.min(10, Math.floor(height / 4))),
+    };
+    clearArea(tiles, dungeonCenter.x, dungeonCenter.y, DUNGEON_RADIUS_TILES);
+    zones = [createDungeonZone(dungeonCenter)];
+  }
+
   return { tiles, width, height, spawn, connectedSize, zones };
 }
 
-export function generateMap(width = MAP_WIDTH, height = MAP_HEIGHT) {
+export function generateMap(width = MAP_WIDTH, height = MAP_HEIGHT, options = {}) {
+  const zoneLayout = options.zoneLayout ?? 'combined';
   const minConnected = minConnectedTiles(width, height);
-  let map = buildMap(width, height);
+  let map = buildMap(width, height, zoneLayout);
 
   for (let attempt = 0; attempt < MAX_GENERATION_ATTEMPTS && map.connectedSize < minConnected; attempt++) {
-    map = buildMap(width, height);
+    map = buildMap(width, height, zoneLayout);
   }
 
   const { connectedSize, ...result } = map;

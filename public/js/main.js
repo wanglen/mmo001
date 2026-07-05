@@ -2,6 +2,7 @@ import { CharacterSelect } from './ui/CharacterSelect.js';
 import { InventoryPanel } from './ui/InventoryPanel.js';
 import { SkillBar } from './ui/SkillBar.js';
 import { LevelUpPanel } from './ui/LevelUpPanel.js';
+import { DialoguePanel } from './ui/DialoguePanel.js';
 import { SocketClient } from './network/socketClient.js';
 import { Game } from './game/Game.js';
 
@@ -21,7 +22,9 @@ const levelUpPanel = new LevelUpPanel(
 levelUpPanel.onAllocate = (stat) => socketClient.sendAllocateStat(stat);
 levelUpPanel.onRequestCanvasFocus = () => canvas.focus();
 
-const game = new Game(canvas, socketClient, inventoryPanel, levelUpPanel, skillBar);
+const dialoguePanel = new DialoguePanel(document.getElementById('dialogue-panel'));
+
+const game = new Game(canvas, socketClient, inventoryPanel, levelUpPanel, skillBar, dialoguePanel);
 levelUpPanel.onPauseChange = (paused) => game.onGamePause(paused);
 
 socketClient.onWorldState((state) => {

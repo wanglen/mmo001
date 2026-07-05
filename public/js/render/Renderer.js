@@ -5,8 +5,12 @@ import { LootRenderer } from './LootRenderer.js';
 import { SkillEffectRenderer } from './SkillEffectRenderer.js';
 import { CombatFxRenderer } from './CombatFxRenderer.js';
 import { FogRenderer } from './FogRenderer.js';
+import { PortalRenderer } from './PortalRenderer.js';
+import { NpcRenderer } from './NpcRenderer.js';
+import { TownRecallRenderer } from './TownRecallRenderer.js';
 import { PlayerHud } from '../ui/PlayerHud.js';
 import { filterRevealedPositions, isPositionRevealed } from '/shared/fog.js';
+import { getZoneAtPixel } from '/shared/zones.js';
 import { TILE_SIZE } from '../config.js';
 
 export class Renderer {
@@ -21,6 +25,9 @@ export class Renderer {
     this.skillEffectRenderer = new SkillEffectRenderer();
     this.combatFxRenderer = new CombatFxRenderer();
     this.fogRenderer = new FogRenderer();
+    this.portalRenderer = new PortalRenderer();
+    this.npcRenderer = new NpcRenderer();
+    this.townRecallRenderer = new TownRecallRenderer();
     this.playerHud = new PlayerHud();
   }
 
@@ -30,7 +37,8 @@ export class Renderer {
   }
 
   draw(worldState, displayPlayer, rafTimestamp, overlays = {}) {
-    const { map, players, monsters = [], loot = [], skillFx = [], combatFx = [] } = worldState;
+    const { map, players, monsters = [], loot = [], npcs = [], skillFx = [], combatFx = [] } = worldState;
+    const portals = map?.portals ?? [];
     const { moveTarget = null, hoveredMonsterId = null, fogOfWar = null } = overlays;
     const revealed = fogOfWar?.revealed ?? null;
     const visibleMonsters = filterRevealedPositions(revealed, monsters, TILE_SIZE);
@@ -50,6 +58,8 @@ export class Renderer {
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     this.mapRenderer.draw(this.ctx, map, this.camera, this.canvas.width, this.canvas.height);
+
+    this.portalRenderer.draw(this.ctx, portals, this.camera, revealed);
 
     if (fogOfWar && map) {
       this.fogRenderer.draw(
@@ -77,6 +87,7 @@ export class Renderer {
       hoveredMonsterId
     );
     this.lootRenderer.draw(this.ctx, visibleLoot, this.camera, rafTimestamp);
+    this.npcRenderer.draw(this.ctx, npcs, this.camera);
 
     if (moveTarget && (!revealed || isPositionRevealed(revealed, moveTarget.x, moveTarget.y, TILE_SIZE))) {
       this.drawMoveTarget(moveTarget);
@@ -96,10 +107,13 @@ export class Renderer {
       this.spriteManager.draw(this.ctx, renderPlayer, this.camera);
     }
 
+    this.townRecallRenderer.draw(this.ctx, displayPlayer, this.camera, rafTimestamp);
+
     this.skillEffectRenderer.draw(this.ctx, visibleSkillFx, this.camera, now);
     this.combatFxRenderer.draw(this.ctx, visibleCombatFx, this.camera, now);
 
-    this.playerHud.draw(this.ctx, displayPlayer);
+    const zone = map ? getZoneAtPixel(map, displayPlayer.x, displayPlayer.y) : null;
+    this.playerHud.draw(this.ctx, displayPlayer, zone, map, this.canvas.width, this.canvas.height);
   }
 
   drawMoveTarget(target) {

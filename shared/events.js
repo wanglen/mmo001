@@ -14,6 +14,8 @@ export const EVENTS = {
   USE_SKILL: 'useSkill',
   USE_CONSUMABLE: 'useConsumable',
   RESPAWN: 'respawn',
+  USE_PORTAL: 'usePortal',
+  CAST_TOWN_RECALL: 'castTownRecall',
   WORLD_STATE: 'worldState',
   ERROR: 'error',
 };
@@ -23,4 +25,5 @@ export const CURSOR_MODE = {
   MOVE: 'move',
   ATTACK: 'attack',
   LOOT: 'loot',
+  PORTAL: 'portal',
 };

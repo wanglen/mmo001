@@ -55,6 +55,23 @@
     </div>
   </div>
 
+  <div id="map-loading-overlay" class="overlay map-loading-overlay hidden">
+    <div class="panel map-loading-panel">
+      <p class="map-loading-text">Loading area…</p>
+    </div>
+  </div>
+
+  <div id="dialogue-panel" class="dialogue-panel hidden">
+    <div class="dialogue-panel-inner">
+      <p class="dialogue-name" data-dialogue-name></p>
+      <p class="dialogue-text" data-dialogue-text></p>
+      <div class="dialogue-actions">
+        <button type="button" data-dialogue-next>Next</button>
+        <button type="button" class="btn-secondary" data-dialogue-close>Close</button>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="/js/main.js"></script>
 </body>
 </html>

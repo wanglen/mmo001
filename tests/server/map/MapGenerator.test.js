@@ -53,14 +53,24 @@ describe('MapGenerator', () => {
     assert.ok(map.spawn.y >= 0 && map.spawn.y < map.height);
   });
 
-  it('includes town zone with identifier', () => {
+  it('includes town and dungeon zones', () => {
     const map = generateMap();
     assert.ok(Array.isArray(map.zones));
-    assert.equal(map.zones.length, 1);
-    assert.equal(map.zones[0].id, ZONE_ID.TOWN);
-    assert.equal(map.zones[0].label, 'Town');
-    assert.ok(map.zones[0].safe);
-    assert.equal(map.zones[0].radius, TOWN_RADIUS_TILES);
+    assert.ok(map.zones.length >= 2);
+
+    const town = map.zones.find((z) => z.id === ZONE_ID.TOWN);
+    const dungeon = map.zones.find((z) => z.id === ZONE_ID.DUNGEON);
+    assert.ok(town);
+    assert.ok(dungeon);
+    assert.equal(town.label, 'Town');
+    assert.ok(town.safe);
+    assert.equal(town.radius, TOWN_RADIUS_TILES);
+    assert.equal(dungeon.label, 'Dungeon');
+    assert.ok(!dungeon.safe);
+    assert.ok(
+      Math.hypot(dungeon.center.x - map.spawn.x, dungeon.center.y - map.spawn.y) >= 35
+    );
+    assert.ok(isWalkable(map, dungeon.center.x, dungeon.center.y));
   });
 
   it('rings the map edge with impassable rock tiles', () => {

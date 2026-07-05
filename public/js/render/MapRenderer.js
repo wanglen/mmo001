@@ -1,6 +1,7 @@
 import { TILE } from '/shared/constants.js';
 import { TILE_SIZE } from '../config.js';
 import { TownRenderer } from './TownRenderer.js';
+import { DungeonRenderer } from './DungeonRenderer.js';
 
 const VOID_COLOR = '#0c0e14';
 const GRASS = '#4a7c3f';
@@ -202,6 +203,7 @@ function drawCliffTile(ctx, screen, tileSize, map, col, row) {
 export class MapRenderer {
   constructor() {
     this.townRenderer = new TownRenderer();
+    this.dungeonRenderer = new DungeonRenderer();
   }
 
   draw(ctx, map, camera, canvasWidth, canvasHeight) {
@@ -248,5 +250,6 @@ export class MapRenderer {
     }
 
     this.townRenderer.draw(ctx, map, camera, tileSize, startCol, startRow, endCol, endRow);
+    this.dungeonRenderer.draw(ctx, map, camera, tileSize, startCol, startRow, endCol, endRow);
   }
 }

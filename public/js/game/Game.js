@@ -6,6 +6,9 @@ import { CursorManager } from '../ui/CursorManager.js';
 import { facingFromTarget } from '/shared/aim.js';
 import { findMonsterAt, isInRange, ATTACK_COOLDOWN_MS } from '/shared/combat.js';
 import { findLootAt, isInPickupRange } from '/shared/inventory.js';
+import { findPortalAt, isInPortalRange } from '/shared/portals.js';
+import { findNpcAt } from '/shared/npcs.js';
+import { isTownHubMap } from '/shared/townHub.js';
 import { getSkill, getSkillFxDuration, resolveProjectileImpact, canUseSkill } from '/shared/skills.js';
 import { CAMERA_ZOOM_STEP, TILE_SIZE } from '../config.js';
 import { filterRevealedPositions } from '/shared/fog.js';
@@ -17,12 +20,13 @@ const MOVE_INTERVAL = 50;
 const AIM_INTERVAL = 50;
 
 export class Game {
-  constructor(canvas, socketClient, inventoryPanel = null, levelUpPanel = null, skillBar = null) {
+  constructor(canvas, socketClient, inventoryPanel = null, levelUpPanel = null, skillBar = null, dialoguePanel = null) {
     this.canvas = canvas;
     this.socketClient = socketClient;
     this.inventoryPanel = inventoryPanel;
     this.levelUpPanel = levelUpPanel;
     this.skillBar = skillBar;
+    this.dialoguePanel = dialoguePanel;
     this.input = new Input(canvas);
     this.camera = new Camera(canvas);
     this.cursorManager = new CursorManager(canvas);
@@ -38,12 +42,15 @@ export class Game {
     this.aimTarget = null;
     this.attackTargetId = null;
     this.lootTargetId = null;
+    this.portalTargetId = null;
     this.inventoryVisible = true;
     this.gamePaused = false;
     this.isDead = false;
     this.fxBuffer = new FxBuffer();
     this.fogOfWar = new FogOfWar();
     this.deathOverlay = document.getElementById('death-overlay');
+    this.mapLoadingOverlay = document.getElementById('map-loading-overlay');
+    this.mapLoadingTimer = null;
 
     document.getElementById('respawn-btn')?.addEventListener('click', () => {
       this.socketClient.sendRespawn();
@@ -55,19 +62,34 @@ export class Game {
 
   setWorldState(state) {
     const prevMap = this.worldState?.map;
-    if (prevMap && state.map && !state.map.tiles) {
+    const mapIdChanged =
+      prevMap?.mapId && state.map?.mapId && prevMap.mapId !== state.map.mapId;
+
+    if (mapIdChanged) {
+      this.showMapLoading();
+      this.pathFollower.clear();
+      this.attackTargetId = null;
+      this.lootTargetId = null;
+      this.portalTargetId = null;
+      this.dialoguePanel?.hide();
+    } else if (prevMap && state.map && !state.map.tiles) {
       state = {
         ...state,
         map: {
           ...state.map,
           tiles: prevMap.tiles,
           zones: state.map.zones?.length ? state.map.zones : prevMap.zones,
+          portals: state.map.portals?.length ? state.map.portals : prevMap.portals,
         },
       };
     }
+
     this.worldState = state;
     if (state.map) {
       this.camera.setMapBounds(state.map.width, state.map.height, TILE_SIZE);
+      if (state.map.tiles) {
+        this.hideMapLoading();
+      }
     }
     this.fxBuffer.ingestCombat(state.combatFx);
     this.fxBuffer.ingestSkill(state.skillFx);
@@ -84,15 +106,20 @@ export class Game {
       this.displayPlayer = { ...state.player };
       this.aimTarget = { x: state.player.aimX, y: state.player.aimY };
     } else if (state.player) {
-      this.displayPlayer = {
-        ...state.player,
-        x: this.displayPlayer?.x ?? state.player.x,
-        y: this.displayPlayer?.y ?? state.player.y,
-        facing: state.player.facing ?? this.displayPlayer?.facing,
-        attacking: state.player.attacking,
-      };
-      if (!this.input.getMouseScreen()) {
+      if (mapIdChanged) {
+        this.displayPlayer = { ...state.player };
         this.aimTarget = { x: state.player.aimX, y: state.player.aimY };
+      } else {
+        this.displayPlayer = {
+          ...state.player,
+          x: this.displayPlayer?.x ?? state.player.x,
+          y: this.displayPlayer?.y ?? state.player.y,
+          facing: state.player.facing ?? this.displayPlayer?.facing,
+          attacking: state.player.attacking,
+        };
+        if (!this.input.getMouseScreen()) {
+          this.aimTarget = { x: state.player.aimX, y: state.player.aimY };
+        }
       }
       this.inventoryPanel?.update(state.player);
       this.levelUpPanel?.update(state.player);
@@ -127,6 +154,25 @@ export class Game {
     this.displayPlayer.vit = server.vit;
     this.displayPlayer.skillCooldowns = server.skillCooldowns;
     this.displayPlayer.skillBar = server.skillBar;
+    this.displayPlayer.townRecallCasting = server.townRecallCasting;
+    this.displayPlayer.townRecallCastMs = server.townRecallCastMs;
+  }
+
+  isRecalling() {
+    return !!this.worldState?.player?.townRecallCasting;
+  }
+
+  handleTownRecallCast() {
+    if (this.gamePaused || this.isDead || this.isRecalling()) return;
+    if (isTownHubMap(this.worldState?.map)) return;
+    if (this.dialoguePanel?.isVisible() || this.levelUpPanel?.isVisible()) return;
+    if (!this.input.consumeKeyPress('t')) return;
+
+    this.pathFollower.clear();
+    this.attackTargetId = null;
+    this.lootTargetId = null;
+    this.portalTargetId = null;
+    this.socketClient.sendCastTownRecall();
   }
 
   onGamePause(paused) {
@@ -171,17 +217,50 @@ export class Game {
     }
   }
 
+  showMapLoading() {
+    this.mapLoadingOverlay?.classList.remove('hidden');
+    if (this.mapLoadingTimer) clearTimeout(this.mapLoadingTimer);
+    this.mapLoadingTimer = setTimeout(() => this.hideMapLoading(), 2500);
+  }
+
+  hideMapLoading() {
+    this.mapLoadingOverlay?.classList.add('hidden');
+    if (this.mapLoadingTimer) {
+      clearTimeout(this.mapLoadingTimer);
+      this.mapLoadingTimer = null;
+    }
+  }
+
   handleClick() {
     if (this.gamePaused) return;
     const click = this.input.consumeClick();
     if (!click || !this.worldState?.map || !this.displayPlayer) return;
 
     const world = this.camera.screenToWorld(click.screenX, click.screenY);
+    const npc = findNpcAt(this.worldState.npcs ?? [], world.x, world.y);
+
+    if (npc) {
+      this.dialoguePanel?.show(npc);
+      this.pathFollower.clear();
+      return;
+    }
+
+    const portals = this.worldState.map.portals ?? [];
+    const portal = findPortalAt(portals, world.x, world.y);
+
+    if (portal) {
+      this.portalTargetId = portal.id;
+      this.attackTargetId = null;
+      this.lootTargetId = null;
+      return;
+    }
+
     const loot = findLootAt(this.worldState.loot ?? [], world.x, world.y);
 
     if (loot) {
       this.lootTargetId = loot.id;
       this.attackTargetId = null;
+      this.portalTargetId = null;
       return;
     }
 
@@ -191,11 +270,13 @@ export class Game {
     if (target) {
       this.attackTargetId = target.id;
       this.lootTargetId = null;
+      this.portalTargetId = null;
       return;
     }
 
     this.attackTargetId = null;
     this.lootTargetId = null;
+    this.portalTargetId = null;
     this.pathFollower.setPath(
       this.worldState.map,
       this.displayPlayer.x,
@@ -212,7 +293,12 @@ export class Game {
 
     const world = this.camera.screenToWorld(mouse.screenX, mouse.screenY);
     this.aimTarget = world;
-    this.cursorManager.update(world, this.worldState.monsters ?? [], this.worldState.loot ?? []);
+    this.cursorManager.update(
+      world,
+      this.worldState.monsters ?? [],
+      this.worldState.loot ?? [],
+      this.worldState.map?.portals ?? []
+    );
 
     const facing = facingFromTarget(
       this.displayPlayer.x,
@@ -255,6 +341,32 @@ export class Game {
 
     if (timestamp - this.lastChasePathTime >= MOVE_INTERVAL) {
       this.pathFollower.setPath(this.worldState.map, px, py, drop.x, drop.y);
+      this.lastChasePathTime = timestamp;
+    }
+  }
+
+  handlePortalChase(timestamp) {
+    if (!this.portalTargetId || !this.displayPlayer || !this.worldState) return;
+
+    const portals = this.worldState.map?.portals ?? [];
+    const portal = portals.find((entry) => entry.id === this.portalTargetId);
+    if (!portal) {
+      this.portalTargetId = null;
+      return;
+    }
+
+    const px = this.displayPlayer.x;
+    const py = this.displayPlayer.y;
+
+    if (isInPortalRange(px, py, portal)) {
+      this.pathFollower.clear();
+      this.socketClient.sendUsePortal(portal.id);
+      this.portalTargetId = null;
+      return;
+    }
+
+    if (timestamp - this.lastChasePathTime >= MOVE_INTERVAL) {
+      this.pathFollower.setPath(this.worldState.map, px, py, portal.x, portal.y);
       this.lastChasePathTime = timestamp;
     }
   }
@@ -358,6 +470,15 @@ export class Game {
       return;
     }
 
+    this.handleTownRecallCast();
+
+    if (this.isRecalling()) {
+      this.pathFollower.clear();
+      this.handleAim(timestamp);
+      this.handleZoom();
+      return;
+    }
+
     this.handleClick();
     this.handleInventoryToggle();
     this.handleSkills();
@@ -369,6 +490,7 @@ export class Game {
     if (keyboardDirection) {
       this.attackTargetId = null;
       this.lootTargetId = null;
+      this.portalTargetId = null;
       this.pathFollower.clear();
       if (timestamp - this.lastMoveTime >= MOVE_INTERVAL) {
         this.socketClient.sendMove(keyboardDirection);
@@ -379,6 +501,7 @@ export class Game {
 
     this.handleLootChase(timestamp);
     this.handleAttackChase(timestamp);
+    this.handlePortalChase(timestamp);
 
     if (!this.pathFollower.isActive() || !this.displayPlayer) {
       if (this.displayPlayer) this.displayPlayer.moving = false;

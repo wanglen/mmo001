@@ -4,7 +4,7 @@ import { TILE_WALKABLE } from '../../shared/constants.js';
 import { tileToPixel, pixelToTile } from '../map/collision.js';
 import { canMoveTo } from '../map/collision.js';
 import { isInRange } from '../../shared/combat.js';
-import { isTileInAnySafeZone } from '../../shared/zones.js';
+import { ZONE_ID, isTileInAnySafeZone, isTileInZoneId, totalSpawnTarget, DUNGEON_EXTRA_SPAWN_RATIO } from '../../shared/zones.js';
 import { resolveMonsterTarget, monsterAttackPlayer } from '../systems/monsterCombat.js';
 
 const DIRECTION_DELTA = {
@@ -72,6 +72,43 @@ function shuffle(tiles) {
   return list;
 }
 
+function filterSpawnCandidates(map, connected) {
+  let candidates = connected.filter(
+    (tile) =>
+      isOutsideSafeZones(map, tile.x, tile.y) &&
+      Math.hypot(tile.x - map.spawn.x, tile.y - map.spawn.y) >= MIN_SPAWN_TILES_FROM_PLAYER
+  );
+
+  if (candidates.length === 0) {
+    candidates = connected.filter(
+      (tile) =>
+        isOutsideSafeZones(map, tile.x, tile.y) &&
+        (tile.x !== map.spawn.x || tile.y !== map.spawn.y)
+    );
+  }
+
+  return candidates;
+}
+
+function placeMonstersOnTiles(manager, tiles, count, types, startIndex = 0) {
+  if (count <= 0 || tiles.length === 0) return 0;
+
+  const shuffled = shuffle(tiles);
+  const toPlace = Math.min(count, shuffled.length);
+  let placed = 0;
+
+  for (let i = 0; i < toPlace; i++) {
+    const tile = shuffled[i];
+    const type = types[(startIndex + placed) % types.length];
+    const { x, y } = tileToPixel(tile.x, tile.y);
+    const monster = createMonster(type, x, y);
+    manager.monsters.set(monster.id, monster);
+    placed++;
+  }
+
+  return placed;
+}
+
 export class MonsterManager {
   constructor() {
     this.monsters = new Map();
@@ -80,44 +117,40 @@ export class MonsterManager {
   spawnOnMap(map, count = SPAWN_COUNT) {
     const types = Object.keys(MONSTER_TYPES);
     const connected = getConnectedWalkableTiles(map);
-
-    let candidates = connected.filter(
-      (tile) =>
-        isOutsideSafeZones(map, tile.x, tile.y) &&
-        Math.hypot(tile.x - map.spawn.x, tile.y - map.spawn.y) >= MIN_SPAWN_TILES_FROM_PLAYER
-    );
-
-    if (candidates.length === 0) {
-      candidates = connected.filter(
-        (tile) =>
-          isOutsideSafeZones(map, tile.x, tile.y) &&
-          (tile.x !== map.spawn.x || tile.y !== map.spawn.y)
-      );
-    }
+    const candidates = filterSpawnCandidates(map, connected);
 
     if (candidates.length === 0) return 0;
 
-    const shuffled = shuffle(candidates);
-    const toPlace = Math.min(count, shuffled.length);
-    let placed = 0;
+    const wildernessCandidates = candidates.filter(
+      (tile) => !isTileInZoneId(map, ZONE_ID.DUNGEON, tile.x, tile.y)
+    );
+    const dungeonCandidates = candidates.filter((tile) =>
+      isTileInZoneId(map, ZONE_ID.DUNGEON, tile.x, tile.y)
+    );
 
-    for (let i = 0; i < toPlace; i++) {
-      const tile = shuffled[i];
-      const type = types[placed % types.length];
-      const { x, y } = tileToPixel(tile.x, tile.y);
-      const monster = createMonster(type, x, y);
-      this.monsters.set(monster.id, monster);
-      placed++;
-    }
+    const basePlaced = placeMonstersOnTiles(this, wildernessCandidates, count, types, 0);
+    const bonusPlaced = placeMonstersOnTiles(
+      this,
+      dungeonCandidates,
+      totalSpawnTarget(count) - count,
+      types,
+      basePlaced
+    );
 
-    return placed;
+    return basePlaced + bonusPlaced;
   }
 
   /** Top up monsters on the player's reachable region when population is low. */
   ensurePopulation(map, target = SPAWN_COUNT) {
+    const hasDungeon = (map.zones ?? []).some((zone) => zone.id === ZONE_ID.DUNGEON);
+    const goal = hasDungeon ? totalSpawnTarget(target) : target;
     const current = this.getAll().length;
-    if (current >= target) return 0;
-    return this.spawnOnMap(map, target - current);
+    if (current >= goal) return 0;
+    const missing = goal - current;
+    const baseMissing = hasDungeon
+      ? Math.max(1, Math.ceil(missing / (1 + DUNGEON_EXTRA_SPAWN_RATIO)))
+      : missing;
+    return this.spawnOnMap(map, baseMissing);
   }
 
   get(id) {

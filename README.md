@@ -16,6 +16,9 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 - Skills: class skill bar (keys 1–8), MP costs, cooldowns, out-of-combat MP regen, server-authoritative damage and visuals
 - Death at 0 HP: blocked actions, respawn button restores HP/MP at spawn
 - Map fog of war: translucent grey veil on unexplored terrain only; monsters and loot hidden until explored; explored areas stay clear
+- World zones: town safe hub, wilderness (default), and dungeon pocket with higher mob density; zone name shown in HUD
+- Zone transitions: click glowing portals to travel between separate town, wilderness, and dungeon maps (loading overlay on travel)
+- Town hub: full HP/MP recovery in town, NPC dialogue (Mira & Eldon), press **T** for interruptible 6s recall to town
 - Socket.IO architecture ready for multiplayer
 
 ## Tech stack
@@ -57,7 +60,7 @@ Tests use Node.js built-in test runner. Coverage includes pathfinding, collision
 
 ### Controls
 
-- **Click** — move (8-way pathfinding with diagonals), pick up loot, or attack/chase enemy
+- **Click** — move (8-way pathfinding with diagonals), pick up loot, attack/chase enemy, or use portals
 - **Mouse** — aim / facing direction (character faces cursor)
 - **Scroll wheel** — zoom in/out
 - **I** — toggle inventory panel
@@ -65,7 +68,8 @@ Tests use Node.js built-in test runner. Coverage includes pathfinding, collision
 - **1**–**8** — use skills from the skill bar (class-specific; costs MP, has cooldowns; Mage: Fireball, Icebolt)
 - **WASD** / **Arrow keys** — move including diagonals (e.g. W+D); cancels click path
 - **Inventory** — click item to equip; click potions to drink (restore HP/MP)
-- Character selection: pick an existing hero, create a new one, or delete saves (name is the unique key)
+- **T** (outside town) — start 6s recall cast to town; interrupted by movement, combat, or damage
+- **Click NPC** — talk to town residents
 
 ## Project structure
 

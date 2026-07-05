@@ -4,14 +4,16 @@ import { createEmptyInventory, createEmptyEquipment, getEffectiveCombatStats, re
 import { itemToJSON } from '../../shared/items.js';
 import { getSkillBar, getSkillCooldownRemaining } from '../../shared/skills.js';
 import { restoreItems } from '../persistence/CharacterStore.js';
+import { DEFAULT_MAP_ID } from '../../shared/worldMaps.js';
 
 export class Player {
-  constructor({ id, name, characterClass, x, y, stats, inventory, equipment }) {
+  constructor({ id, name, characterClass, x, y, stats, inventory, equipment, mapId }) {
     this.id = id;
     this.name = name;
     this.characterClass = characterClass;
     this.x = x;
     this.y = y;
+    this.mapId = mapId ?? DEFAULT_MAP_ID;
     this.direction = 'down';
     this.facing = 'down';
     this.aimX = x;
@@ -22,6 +24,8 @@ export class Player {
     this.lastSkillAt = 0;
     this.lastDamagedAt = 0;
     this.dead = false;
+    this.townRecallCasting = false;
+    this.townRecallCastMs = 0;
     this.skillCooldowns = {};
     this.inventory = inventory ?? createEmptyInventory();
     this.equipment = equipment ?? createEmptyEquipment();
@@ -36,6 +40,7 @@ export class Player {
       id: this.id,
       name: this.name,
       characterClass: this.characterClass,
+      mapId: this.mapId,
       x: this.x,
       y: this.y,
       direction: this.direction,
@@ -45,6 +50,8 @@ export class Player {
       moving: this.moving,
       attacking: this.attacking,
       dead: !!this.dead,
+      townRecallCasting: !!this.townRecallCasting,
+      townRecallCastMs: this.townRecallCasting ? (this.townRecallCastMs ?? 0) : 0,
       ...statsToJSON(this),
       str: effective.str,
       dex: effective.dex,
@@ -64,13 +71,14 @@ export class Player {
   }
 }
 
-export function createPlayer({ id, name, characterClass, spawn }) {
+export function createPlayer({ id, name, characterClass, spawn, mapId = DEFAULT_MAP_ID }) {
   const { x, y } = tileToPixel(spawn.x, spawn.y);
   const stats = createPlayerStats(characterClass);
-  return new Player({ id, name, characterClass, x, y, stats });
+  return new Player({ id, name, characterClass, x, y, stats, mapId });
 }
 
-export function createPlayerFromSave({ id, name, characterClass, spawn, map, saved }) {
+export function createPlayerFromSave({ id, name, characterClass, spawn, map, saved, mapId = DEFAULT_MAP_ID }) {
+  const resolvedMapId = saved.mapId ?? mapId;
   const spawnPos = tileToPixel(spawn.x, spawn.y);
   let x = typeof saved.x === 'number' ? saved.x : spawnPos.x;
   let y = typeof saved.y === 'number' ? saved.y : spawnPos.y;
@@ -103,6 +111,7 @@ export function createPlayerFromSave({ id, name, characterClass, spawn, map, sav
     stats,
     inventory,
     equipment,
+    mapId: resolvedMapId,
   });
 
   refreshPlayerDerivedStats(player, player.equipment);

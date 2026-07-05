@@ -13,7 +13,7 @@ export class FogOfWar {
 
   resetForMap(map) {
     if (!map) return;
-    const key = `${map.width}x${map.height}`;
+    const key = map.mapId ?? `${map.width}x${map.height}`;
     if (this.mapKey === key) return;
     this.mapKey = key;
     this.revealed = new Set();

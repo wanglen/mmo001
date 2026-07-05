@@ -4,13 +4,11 @@ import { Server } from 'socket.io';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { PORT } from './config.js';
-import { generateMap } from './map/MapGenerator.js';
 import { PlayerManager } from './players/PlayerManager.js';
-import { MonsterManager } from './monsters/MonsterManager.js';
-import { LootManager } from './items/LootManager.js';
 import { CharacterStore } from './persistence/CharacterStore.js';
 import { registerSocketHandlers } from './network/socketHandlers.js';
 import { startGameLoop } from './systems/gameLoop.js';
+import { createWorld } from './world/World.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.join(__dirname, '..');
@@ -34,25 +32,15 @@ app.get('/api/characters', async (_req, res) => {
   }
 });
 
-const map = generateMap();
+const world = createWorld();
 const playerManager = new PlayerManager();
-const monsterManager = new MonsterManager();
-const lootManager = new LootManager();
-monsterManager.spawnOnMap(map);
 
-const { broadcastAll } = registerSocketHandlers(
-  io,
-  map,
-  playerManager,
-  monsterManager,
-  lootManager,
-  characterStore
-);
+const { broadcastAll } = registerSocketHandlers(io, world, playerManager, characterStore);
 
 startGameLoop({
-  map,
+  world,
   playerManager,
-  monsterManager,
+  characterStore,
   broadcast: broadcastAll,
 });
 
