@@ -1,3 +1,4 @@
+import { isInSafeZone } from '../../shared/zones.js';
 import {
   MONSTER_ATTACK_COOLDOWN_MS,
   MONSTER_PROVOKE_CHASE_RANGE,
@@ -22,10 +23,14 @@ export function provokeMonster(monster, player) {
  * @param {object[]} players
  * @returns {object | null}
  */
-export function resolveMonsterTarget(monster, players) {
+export function resolveMonsterTarget(monster, players, map = null) {
   if (monster.provoked && monster.targetPlayerId) {
     const target = players.find((p) => p.id === monster.targetPlayerId);
-    if (target && isPlayerAlive(target)) {
+    if (
+      target &&
+      isPlayerAlive(target) &&
+      !(map && isInSafeZone(map, target.x, target.y))
+    ) {
       const d = distance(monster.x, monster.y, target.x, target.y);
       if (d <= MONSTER_PROVOKE_CHASE_RANGE) return target;
     }
@@ -38,6 +43,7 @@ export function resolveMonsterTarget(monster, players) {
 
   for (const player of players) {
     if (!isPlayerAlive(player)) continue;
+    if (map && isInSafeZone(map, player.x, player.y)) continue;
     const d = distance(monster.x, monster.y, player.x, player.y);
     if (d < nearestDist) {
       nearest = player;
@@ -51,9 +57,13 @@ export function resolveMonsterTarget(monster, players) {
 /**
  * @returns {{ ok: true, damage: number } | { ok: false, reason: string }}
  */
-export function monsterAttackPlayer(monster, player, now = Date.now()) {
+export function monsterAttackPlayer(monster, player, map = null, now = Date.now()) {
   if (!isPlayerAlive(player)) {
     return { ok: false, reason: 'target_dead' };
+  }
+
+  if (map && isInSafeZone(map, player.x, player.y)) {
+    return { ok: false, reason: 'safe_zone' };
   }
 
   if (!canAttackNow(monster.lastAttackAt ?? 0, now, MONSTER_ATTACK_COOLDOWN_MS)) {

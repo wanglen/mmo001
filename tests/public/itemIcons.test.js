@@ -1,17 +1,10 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveIconType, buildItemIconSvg } from '../../public/js/ui/itemIcons.js';
+import { buildItemIconSvg } from '../../public/js/ui/itemIconSvg.js';
 
-describe('itemIcons', () => {
-  it('resolveIconType prefers item slot then type then fallback', () => {
-    assert.equal(resolveIconType({ slot: 'ring', type: 'weapon' }), 'ring');
-    assert.equal(resolveIconType({ type: 'helm' }), 'helm');
-    assert.equal(resolveIconType(null, 'boots'), 'boots');
-    assert.equal(resolveIconType(null), 'chest');
-  });
-
-  it('buildItemIconSvg returns svg for known types', () => {
-    const svg = buildItemIconSvg('weapon');
+describe('itemIconSvg (client)', () => {
+  it('buildItemIconSvg returns svg for template keys', () => {
+    const svg = buildItemIconSvg('rusty_sword');
     assert.ok(svg.includes('<svg'));
     assert.ok(svg.includes('item-icon-svg'));
   });
@@ -19,5 +12,10 @@ describe('itemIcons', () => {
   it('buildItemIconSvg falls back for unknown type', () => {
     const svg = buildItemIconSvg('unknown');
     assert.ok(svg.includes('<svg'));
+  });
+
+  it('buildItemIconSvg includes shapes for potions', () => {
+    assert.ok(buildItemIconSvg('health_potion').includes('<path'));
+    assert.ok(buildItemIconSvg('mana_potion').includes('<path'));
   });
 });

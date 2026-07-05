@@ -7,7 +7,7 @@ import { facingFromTarget } from '/shared/aim.js';
 import { findMonsterAt, isInRange, ATTACK_COOLDOWN_MS } from '/shared/combat.js';
 import { findLootAt, isInPickupRange } from '/shared/inventory.js';
 import { getSkill, getSkillFxDuration, resolveProjectileImpact, canUseSkill } from '/shared/skills.js';
-import { CAMERA_ZOOM_STEP } from '../config.js';
+import { CAMERA_ZOOM_STEP, TILE_SIZE } from '../config.js';
 import { FxBuffer } from './FxBuffer.js';
 
 const LERP = 0.3;
@@ -51,7 +51,21 @@ export class Game {
   }
 
   setWorldState(state) {
+    const prevMap = this.worldState?.map;
+    if (prevMap && state.map && !state.map.tiles) {
+      state = {
+        ...state,
+        map: {
+          ...state.map,
+          tiles: prevMap.tiles,
+          zones: state.map.zones?.length ? state.map.zones : prevMap.zones,
+        },
+      };
+    }
     this.worldState = state;
+    if (state.map) {
+      this.camera.setMapBounds(state.map.width, state.map.height, TILE_SIZE);
+    }
     this.fxBuffer.ingestCombat(state.combatFx);
     this.fxBuffer.ingestSkill(state.skillFx);
 
@@ -101,6 +115,7 @@ export class Game {
     this.displayPlayer.skillPoints = server.skillPoints;
     this.displayPlayer.hp = server.hp;
     this.displayPlayer.maxHp = server.maxHp;
+    this.displayPlayer.dead = server.dead;
     this.displayPlayer.mp = server.mp;
     this.displayPlayer.maxMp = server.maxMp;
     this.displayPlayer.str = server.str;
@@ -395,11 +410,18 @@ export class Game {
         skillFx: this.fxBuffer.getSkillFx(),
       };
 
+      let hoveredMonsterId = null;
+      const mouse = this.input.getMouseScreen();
+      if (mouse && this.worldState?.monsters) {
+        const world = this.camera.screenToWorld(mouse.screenX, mouse.screenY);
+        hoveredMonsterId = findMonsterAt(this.worldState.monsters, world.x, world.y)?.id ?? null;
+      }
+
       this.renderer.draw(
         renderState,
         this.displayPlayer,
         timestamp,
-        { moveTarget: this.pathFollower.target }
+        { moveTarget: this.pathFollower.target, hoveredMonsterId }
       );
     }
 

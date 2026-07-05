@@ -14,10 +14,11 @@ import {
 describe('items', () => {
   it('createItem applies rarity multiplier to stats', () => {
     resetItemIdCounter();
-    const template = { name: 'Sword', type: 'weapon', slot: 'weapon', baseStats: { str: 2 } };
+    const template = { key: 'rusty_sword', name: 'Sword', type: 'weapon', slot: 'weapon', baseStats: { str: 2 } };
     const common = createItem(template, RARITY.COMMON);
     const rare = createItem(template, RARITY.RARE);
     assert.equal(common.stats.str, 2);
+    assert.equal(common.templateKey, 'rusty_sword');
     assert.equal(rare.stats.str, 4);
     assert.ok(rare.name.includes('Rare'));
   });
@@ -68,6 +69,7 @@ describe('items', () => {
     resetItemIdCounter();
     const common = createPotion(POTION_TEMPLATES[0], RARITY.COMMON);
     const rare = createPotion(POTION_TEMPLATES[0], RARITY.RARE);
+    assert.equal(common.templateKey, 'health_potion');
     assert.equal(common.restoreAmount, 50);
     assert.equal(rare.restoreAmount, 100);
   });

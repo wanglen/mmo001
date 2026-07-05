@@ -2,7 +2,8 @@ import { INVENTORY_COLS, INVENTORY_ROWS } from '/shared/inventory.js';
 import { isConsumable } from '/shared/consumables.js';
 import { getRarityColor } from '/shared/items.js';
 import { EQUIP_SLOTS } from '/shared/items.js';
-import { buildSlotIconHtml } from './itemIcons.js';
+import { buildSlotIconHtml, buildItemIconSvg } from './itemIcons.js';
+import { resolveItemIconKey } from '/shared/itemIcons.js';
 import {
   buildEmptyInspectHtml,
   buildItemInspectHtml,
@@ -116,7 +117,11 @@ export class InventoryPanel {
         : slotEl.classList.contains('equip-slot')
           ? 'Click to unequip'
           : 'Click to equip';
-      this.showInspect(buildItemInspectHtml(item, { actionHint }));
+      const fallbackSlot = slotEl.classList.contains('equip-slot') ? slotEl.dataset.slot : '';
+      const iconKey = resolveItemIconKey(item, fallbackSlot);
+      const iconColor = getRarityColor(item.rarity);
+      const iconHtml = `<div class="item-inspect-icon" style="color: ${iconColor}">${buildItemIconSvg(iconKey)}</div>`;
+      this.showInspect(iconHtml + buildItemInspectHtml(item, { actionHint }));
       return;
     }
 

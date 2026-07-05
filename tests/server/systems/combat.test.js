@@ -2,6 +2,8 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { processAttack, clearAttackAnim } from '../../../server/systems/combat.js';
 import { ATTACK_COOLDOWN_MS, ATTACK_ANIM_MS } from '../../../shared/combat.js';
+import { createTownZone } from '../../../shared/zones.js';
+import { TILE_SIZE } from '../../../shared/constants.js';
 import { createPlayerStats } from '../../../shared/stats.js';
 import { Player } from '../../../server/players/Player.js';
 
@@ -99,6 +101,34 @@ describe('processAttack', () => {
 
     assert.equal(result.ok, false);
     assert.equal(result.reason, 'cooldown');
+  });
+
+  it('rejects attack in town zone', () => {
+    const map = {
+      zones: [createTownZone({ x: 3, y: 3 }, 40)],
+    };
+    const player = createMockPlayer({
+      lastAttackAt: 0,
+      x: 3 * TILE_SIZE + TILE_SIZE / 2,
+      y: 3 * TILE_SIZE + TILE_SIZE / 2,
+    });
+    const monsterManager = createMockMonsterManager({
+      id: 'm1',
+      x: 500,
+      y: 500,
+      hp: 40,
+    });
+
+    const result = processAttack({
+      player,
+      targetId: 'm1',
+      monsterManager,
+      map,
+      now: 1000,
+    });
+
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'safe_zone');
   });
 
   it('clearAttackAnim resets attacking flag', () => {

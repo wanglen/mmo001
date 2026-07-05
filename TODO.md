@@ -53,6 +53,15 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 
 ---
 
+## Phase 2.1 — In-Game Visual Polish
+
+### UI / representation
+- [x] Improve **character** representation in game
+- [x] Improve **items** representation in game (ground loot, inventory icons)
+- [x] Improve **monsters** representation in game
+
+---
+
 ## Phase 3 — World & Content
 
 ### Maps & zones

@@ -17,7 +17,7 @@ function sanitizePlayerName(name) {
   return (name || '').trim().slice(0, 20);
 }
 
-function buildWorldState(map, playerManager, monsterManager, lootManager, playerId) {
+function buildWorldState(map, playerManager, monsterManager, lootManager, playerId, { includeMapTiles = true } = {}) {
   const now = Date.now();
   const player = playerManager.get(playerId);
   if (player) {
@@ -25,13 +25,18 @@ function buildWorldState(map, playerManager, monsterManager, lootManager, player
     clearSkillAnim(player, now);
   }
 
+  const mapPayload = {
+    width: map.width,
+    height: map.height,
+    spawn: map.spawn,
+    zones: map.zones ?? [],
+  };
+  if (includeMapTiles) {
+    mapPayload.tiles = map.tiles;
+  }
+
   return {
-    map: {
-      tiles: map.tiles,
-      width: map.width,
-      height: map.height,
-      spawn: map.spawn,
-    },
+    map: mapPayload,
     player: player ? player.toJSON(now) : null,
     players: playerManager.getAll(),
     monsters: monsterManager.getAll(),
@@ -57,13 +62,20 @@ function broadcastWorldState(io, map, playerManager, monsterManager, lootManager
   for (const [socketId, socket] of io.sockets.sockets) {
     socket.emit(
       EVENTS.WORLD_STATE,
-      buildWorldState(map, playerManager, monsterManager, lootManager, socketId)
+      buildWorldState(map, playerManager, monsterManager, lootManager, socketId, {
+        includeMapTiles: false,
+      })
     );
   }
 }
 
 function broadcastWorldStateToSocket(io, socket, map, playerManager, monsterManager, lootManager) {
-  sendWorldState(socket, map, playerManager, monsterManager, lootManager);
+  socket.emit(
+    EVENTS.WORLD_STATE,
+    buildWorldState(map, playerManager, monsterManager, lootManager, socket.id, {
+      includeMapTiles: false,
+    })
+  );
 }
 
 function updatePlayerAim(player, x, y) {
@@ -190,7 +202,7 @@ export function registerSocketHandlers(io, map, playerManager, monsterManager, l
       const player = getLivingPlayer(playerManager, socket.id);
       if (!player || typeof targetId !== 'string') return;
 
-      const result = processAttack({ player, targetId, monsterManager, lootManager });
+      const result = processAttack({ player, targetId, monsterManager, lootManager, map });
       if (!result.ok && result.reason === 'cooldown') return;
 
       if (result.ok) await persistPlayer(characterStore, player);

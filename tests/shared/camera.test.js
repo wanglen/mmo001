@@ -8,6 +8,8 @@ import {
   getScaledTileSize,
   CAMERA_MIN_ZOOM,
   CAMERA_MAX_ZOOM,
+  CAMERA_DEFAULT_ZOOM,
+  clampViewToMap,
 } from '../../shared/camera.js';
 
 describe('camera', () => {
@@ -15,6 +17,10 @@ describe('camera', () => {
     assert.equal(clampZoom(1), 1);
     assert.equal(clampZoom(0.1), CAMERA_MIN_ZOOM);
     assert.equal(clampZoom(5), CAMERA_MAX_ZOOM);
+  });
+
+  it('CAMERA_DEFAULT_ZOOM is within clamp bounds', () => {
+    assert.equal(clampZoom(CAMERA_DEFAULT_ZOOM), CAMERA_DEFAULT_ZOOM);
   });
 
   it('lerpView moves toward target', () => {
@@ -59,5 +65,18 @@ describe('camera', () => {
   it('getScaledTileSize applies zoom and yScale', () => {
     const size = getScaledTileSize(32, 2, 0.5);
     assert.deepEqual(size, { width: 64, height: 32 });
+  });
+
+  it('clampViewToMap keeps camera inside bounds', () => {
+    const bounds = { minX: 100, minY: 100, maxX: 900, maxY: 700 };
+    const clamped = clampViewToMap(50, 50, bounds, 1, 0.55, 800, 600);
+    assert.ok(clamped.x >= bounds.minX);
+    assert.ok(clamped.y >= bounds.minY);
+  });
+
+  it('clampViewToMap returns input when bounds are null', () => {
+    const result = clampViewToMap(120, 80, null, 1, 0.55, 800, 600);
+    assert.equal(result.x, 120);
+    assert.equal(result.y, 80);
   });
 });

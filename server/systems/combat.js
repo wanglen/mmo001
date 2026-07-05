@@ -1,3 +1,4 @@
+import { isInSafeZone } from '../../shared/zones.js';
 import {
   ATTACK_ANIM_MS,
   calculateDamage,
@@ -41,9 +42,13 @@ export function applyMonsterDamage({
   return { damage, killed, xp: xpResult, lootDrop };
 }
 
-export function processAttack({ player, targetId, monsterManager, lootManager, now = Date.now() }) {
+export function processAttack({ player, targetId, monsterManager, lootManager, map, now = Date.now() }) {
   if (!canAttackNow(player.lastAttackAt ?? 0, now)) {
     return { ok: false, reason: 'cooldown' };
+  }
+
+  if (map && isInSafeZone(map, player.x, player.y)) {
+    return { ok: false, reason: 'safe_zone' };
   }
 
   const monster = monsterManager.get(targetId);

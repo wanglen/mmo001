@@ -92,6 +92,7 @@ export function createItem(template, rarity = RARITY.COMMON) {
   return {
     id: `item${itemIdCounter++}`,
     name: `${prefix}${template.name}`,
+    templateKey: template.key,
     type: template.type,
     rarity,
     slot: template.slot,
@@ -108,6 +109,7 @@ export function createPotion(template, rarity = RARITY.COMMON) {
   return {
     id: `item${itemIdCounter++}`,
     name: `${prefix}${template.name}`,
+    templateKey: template.key,
     type: ITEM_TYPES.CONSUMABLE,
     consumableKind: template.consumableKind,
     rarity,
@@ -144,6 +146,7 @@ export function itemToJSON(item) {
   const json = {
     id: item.id,
     name: item.name,
+    templateKey: item.templateKey,
     type: item.type,
     rarity: item.rarity,
     slot: item.slot,
@@ -151,6 +154,7 @@ export function itemToJSON(item) {
     consumableKind: item.consumableKind,
     restoreAmount: item.restoreAmount,
   };
+  if (!json.templateKey) delete json.templateKey;
   if (!json.stats) delete json.stats;
   if (!json.slot) delete json.slot;
   if (!json.consumableKind) delete json.consumableKind;

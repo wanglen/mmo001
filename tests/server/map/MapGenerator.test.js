@@ -1,8 +1,9 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateMap } from '../../../server/map/MapGenerator.js';
+import { generateMap, minConnectedTiles } from '../../../server/map/MapGenerator.js';
 import { isWalkable } from '../../../server/map/collision.js';
-import { TILE_WALKABLE, MAP_WIDTH, MAP_HEIGHT } from '../../../shared/constants.js';
+import { TILE_WALKABLE, TILE, MAP_WIDTH, MAP_HEIGHT } from '../../../shared/constants.js';
+import { ZONE_ID, TOWN_RADIUS_TILES } from '../../../shared/zones.js';
 
 function countWalkableFromSpawn(map) {
   const visited = new Set();
@@ -42,12 +43,41 @@ describe('MapGenerator', () => {
   it('provides a large connected walkable region from spawn', () => {
     const map = generateMap();
     const connected = countWalkableFromSpawn(map);
-    assert.ok(connected >= 400, `expected >= 400 walkable tiles, got ${connected}`);
+    const minConnected = minConnectedTiles(map.width, map.height);
+    assert.ok(connected >= minConnected, `expected >= ${minConnected} walkable tiles, got ${connected}`);
   });
 
   it('returns spawn coordinates within map bounds', () => {
     const map = generateMap();
     assert.ok(map.spawn.x >= 0 && map.spawn.x < map.width);
     assert.ok(map.spawn.y >= 0 && map.spawn.y < map.height);
+  });
+
+  it('includes town zone with identifier', () => {
+    const map = generateMap();
+    assert.ok(Array.isArray(map.zones));
+    assert.equal(map.zones.length, 1);
+    assert.equal(map.zones[0].id, ZONE_ID.TOWN);
+    assert.equal(map.zones[0].label, 'Town');
+    assert.ok(map.zones[0].safe);
+    assert.equal(map.zones[0].radius, TOWN_RADIUS_TILES);
+  });
+
+  it('rings the map edge with impassable rock tiles', () => {
+    const map = generateMap();
+    const { width, height, tiles } = map;
+
+    for (let x = 0; x < width; x++) {
+      assert.equal(tiles[0][x], TILE.ROCK);
+      assert.equal(tiles[height - 1][x], TILE.ROCK);
+    }
+    for (let y = 0; y < height; y++) {
+      assert.equal(tiles[y][0], TILE.ROCK);
+      assert.equal(tiles[y][width - 1], TILE.ROCK);
+    }
+
+    assert.ok(!isWalkable(map, 0, 0));
+    assert.ok(!isWalkable(map, width - 1, height - 1));
+    assert.ok(isWalkable(map, map.spawn.x, map.spawn.y));
   });
 });

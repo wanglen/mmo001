@@ -1,9 +1,10 @@
 import { createMonster } from './Monster.js';
 import { MONSTER_TYPES, SPAWN_COUNT } from '../../shared/monsters.js';
 import { TILE_WALKABLE } from '../../shared/constants.js';
-import { tileToPixel } from '../map/collision.js';
+import { tileToPixel, pixelToTile } from '../map/collision.js';
 import { canMoveTo } from '../map/collision.js';
 import { isInRange } from '../../shared/combat.js';
+import { isTileInAnySafeZone } from '../../shared/zones.js';
 import { resolveMonsterTarget, monsterAttackPlayer } from '../systems/monsterCombat.js';
 
 const DIRECTION_DELTA = {
@@ -14,6 +15,10 @@ const DIRECTION_DELTA = {
 };
 
 const MIN_SPAWN_TILES_FROM_PLAYER = 5;
+
+function isOutsideSafeZones(map, tileX, tileY) {
+  return !isTileInAnySafeZone(map, tileX, tileY);
+}
 
 function pickDirection(fromX, fromY, toX, toY) {
   const dx = toX - fromX;
@@ -78,12 +83,15 @@ export class MonsterManager {
 
     let candidates = connected.filter(
       (tile) =>
+        isOutsideSafeZones(map, tile.x, tile.y) &&
         Math.hypot(tile.x - map.spawn.x, tile.y - map.spawn.y) >= MIN_SPAWN_TILES_FROM_PLAYER
     );
 
     if (candidates.length === 0) {
       candidates = connected.filter(
-        (tile) => tile.x !== map.spawn.x || tile.y !== map.spawn.y
+        (tile) =>
+          isOutsideSafeZones(map, tile.x, tile.y) &&
+          (tile.x !== map.spawn.x || tile.y !== map.spawn.y)
       );
     }
 
@@ -134,7 +142,7 @@ export class MonsterManager {
     for (const monster of this.monsters.values()) {
       if (monster.hp <= 0) continue;
 
-      const target = resolveMonsterTarget(monster, players);
+      const target = resolveMonsterTarget(monster, players, map);
 
       if (!target) {
         monster.moving = false;
@@ -146,7 +154,7 @@ export class MonsterManager {
 
       if (isInRange(monster.x, monster.y, target.x, target.y, monster.attackRange)) {
         monster.moving = false;
-        monsterAttackPlayer(monster, target, now);
+        monsterAttackPlayer(monster, target, map, now);
         continue;
       }
 
@@ -158,6 +166,11 @@ export class MonsterManager {
       const nextY = monster.y + delta.y * monster.speed;
 
       if (canMoveTo(map, nextX, nextY)) {
+        const { x: tileX, y: tileY } = pixelToTile(nextX, nextY);
+        if (isTileInAnySafeZone(map, tileX, tileY)) {
+          monster.moving = false;
+          continue;
+        }
         monster.x = nextX;
         monster.y = nextY;
         monster.moving = true;

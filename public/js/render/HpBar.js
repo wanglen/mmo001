@@ -1,5 +1,15 @@
+const BAR_HEIGHT = 4;
+const BAR_BORDER = 1;
+
+/** Screen-space offsets from entity center for HP bar and nameplate (avoids overlap). */
+export function getEntityOverheadOffsets(half, zoom) {
+  const barYOffset = -half - 4 * zoom;
+  const nameplateCenterOffset = barYOffset - BAR_HEIGHT - BAR_BORDER * 2 - 8 * zoom;
+  return { barYOffset, nameplateCenterOffset };
+}
+
 export function drawHpBar(ctx, screenX, screenY, hp, maxHp, width = 24, yOffset = -14) {
-  const height = 4;
+  const height = BAR_HEIGHT;
   const x = screenX - width / 2;
   const y = screenY + yOffset;
 

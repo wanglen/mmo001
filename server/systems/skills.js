@@ -15,6 +15,7 @@ import {
   spendSkillMp,
 } from '../../shared/skills.js';
 import { applyMonsterDamage } from './combat.js';
+import { isInSafeZone } from '../../shared/zones.js';
 
 export const SKILL_FX_MS = 400;
 
@@ -159,6 +160,10 @@ export function processSkill({
 }) {
   const check = canUseSkill(player, skillId, now);
   if (!check.ok) return { ok: false, reason: check.reason };
+
+  if (isInSafeZone(map, player.x, player.y)) {
+    return { ok: false, reason: 'safe_zone' };
+  }
 
   const skill = getSkill(skillId);
   if (!skill) return { ok: false, reason: 'invalid_skill' };

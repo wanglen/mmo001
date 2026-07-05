@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.14.0] - 2026-07-05
+
+### Added
+
+- Spawn town (`id: town`): cleared grass hub with wooden fence, house, well, and cobble paths; no monster spawns or combat
+
+### Changed
+
+- Monster names show on hover only; player and monster nameplates stacked above HP bars (no overlap)
+- World map enlarged to 120×90 tiles (3× previous size); monster count and obstacles scale with map area
+- Monster population scaled to original density (108 on current map, was 12 on 40×30)
+- World state updates omit map tiles after join to reduce network payload
+
+## [1.13.0] - 2026-07-05
+
+### Added
+
+- Per-type monster pixel sprites (goblin, skeleton, bat) with walk animation, ground shadow, nameplate, and hit flash
+
+### Changed
+
+- Map boundary UX: directional cliff faces with grass transition, dark void outside the world, and camera clamping so the view stays framed at edges
+
+## [1.12.0] - 2026-07-05
+
+### Added
+
+- Per-template item icons on ground loot (pixel art, rarity glow, bob animation) and in inventory/equipment slots
+- Item inspect panel shows icon above stats; `templateKey` persisted on drops for reliable icon lookup
+
+## [1.11.1] - 2026-07-05
+
+### Changed
+
+- Class-distinct character sprites (warrior armor, mage robes/staff, ranger hood/bow), overhead HP bar, nameplate, and ground shadow
+- Default camera zoom increased (1.6×) so map, characters, monsters, loot, and combat FX appear larger on screen; scroll wheel still adjusts zoom
+
 ## [1.11.0] - 2026-07-05
 
 ### Added

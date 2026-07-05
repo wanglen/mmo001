@@ -4,7 +4,9 @@ import {
   worldToScreen as toScreen,
   screenToWorld as toWorld,
   getScaledTileSize,
+  clampViewToMap,
   DEFAULT_CAMERA,
+  CAMERA_DEFAULT_ZOOM,
 } from '../../shared/camera.js';
 import {
   CAMERA_LERP,
@@ -18,22 +20,53 @@ export class Camera {
     this.canvas = canvas;
     this.viewX = 0;
     this.viewY = 0;
-    this.zoom = 1;
+    this.zoom = CAMERA_DEFAULT_ZOOM;
     this.yScale = CAMERA_Y_SCALE;
     this.lerp = CAMERA_LERP;
     this.initialized = false;
+    this.mapBounds = null;
+  }
+
+  setMapBounds(mapWidth, mapHeight, tileSize) {
+    const pad = tileSize * 1.5;
+    this.mapBounds = {
+      minX: pad,
+      minY: pad,
+      maxX: mapWidth * tileSize - pad,
+      maxY: mapHeight * tileSize - pad,
+    };
   }
 
   follow(targetX, targetY) {
     if (!this.initialized) {
-      this.viewX = targetX;
-      this.viewY = targetY;
+      const clamped = clampViewToMap(
+        targetX,
+        targetY,
+        this.mapBounds,
+        this.zoom,
+        this.yScale,
+        this.canvas.width,
+        this.canvas.height
+      );
+      this.viewX = clamped.x;
+      this.viewY = clamped.y;
       this.initialized = true;
       return;
     }
 
-    this.viewX = lerpView(this.viewX, targetX, this.lerp);
-    this.viewY = lerpView(this.viewY, targetY, this.lerp);
+    const nextX = lerpView(this.viewX, targetX, this.lerp);
+    const nextY = lerpView(this.viewY, targetY, this.lerp);
+    const clamped = clampViewToMap(
+      nextX,
+      nextY,
+      this.mapBounds,
+      this.zoom,
+      this.yScale,
+      this.canvas.width,
+      this.canvas.height
+    );
+    this.viewX = clamped.x;
+    this.viewY = clamped.y;
   }
 
   adjustZoom(delta) {

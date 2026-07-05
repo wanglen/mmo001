@@ -1,7 +1,18 @@
 import { TILE, TILE_WALKABLE, MAP_WIDTH, MAP_HEIGHT } from '../../shared/constants.js';
+import { createTownZone, spawnSafeRadiusTiles } from '../../shared/zones.js';
 
-const MIN_CONNECTED_TILES = 400;
 const MAX_GENERATION_ATTEMPTS = 10;
+
+/** Minimum walkable region size scales with map area (~35% of interior). */
+export function minConnectedTiles(width, height) {
+  return Math.floor((width - 2) * (height - 2) * 0.35);
+}
+
+const BASE_MAP_WIDTH = 40;
+
+function mapDimScale(width) {
+  return Math.max(1, width / BASE_MAP_WIDTH);
+}
 
 function createGrassGrid(width, height) {
   return Array.from({ length: height }, () =>
@@ -28,19 +39,22 @@ function placeCluster(tiles, width, height, tileType, startX, startY, size) {
 }
 
 function placeObstacleClusters(tiles, width, height) {
-  const waterClusters = 6 + Math.floor(Math.random() * 3);
-  const treeClusters = 5 + Math.floor(Math.random() * 3);
+  const scale = mapDimScale(width);
+  const waterClusters = Math.floor((6 + Math.random() * 3) * scale);
+  const treeClusters = Math.floor((5 + Math.random() * 3) * scale);
 
   for (let i = 0; i < waterClusters; i++) {
     const x = Math.floor(Math.random() * width);
     const y = Math.floor(Math.random() * height);
-    placeCluster(tiles, width, height, TILE.WATER, x, y, 18 + Math.floor(Math.random() * 20));
+    const size = Math.floor((18 + Math.random() * 20) * scale);
+    placeCluster(tiles, width, height, TILE.WATER, x, y, size);
   }
 
   for (let i = 0; i < treeClusters; i++) {
     const x = Math.floor(Math.random() * width);
     const y = Math.floor(Math.random() * height);
-    placeCluster(tiles, width, height, TILE.TREE, x, y, 12 + Math.floor(Math.random() * 15));
+    const size = Math.floor((12 + Math.random() * 15) * scale);
+    placeCluster(tiles, width, height, TILE.TREE, x, y, size);
   }
 }
 
@@ -104,22 +118,38 @@ function findLargestWalkableRegion(tiles, width, height) {
   return { spawn: bestSpawn, connectedSize: bestSize };
 }
 
+function placeRockBorder(tiles, width, height) {
+  for (let x = 0; x < width; x++) {
+    tiles[0][x] = TILE.ROCK;
+    tiles[height - 1][x] = TILE.ROCK;
+  }
+  for (let y = 0; y < height; y++) {
+    tiles[y][0] = TILE.ROCK;
+    tiles[y][width - 1] = TILE.ROCK;
+  }
+}
+
 function buildMap(width, height) {
   const tiles = createGrassGrid(width, height);
+  placeRockBorder(tiles, width, height);
   placeObstacleClusters(tiles, width, height);
 
   const centerX = Math.floor(width / 2);
   const centerY = Math.floor(height / 2);
-  clearArea(tiles, centerX, centerY, 4);
+  const spawnClear = Math.max(4, Math.floor(4 * mapDimScale(width)));
+  clearArea(tiles, centerX, centerY, spawnClear);
 
   const { spawn, connectedSize } = findLargestWalkableRegion(tiles, width, height);
-  return { tiles, width, height, spawn, connectedSize };
+  clearArea(tiles, spawn.x, spawn.y, spawnSafeRadiusTiles(width));
+  const zones = [createTownZone(spawn, width)];
+  return { tiles, width, height, spawn, connectedSize, zones };
 }
 
 export function generateMap(width = MAP_WIDTH, height = MAP_HEIGHT) {
+  const minConnected = minConnectedTiles(width, height);
   let map = buildMap(width, height);
 
-  for (let attempt = 0; attempt < MAX_GENERATION_ATTEMPTS && map.connectedSize < MIN_CONNECTED_TILES; attempt++) {
+  for (let attempt = 0; attempt < MAX_GENERATION_ATTEMPTS && map.connectedSize < minConnected; attempt++) {
     map = buildMap(width, height);
   }
 

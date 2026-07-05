@@ -6,6 +6,8 @@ import {
   monsterAttackPlayer,
 } from '../../../server/systems/monsterCombat.js';
 import { MONSTER_ATTACK_COOLDOWN_MS } from '../../../shared/combat.js';
+import { createTownZone } from '../../../shared/zones.js';
+import { TILE_SIZE } from '../../../shared/constants.js';
 import { createPlayerStats } from '../../../shared/stats.js';
 import { Player } from '../../../server/players/Player.js';
 
@@ -62,12 +64,35 @@ describe('monsterCombat', () => {
     assert.equal(target?.id, 'alive');
   });
 
+  it('resolveMonsterTarget ignores players in town zone', () => {
+    const map = {
+      zones: [createTownZone({ x: 3, y: 3 }, 40)],
+    };
+    const monster = createMonster({ x: 100, y: 100, aggroRange: 500 });
+    const player = createPlayer('p1', 3 * TILE_SIZE + TILE_SIZE / 2, 3 * TILE_SIZE + TILE_SIZE / 2);
+
+    const target = resolveMonsterTarget(monster, [player], map);
+    assert.equal(target, null);
+  });
+
+  it('monsterAttackPlayer ignores players in town zone', () => {
+    const map = {
+      zones: [createTownZone({ x: 3, y: 3 }, 40)],
+    };
+    const monster = createMonster({ x: 100, y: 100, lastAttackAt: 0 });
+    const player = createPlayer('p1', 3 * TILE_SIZE + TILE_SIZE / 2, 3 * TILE_SIZE + TILE_SIZE / 2);
+
+    const result = monsterAttackPlayer(monster, player, map, 5000);
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'safe_zone');
+  });
+
   it('monsterAttackPlayer deals damage in melee range', () => {
     const monster = createMonster({ x: 100, y: 100, lastAttackAt: 0 });
     const player = createPlayer('p1', 120, 100);
     const hpBefore = player.hp;
 
-    const result = monsterAttackPlayer(monster, player, 5000);
+    const result = monsterAttackPlayer(monster, player, null, 5000);
     assert.equal(result.ok, true);
     assert.ok(result.damage >= 1);
     assert.ok(player.hp < hpBefore);
@@ -79,7 +104,7 @@ describe('monsterCombat', () => {
     const player = createPlayer('p1', 120, 100);
     player.hp = 5;
 
-    const result = monsterAttackPlayer(monster, player, 5000);
+    const result = monsterAttackPlayer(monster, player, null, 5000);
 
     assert.equal(result.ok, true);
     assert.equal(result.killed, true);
@@ -93,7 +118,7 @@ describe('monsterCombat', () => {
     player.hp = 0;
     player.dead = true;
 
-    const result = monsterAttackPlayer(monster, player, 5000);
+    const result = monsterAttackPlayer(monster, player, null, 5000);
 
     assert.equal(result.ok, false);
     assert.equal(result.reason, 'target_dead');
@@ -103,7 +128,7 @@ describe('monsterCombat', () => {
     const monster = createMonster({ x: 100, y: 100, lastAttackAt: 5000 });
     const player = createPlayer('p1', 120, 100);
 
-    const result = monsterAttackPlayer(monster, player, 5000 + MONSTER_ATTACK_COOLDOWN_MS - 100);
+    const result = monsterAttackPlayer(monster, player, null, 5000 + MONSTER_ATTACK_COOLDOWN_MS - 100);
     assert.equal(result.ok, false);
     assert.equal(result.reason, 'cooldown');
   });

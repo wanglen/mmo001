@@ -2,12 +2,14 @@ export const TILE = {
   GRASS: 0,
   WATER: 1,
   TREE: 2,
+  ROCK: 3,
 };
 
 export const TILE_WALKABLE = {
   [TILE.GRASS]: true,
   [TILE.WATER]: false,
   [TILE.TREE]: false,
+  [TILE.ROCK]: false,
 };
 
 export const CHARACTER_CLASSES = {
@@ -18,8 +20,8 @@ export const CHARACTER_CLASSES = {
 
 export const DIRECTIONS = ['up', 'down', 'left', 'right'];
 
-export const MAP_WIDTH = 40;
-export const MAP_HEIGHT = 30;
+export const MAP_WIDTH = 120;
+export const MAP_HEIGHT = 90;
 export const TILE_SIZE = 32;
 export const PLAYER_SIZE = 16;
 

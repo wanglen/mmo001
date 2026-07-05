@@ -10,19 +10,21 @@ export class CombatFxRenderer {
   }
 
   drawDamageNumber(ctx, fx, camera, now) {
+    const zoom = camera.zoom ?? 1;
     const age = Math.max(0, now - fx.at);
     if (age >= DAMAGE_NUMBER_MS) return;
 
     const progress = age / DAMAGE_NUMBER_MS;
-    const screen = camera.worldToScreen(fx.x, fx.y - 12 - progress * 28);
+    const screen = camera.worldToScreen(fx.x, fx.y);
+    screen.y -= (12 + progress * 28) * zoom;
     const alpha = 1 - progress * 0.85;
 
     ctx.save();
-    ctx.font = 'bold 13px system-ui, sans-serif';
+    ctx.font = `bold ${13 * zoom}px system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.fillStyle = `rgba(255, 235, 120, ${alpha})`;
     ctx.strokeStyle = `rgba(80, 20, 10, ${alpha * 0.8})`;
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 3 * zoom;
     ctx.strokeText(String(fx.value), screen.x, screen.y);
     ctx.fillText(String(fx.value), screen.x, screen.y);
     ctx.restore();

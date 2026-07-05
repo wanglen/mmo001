@@ -1,3 +1,5 @@
+import { MAP_WIDTH, MAP_HEIGHT } from './constants.js';
+
 export const MONSTER_TYPES = {
   goblin: {
     label: 'Goblin',
@@ -31,4 +33,11 @@ export const MONSTER_TYPES = {
   },
 };
 
-export const SPAWN_COUNT = 12;
+/** Original MVP: 12 monsters on a 40×30 map — scale count with map area. */
+const BASE_SPAWN_COUNT = 12;
+const BASE_MAP_TILES = 40 * 30;
+
+export const SPAWN_COUNT = Math.max(
+  BASE_SPAWN_COUNT,
+  Math.round((BASE_SPAWN_COUNT * MAP_WIDTH * MAP_HEIGHT) / BASE_MAP_TILES)
+);
