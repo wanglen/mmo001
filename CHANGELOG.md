@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.1] - 2026-07-05
+
+### Changed
+
+- Inventory and equipment slots use pixel-style icons per item type (weapon, helm, chest, etc.), tinted by rarity
+- Item inspect panel below inventory shows name, rarity, slot, and formatted stat bonuses on hover
+
+### Fixed
+
+- Inspect panel no longer flickers when hovering items (fixed height, stable hover handling)
+
 ## [1.9.0] - 2026-07-05
 
 ### Added

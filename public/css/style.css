@@ -110,12 +110,14 @@ html, body {
   background: #1a1a2e;
   border: 2px solid #333;
   border-radius: 4px;
-  color: #aaa;
-  font-size: 8px;
+  color: var(--slot-icon-color, #4a5a6a);
   cursor: pointer;
-  padding: 2px;
+  padding: 0;
   overflow: hidden;
   box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .inv-slot {
@@ -124,22 +126,127 @@ html, body {
   background: #1a1a2e;
   border: 2px solid #333;
   border-radius: 4px;
-  color: #aaa;
+  color: var(--slot-icon-color, #4a5a6a);
   font-size: 7px;
   cursor: pointer;
-  padding: 1px;
+  padding: 0;
   overflow: hidden;
   box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.equip-slot.has-item,
-.inv-slot.has-item {
-  color: #fff;
+.slot-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: inherit;
+  pointer-events: none;
+}
+
+.slot-visual--empty {
+  opacity: 0.5;
+}
+
+.item-icon-svg {
+  width: 78%;
+  height: 78%;
+  display: block;
+}
+
+.inv-slot .item-icon-svg {
+  width: 88%;
+  height: 88%;
+}
+
+.item-inspect {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #0f3460;
+  height: 96px;
+  min-height: 96px;
+  max-height: 96px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.item-inspect-empty {
+  color: #6a7a8a;
+  font-size: 11px;
+  font-style: italic;
+  text-align: center;
+  padding: 12px 4px;
+}
+
+.item-inspect-name {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 2px;
+  line-height: 1.2;
+}
+
+.item-inspect-meta {
+  font-size: 10px;
+  color: #8a9aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+
+.item-stat-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.item-stat-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 11px;
+  padding: 2px 0;
+}
+
+.item-stat-label {
+  color: #bdc3c7;
+}
+
+.item-stat-value {
+  color: #5dade2;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.item-inspect-no-stats {
+  font-size: 11px;
+  color: #6a7a8a;
+  font-style: italic;
+}
+
+.item-inspect-action {
+  margin-top: 8px;
+  font-size: 10px;
+  color: #6a7a8a;
+  font-style: italic;
 }
 
 .equip-slot:hover,
 .inv-slot:hover {
   filter: brightness(1.2);
+}
+
+.equip-slot.slot-inspect,
+.inv-slot.slot-inspect {
+  box-shadow: inset 0 0 0 1px rgba(241, 196, 15, 0.65);
 }
 
 .level-up-flash {
