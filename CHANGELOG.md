@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-07-05
+
+### Added
+
+- 8-directional click-to-move with diagonal pathfinding (A*)
+- Diagonal keyboard movement (e.g. W+D); speed-normalized so diagonals are not faster
+
+### Changed
+
+- Pathfinding avoids cutting corners through blocked tiles
+- Movement directions shared in `shared/movement.js` (server + client)
+
 ## [1.7.0] - 2026-07-05
 
 ### Added

@@ -1,7 +1,12 @@
 import { TILE_WALKABLE } from './constants.js';
 
+const SQRT2 = Math.SQRT2;
+
 function heuristic(ax, ay, bx, by) {
-  return Math.abs(ax - bx) + Math.abs(ay - by);
+  const dx = Math.abs(ax - bx);
+  const dy = Math.abs(ay - by);
+  const F = SQRT2 - 1;
+  return dx < dy ? F * dx + dy : F * dy + dx;
 }
 
 function isWalkable(map, x, y) {
@@ -11,6 +16,29 @@ function isWalkable(map, x, y) {
 
 function nodeKey(x, y) {
   return `${x},${y}`;
+}
+
+const CARDINAL_NEIGHBORS = [
+  [0, 1, 1],
+  [0, -1, 1],
+  [1, 0, 1],
+  [-1, 0, 1],
+];
+
+const DIAGONAL_NEIGHBORS = [
+  [1, 1, SQRT2],
+  [1, -1, SQRT2],
+  [-1, 1, SQRT2],
+  [-1, -1, SQRT2],
+];
+
+function canMoveDiagonally(map, fromX, fromY, dx, dy) {
+  const nx = fromX + dx;
+  const ny = fromY + dy;
+  if (!isWalkable(map, nx, ny)) return false;
+  if (!isWalkable(map, fromX + dx, fromY)) return false;
+  if (!isWalkable(map, fromX, fromY + dy)) return false;
+  return true;
 }
 
 export function findPath(map, startX, startY, endX, endY) {
@@ -25,10 +53,6 @@ export function findPath(map, startX, startY, endX, endY) {
   const openSet = new Set([startKey]);
   const cameFrom = new Map();
   const gScore = new Map([[startKey, 0]]);
-
-  const neighbors = [
-    [0, 1], [0, -1], [1, 0], [-1, 0],
-  ];
 
   while (open.length > 0) {
     open.sort((a, b) => a.f - b.f);
@@ -47,32 +71,52 @@ export function findPath(map, startX, startY, endX, endY) {
       return path;
     }
 
-    for (const [dx, dy] of neighbors) {
+    for (const [dx, dy, cost] of CARDINAL_NEIGHBORS) {
       const nx = current.x + dx;
       const ny = current.y + dy;
       if (!isWalkable(map, nx, ny)) continue;
+      relaxNeighbor(current, nx, ny, cost, endX, endY, open, openSet, cameFrom, gScore);
+    }
 
-      const neighborKey = nodeKey(nx, ny);
-      const tentativeG = (gScore.get(currentKey) ?? Infinity) + 1;
-
-      if (tentativeG >= (gScore.get(neighborKey) ?? Infinity)) continue;
-
-      cameFrom.set(neighborKey, currentKey);
-      gScore.set(neighborKey, tentativeG);
-
-      if (!openSet.has(neighborKey)) {
-        open.push({
-          x: nx,
-          y: ny,
-          g: tentativeG,
-          f: tentativeG + heuristic(nx, ny, endX, endY),
-        });
-        openSet.add(neighborKey);
-      }
+    for (const [dx, dy, cost] of DIAGONAL_NEIGHBORS) {
+      if (!canMoveDiagonally(map, current.x, current.y, dx, dy)) continue;
+      relaxNeighbor(
+        current,
+        current.x + dx,
+        current.y + dy,
+        cost,
+        endX,
+        endY,
+        open,
+        openSet,
+        cameFrom,
+        gScore
+      );
     }
   }
 
   return [];
+}
+
+function relaxNeighbor(current, nx, ny, cost, endX, endY, open, openSet, cameFrom, gScore) {
+  const currentKey = nodeKey(current.x, current.y);
+  const neighborKey = nodeKey(nx, ny);
+  const tentativeG = (gScore.get(currentKey) ?? Infinity) + cost;
+
+  if (tentativeG >= (gScore.get(neighborKey) ?? Infinity)) return;
+
+  cameFrom.set(neighborKey, currentKey);
+  gScore.set(neighborKey, tentativeG);
+
+  if (!openSet.has(neighborKey)) {
+    open.push({
+      x: nx,
+      y: ny,
+      g: tentativeG,
+      f: tentativeG + heuristic(nx, ny, endX, endY),
+    });
+    openSet.add(neighborKey);
+  }
 }
 
 export function findNearestWalkable(map, tileX, tileY, maxRadius = 8) {

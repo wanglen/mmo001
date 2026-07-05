@@ -1,3 +1,5 @@
+import { directionFromKeys } from '/shared/movement.js';
+
 export class Input {
   constructor(canvas) {
     this.canvas = canvas;
@@ -62,11 +64,12 @@ export class Input {
   }
 
   getDirection() {
-    if (this.keys.has('w') || this.keys.has('arrowup')) return 'up';
-    if (this.keys.has('s') || this.keys.has('arrowdown')) return 'down';
-    if (this.keys.has('a') || this.keys.has('arrowleft')) return 'left';
-    if (this.keys.has('d') || this.keys.has('arrowright')) return 'right';
-    return null;
+    return directionFromKeys({
+      up: this.keys.has('w') || this.keys.has('arrowup'),
+      down: this.keys.has('s') || this.keys.has('arrowdown'),
+      left: this.keys.has('a') || this.keys.has('arrowleft'),
+      right: this.keys.has('d') || this.keys.has('arrowright'),
+    });
   }
 
   isKeyboardActive() {

@@ -1,16 +1,10 @@
 import { EVENTS } from '../../shared/events.js';
-import { CHARACTER_CLASSES, MOVE_SPEED } from '../../shared/constants.js';
+import { CHARACTER_CLASSES } from '../../shared/constants.js';
 import { facingFromTarget } from '../../shared/aim.js';
+import { DIRECTION_DELTA, isValidDirection } from '../../shared/movement.js';
 import { canMoveTo } from '../map/collision.js';
 import { processAttack, clearAttackAnim } from '../systems/combat.js';
 import { pickupLoot, equipFromInventory, unequipSlot } from '../systems/inventory.js';
-
-const DIRECTION_DELTA = {
-  up: { x: 0, y: -1 },
-  down: { x: 0, y: 1 },
-  left: { x: -1, y: 0 },
-  right: { x: 1, y: 0 },
-};
 
 function buildWorldState(map, playerManager, monsterManager, lootManager, playerId) {
   const player = playerManager.get(playerId);
@@ -150,13 +144,12 @@ export function registerSocketHandlers(io, map, playerManager, monsterManager, l
 
     socket.on(EVENTS.MOVE, ({ direction }) => {
       const player = playerManager.get(socket.id);
-      if (!player) return;
+      if (!player || !isValidDirection(direction)) return;
 
       const delta = DIRECTION_DELTA[direction];
-      if (!delta) return;
 
-      const nextX = player.x + delta.x * MOVE_SPEED;
-      const nextY = player.y + delta.y * MOVE_SPEED;
+      const nextX = player.x + delta.x;
+      const nextY = player.y + delta.y;
 
       if (canMoveTo(map, nextX, nextY)) {
         player.x = nextX;

@@ -27,10 +27,29 @@ describe('pathfinding', () => {
     }
   });
 
-  it('findPath on open map is shortest Manhattan path', () => {
+  it('findPath on open map uses diagonal shortcuts', () => {
     const map = createOpenMap();
     const path = findPath(map, 0, 0, 3, 4);
-    assert.equal(path.length, 7);
+    assert.ok(path.length < 7);
+    assert.deepEqual(path[path.length - 1], { x: 3, y: 4 });
+  });
+
+  it('findPath avoids cutting corners through obstacles', () => {
+    const map = {
+      width: 3,
+      height: 3,
+      tiles: [
+        [0, 0, 0],
+        [0, 1, 0],
+        [0, 0, 0],
+      ],
+    };
+    const path = findPath(map, 0, 0, 2, 2);
+    assert.ok(path.length > 0);
+    for (const step of path) {
+      assert.equal(map.tiles[step.y][step.x], 0);
+    }
+    assert.notDeepEqual(path, [{ x: 2, y: 2 }]);
   });
 
   it('findPath returns single step when start equals end tile', () => {

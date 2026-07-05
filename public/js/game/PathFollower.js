@@ -4,18 +4,10 @@ import {
   tileToWorldCenter,
   worldToTile,
 } from '/shared/pathfinding.js';
+import { directionFromDelta8 } from '/shared/movement.js';
 import { TILE_SIZE } from '../config.js';
 
 const WAYPOINT_THRESHOLD = 6;
-
-function directionBetween(fromX, fromY, toX, toY) {
-  const dx = toX - fromX;
-  const dy = toY - fromY;
-
-  if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return null;
-  if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? 'right' : 'left';
-  return dy > 0 ? 'down' : 'up';
-}
 
 export class PathFollower {
   constructor() {
@@ -75,6 +67,6 @@ export class PathFollower {
       dist = Math.hypot(dx, dy);
     }
 
-    return directionBetween(playerX, playerY, waypoint.x, waypoint.y);
+    return directionFromDelta8(dx, dy);
   }
 }

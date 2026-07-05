@@ -52,11 +52,11 @@ Tests use Node.js built-in test runner. Coverage includes pathfinding, collision
 
 ### Controls
 
-- **Click** — move, pick up loot, or attack/chase enemy under cursor
+- **Click** — move (8-way pathfinding with diagonals), pick up loot, or attack/chase enemy
 - **Mouse** — aim / facing direction (character faces cursor)
 - **Scroll wheel** — zoom in/out
 - **I** — toggle inventory panel
-- **WASD** or **Arrow keys** — manual movement (cancels click path)
+- **WASD** / **Arrow keys** — move including diagonals (e.g. W+D); cancels click path
 - **Inventory** — click item to equip; click equipped slot to unequip
 - Choose a class and name on the character select screen before entering the world
 

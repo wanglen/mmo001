@@ -1,4 +1,5 @@
 import { PLAYER_SIZE } from '/shared/constants.js';
+import { toCardinalDirection } from '/shared/movement.js';
 import { resolveSpriteFrame, getSourceRect } from '/shared/sprites.js';
 import { SpriteAtlas } from './SpriteAtlas.js';
 
@@ -22,7 +23,7 @@ export class SpriteManager {
     const scale = camera.zoom ?? 1;
     const size = PLAYER_SIZE * scale;
     const half = size / 2;
-    const facing = player.facing || player.direction || 'down';
+    const facing = player.facing || toCardinalDirection(player.direction) || 'down';
 
     const { col, row, frameSize } = resolveSpriteFrame(
       { moving: player.moving, attacking: player.attacking },
