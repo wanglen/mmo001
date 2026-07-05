@@ -37,6 +37,7 @@ npm run dev    # auto-reload
 
 - Clean, modular code; server-authoritative gameplay
 - One feature per branch; bump semver + CHANGELOG on merge
+- **When the user approves changes, merge the feature branch to `main`** (after tests pass and work is committed)
 - **Unit tests required** for pure logic and bug fixes; run `npm test` before merge
 - JSDoc on public APIs; update README when behavior changes
 - Never commit `.env` or credentials

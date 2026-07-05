@@ -25,7 +25,7 @@ Copy and track progress:
 - [ ] 6. Smoke test (npm start, manual or script)
 - [ ] 7. Update TODO.md, CHANGELOG.md, README.md, package.json version
 - [ ] 8. Commit with imperative message
-- [ ] 9. Merge to main when user approves
+- [ ] 9. **On user approval** — commit if needed, run `npm test`, merge feature branch to `main` (see merge-on-approval below)
 - [ ] 10. Create next feature branch for following TODO item
 ```
 
@@ -78,6 +78,20 @@ Move items from `[Unreleased]` into the new version section on each release.
 - [ ] TODO item checked off
 - [ ] CHANGELOG + version updated
 - [ ] README updated if controls/setup changed
+
+## Merge on user approval
+
+**Trigger:** User approves changes ("approve", "looks good", "merge it", "LGTM", or approves merge to `main`).
+
+**Do immediately (no extra confirmation):**
+
+1. Commit any uncommitted work on the feature branch (if tests pass)
+2. `git checkout main && git merge feature/<branch>`
+3. Confirm tests still pass and report result
+
+**Do not** merge without approval. **Do not** push unless asked.
+
+See also [.cursor/rules/mmo-workflow.mdc](../../rules/mmo-workflow.mdc) § Merge on user approval.
 
 ## References
 

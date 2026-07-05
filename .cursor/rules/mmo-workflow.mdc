@@ -18,6 +18,32 @@ alwaysApply: true
 - Merge to `main` only when the feature is complete, **`npm test` passes**, and smoke-tested
 - Never commit secrets (`.env`, credentials)
 
+## Merge on user approval
+
+When the user **approves** the work (e.g. "approve", "looks good", "merge it", "LGTM", or approving a merge to `main`), **merge to `main` without asking again**.
+
+### Pre-merge checklist
+
+1. `npm test` passes
+2. Version, CHANGELOG, README, and TODO are updated if behavior changed
+3. All feature changes are **committed** on the feature branch (commit first if still uncommitted)
+
+### Merge steps
+
+```bash
+git checkout main
+git merge feature/<branch-name>
+```
+
+- Use fast-forward when possible; otherwise a merge commit is fine
+- Stay on `main` after merge; report the merge commit hash
+- Do **not** merge without explicit user approval
+- Do **not** push to remote unless the user asks
+
+### After merge
+
+- Optionally create the next `feature/<name>` branch from `main` if continuing the roadmap
+
 ## Versioning (each merged feature)
 
 1. Bump `version` in [package.json](../../package.json) (semver: patch/minor by scope)
