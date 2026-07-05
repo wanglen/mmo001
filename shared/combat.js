@@ -2,6 +2,9 @@ export const ATTACK_RANGE = 48;
 export const ATTACK_COOLDOWN_MS = 600;
 export const ATTACK_ANIM_MS = 250;
 export const MONSTER_HIT_RADIUS = 18;
+export const MONSTER_ATTACK_COOLDOWN_MS = 1200;
+/** Provoked monsters chase their attacker up to this distance. */
+export const MONSTER_PROVOKE_CHASE_RANGE = 600;
 
 export function distance(x1, y1, x2, y2) {
   return Math.hypot(x2 - x1, y2 - y1);
@@ -17,8 +20,15 @@ export function isInRange(x1, y1, x2, y2, range = ATTACK_RANGE) {
   return distance(x1, y1, x2, y2) <= range;
 }
 
-export function canAttackNow(lastAttackAt, now = Date.now()) {
-  return now - lastAttackAt >= ATTACK_COOLDOWN_MS;
+export function canAttackNow(lastAttackAt, now = Date.now(), cooldownMs = ATTACK_COOLDOWN_MS) {
+  return now - lastAttackAt >= cooldownMs;
+}
+
+/** Monster melee damage scaled by attacker power and defender vit. */
+export function calculateMonsterDamage(baseDamage, defenderVit = 0) {
+  const base = Math.max(1, baseDamage - Math.floor(defenderVit * 0.25));
+  const variance = Math.floor(Math.random() * 2);
+  return base + variance;
 }
 
 export function findMonsterAt(monsters, x, y, radius = MONSTER_HIT_RADIUS) {

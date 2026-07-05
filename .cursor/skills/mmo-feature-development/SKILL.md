@@ -26,8 +26,22 @@ Copy and track progress:
 - [ ] 7. Update TODO.md, CHANGELOG.md, README.md, package.json version
 - [ ] 8. Commit with imperative message
 - [ ] 9. **On user approval** — commit if needed, run `npm test`, merge feature branch to `main` (see merge-on-approval below)
-- [ ] 10. Create next feature branch for following TODO item
+- [ ] 10. Push `origin main` or feature branch if the user asks to sync with GitHub
+- [ ] 11. Create next feature branch for following TODO item
 ```
+
+## GitHub remote
+
+| | |
+|---|---|
+| Remote | `origin` → `https://github.com/wanglen/mmo001.git` |
+| Repo | [github.com/wanglen/mmo001](https://github.com/wanglen/mmo001) |
+
+- `main` tracks `origin/main`
+- New feature branch on remote: `git push -u origin HEAD`
+- After merge, publish: `git push origin main` (user must ask)
+- PRs/issues: use `gh` when the user requests
+- Never force-push `main`
 
 ## Branch naming
 
@@ -89,7 +103,9 @@ Move items from `[Unreleased]` into the new version section on each release.
 2. `git checkout main && git merge feature/<branch>`
 3. Confirm tests still pass and report result
 
-**Do not** merge without approval. **Do not** push unless asked.
+**Do not** merge without approval.
+
+**Push to GitHub** only when the user asks (`git push origin main` or `git push -u origin HEAD` for feature branches). Use `gh pr create` for pull requests when requested.
 
 See also [.cursor/rules/mmo-workflow.mdc](../../rules/mmo-workflow.mdc) § Merge on user approval.
 

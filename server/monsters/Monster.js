@@ -20,6 +20,8 @@ export class Monster {
     this.xpReward = def.xpReward ?? 10;
     this.moving = false;
     this.targetPlayerId = null;
+    this.provoked = false;
+    this.lastAttackAt = 0;
   }
 
   toJSON() {

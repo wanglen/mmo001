@@ -8,10 +8,11 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 - Character selection (Warrior, Mage, Ranger)
 - Server-authoritative movement with collision detection
 - Animated sprite sheets per class (idle, walk, attack) with direction-facing frames
-- Combat: click enemies to attack, 3 mob types, HP bars, monster chase AI, XP on kill
+- Combat: click enemies to attack, 3 mob types, HP bars, monster chase AI, retaliate on hit, XP on kill
 - Loot: items drop on kill (rarity-colored), click to pick up
 - Inventory: 10×4 grid, 7 equip slots, stat bonuses from gear (server-side)
 - Leveling: XP curve, +5 stat points per level-up, allocation UI (reopen with C), JSON character save
+- Skills: class skill bar (keys 1–8), MP costs, cooldowns, MP regen, server-authoritative damage and visuals
 - Socket.IO architecture ready for multiplayer
 
 ## Tech stack
@@ -49,7 +50,7 @@ npm test           # run all unit tests
 npm run test:watch # re-run on file changes
 ```
 
-Tests use Node.js built-in test runner. Coverage includes pathfinding, collision, combat, items, inventory, and player management.
+Tests use Node.js built-in test runner. Coverage includes pathfinding, collision, combat, skills, items, inventory, and player management.
 
 ### Controls
 
@@ -58,6 +59,7 @@ Tests use Node.js built-in test runner. Coverage includes pathfinding, collision
 - **Scroll wheel** — zoom in/out
 - **I** — toggle inventory panel
 - **C** — open character stats / spend stat points (when available)
+- **1**–**8** — use skills from the skill bar (class-specific; costs MP, has cooldowns; Mage: Fireball, Icebolt)
 - **WASD** / **Arrow keys** — move including diagonals (e.g. W+D); cancels click path
 - **Inventory** — click item to equip; click equipped slot to unequip
 - Choose a class and name on the character select screen before entering the world

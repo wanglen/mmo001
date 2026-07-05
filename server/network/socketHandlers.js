@@ -6,6 +6,8 @@ import { facingFromTarget } from '../../shared/aim.js';
 import { DIRECTION_DELTA, isValidDirection } from '../../shared/movement.js';
 import { canMoveTo } from '../map/collision.js';
 import { processAttack, clearAttackAnim } from '../systems/combat.js';
+import { processSkill, clearSkillAnim, collectActiveSkillFx } from '../systems/skills.js';
+import { collectCombatFx } from '../systems/combatFx.js';
 import { pickupLoot, equipFromInventory, unequipSlot } from '../systems/inventory.js';
 import { allocateStat } from '../systems/progression.js';
 import { CharacterStore } from '../persistence/CharacterStore.js';
@@ -14,8 +16,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = path.join(__dirname, '..', '..', 'data', 'characters');
 
 function buildWorldState(map, playerManager, monsterManager, lootManager, playerId) {
+  const now = Date.now();
   const player = playerManager.get(playerId);
-  if (player) clearAttackAnim(player);
+  if (player) {
+    clearAttackAnim(player, now);
+    clearSkillAnim(player, now);
+  }
 
   return {
     map: {
@@ -24,10 +30,12 @@ function buildWorldState(map, playerManager, monsterManager, lootManager, player
       height: map.height,
       spawn: map.spawn,
     },
-    player: player ? player.toJSON() : null,
+    player: player ? player.toJSON(now) : null,
     players: playerManager.getAll(),
     monsters: monsterManager.getAll(),
     loot: lootManager.getAll(),
+    skillFx: collectActiveSkillFx(playerManager, now),
+    combatFx: collectCombatFx(now),
   };
 }
 
@@ -39,8 +47,10 @@ function sendWorldState(socket, map, playerManager, monsterManager, lootManager)
 }
 
 function broadcastWorldState(io, map, playerManager, monsterManager, lootManager) {
+  const now = Date.now();
   for (const player of playerManager.getAllEntities()) {
-    clearAttackAnim(player);
+    clearAttackAnim(player, now);
+    clearSkillAnim(player, now);
   }
   for (const [socketId, socket] of io.sockets.sockets) {
     socket.emit(
@@ -115,6 +125,27 @@ export function registerSocketHandlers(io, map, playerManager, monsterManager, l
 
       const result = processAttack({ player, targetId, monsterManager, lootManager });
       if (!result.ok && result.reason === 'cooldown') return;
+
+      if (result.ok) await persistPlayer(characterStore, player);
+      broadcastWorldStateToSocket(io, socket, map, playerManager, monsterManager, lootManager);
+    });
+
+    socket.on(EVENTS.USE_SKILL, async ({ skillId, targetX, targetY, targetId }) => {
+      const player = playerManager.get(socket.id);
+      if (!player || typeof skillId !== 'string') return;
+
+      const result = processSkill({
+        player,
+        skillId,
+        targetX,
+        targetY,
+        targetId,
+        monsterManager,
+        lootManager,
+        map,
+      });
+
+      if (!result.ok && (result.reason === 'cooldown' || result.reason === 'no_mp')) return;
 
       if (result.ok) await persistPlayer(characterStore, player);
       broadcastWorldStateToSocket(io, socket, map, playerManager, monsterManager, lootManager);

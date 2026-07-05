@@ -8,6 +8,38 @@ import { facingFromTarget } from '../../shared/aim.js';
 import { grantXp } from '../../shared/stats.js';
 import { getEffectiveCombatStats } from '../../shared/inventory.js';
 import { rollLoot } from '../../shared/items.js';
+import { pushDamageFx, pushHitFlash } from './combatFx.js';
+import { provokeMonster } from './monsterCombat.js';
+
+export function applyMonsterDamage({
+  monster,
+  damage,
+  player,
+  monsterManager,
+  lootManager,
+  now = Date.now(),
+}) {
+  monster.hp = Math.max(0, monster.hp - damage);
+  const killed = monster.hp <= 0;
+  let xpResult = null;
+  let lootDrop = null;
+
+  provokeMonster(monster, player);
+
+  pushDamageFx({ x: monster.x, y: monster.y, damage, now });
+  pushHitFlash({ monsterId: monster.id, now });
+
+  if (killed) {
+    xpResult = grantXp(player, monster.xpReward, player.characterClass);
+    if (lootManager) {
+      const item = rollLoot(monster.type);
+      if (item) lootDrop = lootManager.spawn(monster.x, monster.y, item);
+    }
+    monsterManager.remove(monster.id);
+  }
+
+  return { damage, killed, xp: xpResult, lootDrop };
+}
 
 export function processAttack({ player, targetId, monsterManager, lootManager, now = Date.now() }) {
   if (!canAttackNow(player.lastAttackAt ?? 0, now)) {
@@ -24,9 +56,6 @@ export function processAttack({ player, targetId, monsterManager, lootManager, n
   }
 
   const damage = calculateDamage(getEffectiveCombatStats(player, player.equipment).str);
-  monster.hp = Math.max(0, monster.hp - damage);
-  const killed = monster.hp <= 0;
-  const monsterType = monster.type;
   player.lastAttackAt = now;
   player.attacking = true;
   player.moving = false;
@@ -34,18 +63,16 @@ export function processAttack({ player, targetId, monsterManager, lootManager, n
   const facing = facingFromTarget(player.x, player.y, monster.x, monster.y);
   if (facing) player.facing = facing;
 
-  let xpResult = null;
-  let lootDrop = null;
-  if (killed) {
-    xpResult = grantXp(player, monster.xpReward, player.characterClass);
-    if (lootManager) {
-      const item = rollLoot(monsterType);
-      if (item) lootDrop = lootManager.spawn(monster.x, monster.y, item);
-    }
-    monsterManager.remove(monster.id);
-  }
+  const result = applyMonsterDamage({
+    monster,
+    damage,
+    player,
+    monsterManager,
+    lootManager,
+    now,
+  });
 
-  return { ok: true, damage, killed, xp: xpResult, lootDrop };
+  return { ok: true, ...result };
 }
 
 export function clearAttackAnim(player, now = Date.now()) {

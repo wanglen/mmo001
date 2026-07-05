@@ -7,6 +7,7 @@ export const EVENTS = {
   EQUIP: 'equip',
   UNEQUIP: 'unequip',
   ALLOCATE_STAT: 'allocateStat',
+  USE_SKILL: 'useSkill',
   WORLD_STATE: 'worldState',
   ERROR: 'error',
 };

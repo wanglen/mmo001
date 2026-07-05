@@ -2,6 +2,7 @@ import { tileToPixel, canMoveTo } from '../map/collision.js';
 import { createPlayerStats, statsToJSON } from '../../shared/stats.js';
 import { createEmptyInventory, createEmptyEquipment, getEffectiveCombatStats, refreshPlayerDerivedStats } from '../../shared/inventory.js';
 import { itemToJSON } from '../../shared/items.js';
+import { getSkillBar, getSkillCooldownRemaining } from '../../shared/skills.js';
 import { restoreItems } from '../persistence/CharacterStore.js';
 
 export class Player {
@@ -18,13 +19,15 @@ export class Player {
     this.moving = false;
     this.attacking = false;
     this.lastAttackAt = 0;
+    this.lastSkillAt = 0;
+    this.skillCooldowns = {};
     this.inventory = inventory ?? createEmptyInventory();
     this.equipment = equipment ?? createEmptyEquipment();
 
     Object.assign(this, stats);
   }
 
-  toJSON() {
+  toJSON(now = Date.now()) {
     const effective = getEffectiveCombatStats(this, this.equipment);
 
     return {
@@ -46,6 +49,10 @@ export class Player {
       vit: effective.vit,
       maxHp: effective.maxHp,
       maxMp: effective.maxMp,
+      skillBar: getSkillBar(this.characterClass).map((s) =>
+        s ? { id: s.id, name: s.name, icon: s.icon, mpCost: s.mpCost, cooldownMs: s.cooldownMs } : null
+      ),
+      skillCooldowns: getSkillCooldownRemaining(this, now),
       inventory: this.inventory.map(itemToJSON),
       equipment: Object.fromEntries(
         Object.entries(this.equipment).map(([slot, item]) => [slot, itemToJSON(item)])

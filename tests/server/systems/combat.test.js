@@ -52,6 +52,8 @@ describe('processAttack', () => {
     assert.equal(result.ok, true);
     assert.ok(result.damage >= 1);
     assert.equal(monsterManager.monsters.get('m1').hp, 40 - result.damage);
+    assert.equal(monsterManager.monsters.get('m1').provoked, true);
+    assert.equal(monsterManager.monsters.get('m1').targetPlayerId, 'p1');
   });
 
   it('grants xp and removes monster on kill', () => {

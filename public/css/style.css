@@ -483,3 +483,74 @@ html, body {
 #start-btn:not(:disabled):hover {
   background: #c73652;
 }
+
+.skill-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(10, 10, 20, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.skill-slot {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  background: rgba(30, 30, 50, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.skill-slot.empty {
+  opacity: 0.35;
+  border-style: dashed;
+}
+
+.skill-slot.ready:not(.no-mp) {
+  border-color: rgba(241, 196, 15, 0.5);
+}
+
+.skill-slot.no-mp {
+  opacity: 0.55;
+}
+
+.skill-key {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: system-ui, sans-serif;
+}
+
+.skill-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.skill-name,
+.skill-mp {
+  display: none;
+}
+
+.skill-cooldown {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 0%;
+  background: rgba(0, 0, 0, 0.65);
+  pointer-events: none;
+}

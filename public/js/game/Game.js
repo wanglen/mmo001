@@ -6,18 +6,21 @@ import { CursorManager } from '../ui/CursorManager.js';
 import { facingFromTarget } from '/shared/aim.js';
 import { findMonsterAt, isInRange, ATTACK_COOLDOWN_MS } from '/shared/combat.js';
 import { findLootAt, isInPickupRange } from '/shared/inventory.js';
+import { getSkill, getSkillFxDuration, resolveProjectileImpact } from '/shared/skills.js';
 import { CAMERA_ZOOM_STEP } from '../config.js';
+import { FxBuffer } from './FxBuffer.js';
 
 const LERP = 0.3;
 const MOVE_INTERVAL = 50;
 const AIM_INTERVAL = 50;
 
 export class Game {
-  constructor(canvas, socketClient, inventoryPanel = null, levelUpPanel = null) {
+  constructor(canvas, socketClient, inventoryPanel = null, levelUpPanel = null, skillBar = null) {
     this.canvas = canvas;
     this.socketClient = socketClient;
     this.inventoryPanel = inventoryPanel;
     this.levelUpPanel = levelUpPanel;
+    this.skillBar = skillBar;
     this.input = new Input(canvas);
     this.camera = new Camera(canvas);
     this.cursorManager = new CursorManager(canvas);
@@ -35,6 +38,7 @@ export class Game {
     this.lootTargetId = null;
     this.inventoryVisible = true;
     this.gamePaused = false;
+    this.fxBuffer = new FxBuffer();
 
     window.addEventListener('resize', () => this.renderer.resize());
     this.renderer.resize();
@@ -42,6 +46,8 @@ export class Game {
 
   setWorldState(state) {
     this.worldState = state;
+    this.fxBuffer.ingestCombat(state.combatFx);
+    this.fxBuffer.ingestSkill(state.skillFx);
 
     if (!this.displayPlayer && state.player) {
       this.displayPlayer = { ...state.player };
@@ -59,6 +65,7 @@ export class Game {
       }
       this.inventoryPanel?.update(state.player);
       this.levelUpPanel?.update(state.player);
+      this.skillBar?.update(state.player);
     }
   }
 
@@ -86,6 +93,8 @@ export class Game {
     this.displayPlayer.dex = server.dex;
     this.displayPlayer.int = server.int;
     this.displayPlayer.vit = server.vit;
+    this.displayPlayer.skillCooldowns = server.skillCooldowns;
+    this.displayPlayer.skillBar = server.skillBar;
   }
 
   onGamePause(paused) {
@@ -252,6 +261,66 @@ export class Game {
     this.inventoryPanel?.setVisible(this.inventoryVisible);
   }
 
+  handleSkills() {
+    if (this.gamePaused) return;
+    const slot = this.input.consumeSkillSlot();
+    if (slot === null || !this.worldState?.player || !this.displayPlayer) return;
+
+    const skill = this.worldState.player.skillBar?.[slot];
+    if (!skill) return;
+
+    const aim = this.aimTarget ?? {
+      x: this.displayPlayer.aimX ?? this.displayPlayer.x + 1,
+      y: this.displayPlayer.aimY ?? this.displayPlayer.y,
+    };
+    const skillDef = getSkill(skill.id);
+    if (!skillDef) return;
+
+    let shot;
+    if (skillDef.type === 'projectile') {
+      shot = resolveProjectileImpact(
+        this.worldState.monsters ?? [],
+        this.displayPlayer.x,
+        this.displayPlayer.y,
+        aim.x,
+        aim.y,
+        skillDef.range ?? 200,
+        skillDef.radius ?? 24
+      );
+    } else {
+      const target = findMonsterAt(this.worldState.monsters ?? [], aim.x, aim.y);
+      shot = {
+        impactX: aim.x,
+        impactY: aim.y,
+        missed: !target,
+        monster: target,
+      };
+    }
+
+    this.fxBuffer.addSkillFx({
+      skillId: skill.id,
+      x: this.displayPlayer.x,
+      y: this.displayPlayer.y,
+      impactX: shot.impactX,
+      impactY: shot.impactY,
+      missed: shot.missed,
+      durationMs: getSkillFxDuration(
+        skillDef,
+        this.displayPlayer.x,
+        this.displayPlayer.y,
+        shot.impactX,
+        shot.impactY
+      ),
+    });
+
+    this.socketClient.sendUseSkill({
+      skillId: skill.id,
+      targetX: aim.x,
+      targetY: aim.y,
+      targetId: shot.monster?.id,
+    });
+  }
+
   handleInput(timestamp) {
     if (this.gamePaused) {
       return;
@@ -259,6 +328,7 @@ export class Game {
 
     this.handleClick();
     this.handleInventoryToggle();
+    this.handleSkills();
     this.handleAim(timestamp);
     this.handleZoom();
 
@@ -304,8 +374,15 @@ export class Game {
       this.handleInput(timestamp);
       this.updateDisplayPlayer();
       this.camera.follow(this.displayPlayer.x, this.displayPlayer.y);
+
+      const renderState = {
+        ...this.worldState,
+        combatFx: this.fxBuffer.getCombatFx(),
+        skillFx: this.fxBuffer.getSkillFx(),
+      };
+
       this.renderer.draw(
-        this.worldState,
+        renderState,
         this.displayPlayer,
         timestamp,
         { moveTarget: this.pathFollower.target }

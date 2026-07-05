@@ -3,7 +3,8 @@ import { MONSTER_TYPES, SPAWN_COUNT } from '../../shared/monsters.js';
 import { TILE_WALKABLE } from '../../shared/constants.js';
 import { tileToPixel } from '../map/collision.js';
 import { canMoveTo } from '../map/collision.js';
-import { distance, isInRange } from '../../shared/combat.js';
+import { isInRange } from '../../shared/combat.js';
+import { resolveMonsterTarget, monsterAttackPlayer } from '../systems/monsterCombat.js';
 
 const DIRECTION_DELTA = {
   up: { x: 0, y: -1 },
@@ -121,39 +122,35 @@ export class MonsterManager {
       .map((m) => m.toJSON());
   }
 
+  getAllEntities() {
+    return Array.from(this.monsters.values()).filter((m) => m.hp > 0);
+  }
+
   remove(id) {
     this.monsters.delete(id);
   }
 
-  tick(map, players) {
+  tick(map, players, now = Date.now()) {
     for (const monster of this.monsters.values()) {
       if (monster.hp <= 0) continue;
 
-      let nearest = null;
-      let nearestDist = monster.aggroRange;
+      const target = resolveMonsterTarget(monster, players);
 
-      for (const player of players) {
-        const d = distance(monster.x, monster.y, player.x, player.y);
-        if (d < nearestDist) {
-          nearest = player;
-          nearestDist = d;
-        }
-      }
-
-      if (!nearest) {
+      if (!target) {
         monster.moving = false;
         monster.targetPlayerId = null;
         continue;
       }
 
-      monster.targetPlayerId = nearest.id;
+      monster.targetPlayerId = target.id;
 
-      if (isInRange(monster.x, monster.y, nearest.x, nearest.y, monster.attackRange)) {
+      if (isInRange(monster.x, monster.y, target.x, target.y, monster.attackRange)) {
         monster.moving = false;
+        monsterAttackPlayer(monster, target, now);
         continue;
       }
 
-      const direction = pickDirection(monster.x, monster.y, nearest.x, nearest.y);
+      const direction = pickDirection(monster.x, monster.y, target.x, target.y);
       if (!direction) continue;
 
       const delta = DIRECTION_DELTA[direction];

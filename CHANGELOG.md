@@ -7,7 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.9.1] - 2026-07-05
+### Added
+
+- MP regeneration (class-based; Mage 2.5/s)
+- Mage skill polish: Fireball and Icebolt projectile animations, impact bursts, miss puffs
+- Floating damage numbers and monster hit flash on damage
+
+### Fixed
+
+- Skill VFX and damage numbers used rAF timestamp instead of wall-clock time, so effects rendered off-screen
+- Monsters now provoke and fight back when damaged (chase attacker, melee counter-attack)
+
+### Changed
+
+- Mage skill 2 renamed from Frost Nova to **Icebolt** (single-target ice projectile)
+
+
+## [1.10.0] - 2026-07-05
+
+### Added
+
+- Skill bar (8 slots, hotkeys **1**–**8**) with MP cost and cooldown overlays
+- Class skills: Warrior (Cleave, Charge), Mage (Fireball, Frost Nova), Ranger (Arrow Shot, Multishot)
+- Server-authoritative skill casting with MP drain, cooldowns, and AoE/single-target damage
+- Skill visuals: melee arcs, dash trails, projectiles, and ground AoE effects
+
 
 ### Changed
 

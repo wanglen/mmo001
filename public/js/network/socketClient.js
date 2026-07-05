@@ -55,4 +55,8 @@ export class SocketClient {
   sendAllocateStat(stat) {
     this.socket.emit(EVENTS.ALLOCATE_STAT, { stat });
   }
+
+  sendUseSkill({ skillId, targetX, targetY, targetId }) {
+    this.socket.emit(EVENTS.USE_SKILL, { skillId, targetX, targetY, targetId });
+  }
 }

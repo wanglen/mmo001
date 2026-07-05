@@ -46,10 +46,10 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 - [x] Persist character progress (JSON file or SQLite to start)
 
 ### Skills
-- [ ] Skill bar (6–8 slots, hotkeys 1–8)
-- [ ] 2–3 skills per class (Warrior: cleave, charge; Mage: fireball, frost nova)
-- [ ] MP cost, cooldowns, AoE vs single-target
-- [ ] Skill visuals (projectiles, ground effects, melee arcs)
+- [x] Skill bar (6–8 slots, hotkeys 1–8)
+- [x] 2–3 skills per class (Warrior: cleave, charge; Mage: fireball, frost nova)
+- [x] MP cost, cooldowns, AoE vs single-target
+- [x] Skill visuals (projectiles, ground effects, melee arcs)
 
 ---
 

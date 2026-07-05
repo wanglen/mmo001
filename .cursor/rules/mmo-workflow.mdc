@@ -18,6 +18,16 @@ alwaysApply: true
 - Merge to `main` only when the feature is complete, **`npm test` passes**, and smoke-tested
 - Never commit secrets (`.env`, credentials)
 
+## GitHub remote
+
+- **Remote:** `origin` → `https://github.com/wanglen/mmo001.git`
+- **Repository:** [wanglen/mmo001](https://github.com/wanglen/mmo001)
+- `main` tracks `origin/main`; pull before starting a new feature if the remote may be ahead
+- Push a feature branch: `git push -u origin HEAD`
+- Publish `main` after merge: `git push origin main` (only when the user asks)
+- Open PRs with `gh pr create` when the user asks; do not push or open PRs proactively
+- Never `git push --force` to `main`
+
 ## Merge on user approval
 
 When the user **approves** the work (e.g. "approve", "looks good", "merge it", "LGTM", or approving a merge to `main`), **merge to `main` without asking again**.
@@ -42,6 +52,7 @@ git merge feature/<branch-name>
 
 ### After merge
 
+- Push `main` to GitHub when the user asks: `git push origin main`
 - Optionally create the next `feature/<name>` branch from `main` if continuing the roadmap
 
 ## Versioning (each merged feature)

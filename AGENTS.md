@@ -11,8 +11,21 @@ Diablo-like MMORPG (HTML Canvas + Node.js + Socket.IO).
 ## Workflow
 
 ```
-TODO item → plan → feature/<name> branch → implement → test → docs + version → merge main → next branch
+TODO item → plan → feature/<name> branch → implement → test → docs + version → merge main → push origin (when asked) → next branch
 ```
+
+## GitHub
+
+| | |
+|---|---|
+| Repository | [github.com/wanglen/mmo001](https://github.com/wanglen/mmo001) |
+| Remote | `origin` → `https://github.com/wanglen/mmo001.git` |
+| Default branch | `main` (tracks `origin/main`) |
+
+- Create feature branches from `main`; push with `git push -u origin HEAD` when the user wants a remote branch or PR
+- After merging to `main`, run `git push origin main` when the user asks to publish/sync
+- Use `gh` for pull requests and GitHub issues when requested
+- Never force-push `main`
 
 ## Key files
 
