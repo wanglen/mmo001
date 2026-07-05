@@ -15,6 +15,7 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 - Leveling: XP curve, +5 stat points per level-up, allocation UI (reopen with C), JSON character save
 - Skills: class skill bar (keys 1–8), MP costs, cooldowns, out-of-combat MP regen, server-authoritative damage and visuals
 - Death at 0 HP: blocked actions, respawn button restores HP/MP at spawn
+- Map fog of war: translucent grey veil on unexplored terrain only; monsters and loot hidden until explored; explored areas stay clear
 - Socket.IO architecture ready for multiplayer
 
 ## Tech stack

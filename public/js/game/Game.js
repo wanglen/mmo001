@@ -8,7 +8,9 @@ import { findMonsterAt, isInRange, ATTACK_COOLDOWN_MS } from '/shared/combat.js'
 import { findLootAt, isInPickupRange } from '/shared/inventory.js';
 import { getSkill, getSkillFxDuration, resolveProjectileImpact, canUseSkill } from '/shared/skills.js';
 import { CAMERA_ZOOM_STEP, TILE_SIZE } from '../config.js';
+import { filterRevealedPositions } from '/shared/fog.js';
 import { FxBuffer } from './FxBuffer.js';
+import { FogOfWar } from './FogOfWar.js';
 
 const LERP = 0.3;
 const MOVE_INTERVAL = 50;
@@ -40,6 +42,7 @@ export class Game {
     this.gamePaused = false;
     this.isDead = false;
     this.fxBuffer = new FxBuffer();
+    this.fogOfWar = new FogOfWar();
     this.deathOverlay = document.getElementById('death-overlay');
 
     document.getElementById('respawn-btn')?.addEventListener('click', () => {
@@ -403,6 +406,7 @@ export class Game {
       this.handleInput(timestamp);
       this.updateDisplayPlayer();
       this.camera.follow(this.displayPlayer.x, this.displayPlayer.y);
+      this.fogOfWar.update(this.worldState.map, this.displayPlayer.x, this.displayPlayer.y);
 
       const renderState = {
         ...this.worldState,
@@ -414,14 +418,19 @@ export class Game {
       const mouse = this.input.getMouseScreen();
       if (mouse && this.worldState?.monsters) {
         const world = this.camera.screenToWorld(mouse.screenX, mouse.screenY);
-        hoveredMonsterId = findMonsterAt(this.worldState.monsters, world.x, world.y)?.id ?? null;
+        const visibleMonsters = filterRevealedPositions(
+          this.fogOfWar.revealed,
+          this.worldState.monsters,
+          TILE_SIZE
+        );
+        hoveredMonsterId = findMonsterAt(visibleMonsters, world.x, world.y)?.id ?? null;
       }
 
       this.renderer.draw(
         renderState,
         this.displayPlayer,
         timestamp,
-        { moveTarget: this.pathFollower.target, hoveredMonsterId }
+        { moveTarget: this.pathFollower.target, hoveredMonsterId, fogOfWar: this.fogOfWar }
       );
     }
 

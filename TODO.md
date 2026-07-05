@@ -59,6 +59,7 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 - [x] Improve **character** representation in game
 - [x] Improve **items** representation in game (ground loot, inventory icons)
 - [x] Improve **monsters** representation in game
+- [x] Add **map fog** — hide unexplored / off-screen areas; grey or muted overlay for obscured tiles (align with void `#0c0e14` palette)
 
 ---
 
