@@ -1,5 +1,9 @@
 export const EVENTS = {
   JOIN: 'join',
+  CREATE_CHARACTER: 'createCharacter',
+  DELETE_CHARACTER: 'deleteCharacter',
+  CHARACTER_CREATED: 'characterCreated',
+  CHARACTERS_CHANGED: 'charactersChanged',
   MOVE: 'move',
   AIM: 'aim',
   ATTACK: 'attack',

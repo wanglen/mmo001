@@ -1,5 +1,4 @@
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { EVENTS } from '../../shared/events.js';
 import { CHARACTER_CLASSES } from '../../shared/constants.js';
 import { facingFromTarget } from '../../shared/aim.js';
@@ -10,10 +9,11 @@ import { processSkill, clearSkillAnim, collectActiveSkillFx } from '../systems/s
 import { collectCombatFx } from '../systems/combatFx.js';
 import { pickupLoot, equipFromInventory, unequipSlot } from '../systems/inventory.js';
 import { allocateStat } from '../systems/progression.js';
-import { CharacterStore } from '../persistence/CharacterStore.js';
+import { createNewCharacterData } from '../persistence/CharacterStore.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dataDir = path.join(__dirname, '..', '..', 'data', 'characters');
+function sanitizePlayerName(name) {
+  return (name || '').trim().slice(0, 20);
+}
 
 function buildWorldState(map, playerManager, monsterManager, lootManager, playerId) {
   const now = Date.now();
@@ -82,18 +82,67 @@ async function persistPlayer(characterStore, player) {
   if (player) await characterStore.save(player);
 }
 
-export function registerSocketHandlers(io, map, playerManager, monsterManager, lootManager) {
-  const characterStore = new CharacterStore(dataDir);
-
+export function registerSocketHandlers(io, map, playerManager, monsterManager, lootManager, characterStore) {
   io.on('connection', (socket) => {
-    socket.on(EVENTS.JOIN, async ({ characterClass, name }) => {
+    socket.on(EVENTS.CREATE_CHARACTER, async ({ name, characterClass }) => {
       if (!CHARACTER_CLASSES[characterClass]) {
         socket.emit(EVENTS.ERROR, { message: 'Invalid character class' });
         return;
       }
 
-      const playerName = (name || 'Hero').trim().slice(0, 20) || 'Hero';
-      const saved = await characterStore.load(playerName, characterClass);
+      const playerName = sanitizePlayerName(name);
+      if (!playerName) {
+        socket.emit(EVENTS.ERROR, { message: 'Character name is required' });
+        return;
+      }
+
+      if (await characterStore.exists(playerName)) {
+        socket.emit(EVENTS.ERROR, { message: 'Character name already exists' });
+        return;
+      }
+
+      const data = createNewCharacterData(playerName, characterClass, map.spawn);
+      await characterStore.saveData(data);
+      socket.emit(EVENTS.CHARACTER_CREATED, {
+        name: playerName,
+        characterClass,
+        level: 1,
+      });
+    });
+
+    socket.on(EVENTS.DELETE_CHARACTER, async ({ name }) => {
+      const playerName = sanitizePlayerName(name);
+      if (!playerName) return;
+
+      const inGame = playerManager.getAllEntities().some((p) => p.name === playerName);
+      if (inGame) {
+        socket.emit(EVENTS.ERROR, { message: 'Cannot delete a character that is in game' });
+        return;
+      }
+
+      if (!(await characterStore.exists(playerName))) {
+        socket.emit(EVENTS.ERROR, { message: 'Character not found' });
+        return;
+      }
+
+      await characterStore.remove(playerName);
+      socket.emit(EVENTS.CHARACTERS_CHANGED, { name: playerName });
+    });
+
+    socket.on(EVENTS.JOIN, async ({ name }) => {
+      const playerName = sanitizePlayerName(name);
+      if (!playerName) {
+        socket.emit(EVENTS.ERROR, { message: 'Character name is required' });
+        return;
+      }
+
+      const saved = await characterStore.load(playerName);
+      if (!saved?.characterClass || !CHARACTER_CLASSES[saved.characterClass]) {
+        socket.emit(EVENTS.ERROR, { message: 'Character not found' });
+        return;
+      }
+
+      const characterClass = saved.characterClass;
 
       const player = playerManager.create({
         id: socket.id,

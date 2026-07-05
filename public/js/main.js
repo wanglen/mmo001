@@ -27,13 +27,15 @@ socketClient.onWorldState((state) => {
   game.setWorldState(state);
 });
 
-socketClient.onError((err) => {
-  console.error('Server error:', err.message);
+const characterSelect = new CharacterSelect({
+  socketClient,
+  onStart: () => {
+    game.start();
+  },
 });
 
-new CharacterSelect({
-  onStart: ({ characterClass, name }) => {
-    game.start();
-    socketClient.join({ characterClass, name });
-  },
+socketClient.onError((err) => {
+  console.error('Server error:', err.message);
+  characterSelect.showError(err.message);
+  document.getElementById('create-submit-btn')?.removeAttribute('disabled');
 });

@@ -2,9 +2,12 @@ import fs from 'fs/promises';
 import path from 'path';
 import { itemToJSON } from '../../shared/items.js';
 import { createEmptyInventory, createEmptyEquipment } from '../../shared/inventory.js';
+import { createPlayerStats } from '../../shared/stats.js';
+import { tileToPixel } from '../map/collision.js';
 
-function slugify(name, characterClass) {
-  return `${name.trim().toLowerCase()}_${characterClass}`.replace(/[^a-z0-9_-]/g, '');
+export function slugifyCharacterName(name) {
+  const slug = name.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+  return slug || 'hero';
 }
 
 export function playerToSaveData(player) {
@@ -31,22 +34,95 @@ export function playerToSaveData(player) {
   };
 }
 
+/** Default save payload for a brand-new character at spawn. */
+export function createNewCharacterData(name, characterClass, spawn) {
+  const stats = createPlayerStats(characterClass);
+  const { x, y } = tileToPixel(spawn.x, spawn.y);
+
+  return {
+    name,
+    characterClass,
+    x,
+    y,
+    level: stats.level,
+    xp: stats.xp,
+    statPoints: stats.statPoints,
+    skillPoints: stats.skillPoints,
+    str: stats.str,
+    dex: stats.dex,
+    int: stats.int,
+    vit: stats.vit,
+    hp: stats.hp,
+    mp: stats.mp,
+    inventory: createEmptyInventory(),
+    equipment: createEmptyEquipment(),
+    savedAt: new Date().toISOString(),
+  };
+}
+
 export class CharacterStore {
   constructor(dataDir) {
     this.dataDir = dataDir;
   }
 
-  filePath(name, characterClass) {
-    return path.join(this.dataDir, `${slugify(name, characterClass)}.json`);
+  filePath(name) {
+    return path.join(this.dataDir, `${slugifyCharacterName(name)}.json`);
+  }
+
+  /** Canonical save path, or legacy file whose JSON `name` field matches. */
+  async findSaveFileByName(name) {
+    const canonical = this.filePath(name);
+    try {
+      await fs.access(canonical);
+      return canonical;
+    } catch {
+      // fall through to legacy lookup
+    }
+
+    let files = [];
+    try {
+      files = await fs.readdir(this.dataDir);
+    } catch {
+      return null;
+    }
+
+    for (const file of files) {
+      if (!file.endsWith('.json')) continue;
+      const fullPath = path.join(this.dataDir, file);
+      const data = await this.readJson(fullPath);
+      if (data?.name === name) return fullPath;
+    }
+
+    return null;
   }
 
   async ensureDir() {
     await fs.mkdir(this.dataDir, { recursive: true });
   }
 
-  async load(name, characterClass) {
+  async exists(name) {
+    return (await this.findSaveFileByName(name)) !== null;
+  }
+
+  async load(name) {
+    const file = await this.findSaveFileByName(name);
+    if (!file) return null;
+
+    const data = await this.readJson(file);
+    if (!data) return null;
+
+    const canonical = this.filePath(name);
+    if (file !== canonical) {
+      await this.saveData(data);
+      await fs.unlink(file).catch(() => {});
+    }
+
+    return data;
+  }
+
+  async readJson(filePath) {
     try {
-      const raw = await fs.readFile(this.filePath(name, characterClass), 'utf8');
+      const raw = await fs.readFile(filePath, 'utf8');
       return JSON.parse(raw);
     } catch {
       return null;
@@ -55,16 +131,54 @@ export class CharacterStore {
 
   async save(player) {
     await this.ensureDir();
-    const file = this.filePath(player.name, player.characterClass);
-    await fs.writeFile(file, JSON.stringify(playerToSaveData(player), null, 2), 'utf8');
+    await fs.writeFile(
+      this.filePath(player.name),
+      JSON.stringify(playerToSaveData(player), null, 2),
+      'utf8'
+    );
   }
 
-  async remove(name, characterClass) {
+  async saveData(data) {
+    await this.ensureDir();
+    await fs.writeFile(this.filePath(data.name), JSON.stringify(data, null, 2), 'utf8');
+  }
+
+  async remove(name) {
+    const file = await this.findSaveFileByName(name);
+    if (!file) return false;
+    await fs.unlink(file);
+    return true;
+  }
+
+  /** @returns {Promise<{ name: string, characterClass: string, level: number, savedAt?: string }[]>} */
+  async list() {
+    await this.ensureDir();
+    let files = [];
     try {
-      await fs.unlink(this.filePath(name, characterClass));
+      files = await fs.readdir(this.dataDir);
     } catch {
-      // ignore missing file
+      return [];
     }
+
+    const characters = [];
+    for (const file of files) {
+      if (!file.endsWith('.json')) continue;
+      try {
+        const raw = await fs.readFile(path.join(this.dataDir, file), 'utf8');
+        const data = JSON.parse(raw);
+        if (!data?.name || !data?.characterClass) continue;
+        characters.push({
+          name: data.name,
+          characterClass: data.characterClass,
+          level: data.level ?? 1,
+          savedAt: data.savedAt,
+        });
+      } catch {
+        // skip corrupt files
+      }
+    }
+
+    return characters.sort((a, b) => a.name.localeCompare(b.name));
   }
 }
 

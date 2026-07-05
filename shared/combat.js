@@ -2,6 +2,8 @@ export const ATTACK_RANGE = 48;
 export const ATTACK_COOLDOWN_MS = 600;
 export const ATTACK_ANIM_MS = 250;
 export const MONSTER_HIT_RADIUS = 18;
+/** Extra padding added to projectile ray hit tests (monster body + aim forgiveness). */
+export const PROJECTILE_HIT_PADDING = 14;
 export const MONSTER_ATTACK_COOLDOWN_MS = 1200;
 /** Provoked monsters chase their attacker up to this distance. */
 export const MONSTER_PROVOKE_CHASE_RANGE = 600;

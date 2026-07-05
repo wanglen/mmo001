@@ -62,7 +62,7 @@ Tests use Node.js built-in test runner. Coverage includes pathfinding, collision
 - **1**–**8** — use skills from the skill bar (class-specific; costs MP, has cooldowns; Mage: Fireball, Icebolt)
 - **WASD** / **Arrow keys** — move including diagonals (e.g. W+D); cancels click path
 - **Inventory** — click item to equip; click equipped slot to unequip
-- Choose a class and name on the character select screen before entering the world
+- Character selection: pick an existing hero, create a new one, or delete saves (name is the unique key)
 
 ## Project structure
 

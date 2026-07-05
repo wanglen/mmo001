@@ -269,9 +269,12 @@ export class Game {
     const skill = this.worldState.player.skillBar?.[slot];
     if (!skill) return;
 
+    const serverPlayer = this.worldState.player;
+    const px = serverPlayer.x;
+    const py = serverPlayer.y;
     const aim = this.aimTarget ?? {
-      x: this.displayPlayer.aimX ?? this.displayPlayer.x + 1,
-      y: this.displayPlayer.aimY ?? this.displayPlayer.y,
+      x: serverPlayer.aimX ?? px + 1,
+      y: serverPlayer.aimY ?? py,
     };
     const skillDef = getSkill(skill.id);
     if (!skillDef) return;
@@ -280,8 +283,8 @@ export class Game {
     if (skillDef.type === 'projectile') {
       shot = resolveProjectileImpact(
         this.worldState.monsters ?? [],
-        this.displayPlayer.x,
-        this.displayPlayer.y,
+        px,
+        py,
         aim.x,
         aim.y,
         skillDef.range ?? 200,
@@ -299,18 +302,12 @@ export class Game {
 
     this.fxBuffer.addSkillFx({
       skillId: skill.id,
-      x: this.displayPlayer.x,
-      y: this.displayPlayer.y,
+      x: px,
+      y: py,
       impactX: shot.impactX,
       impactY: shot.impactY,
       missed: shot.missed,
-      durationMs: getSkillFxDuration(
-        skillDef,
-        this.displayPlayer.x,
-        this.displayPlayer.y,
-        shot.impactX,
-        shot.impactY
-      ),
+      durationMs: getSkillFxDuration(skillDef, px, py, shot.impactX, shot.impactY),
     });
 
     this.socketClient.sendUseSkill({

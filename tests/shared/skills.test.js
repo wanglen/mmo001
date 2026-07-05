@@ -65,7 +65,7 @@ describe('skills', () => {
   it('calculateSkillDamage scales with stat', () => {
     const dmg = calculateSkillDamage(SKILLS.cleave, { str: 20, dex: 5, int: 5 });
     assert.ok(dmg >= 1);
-    assert.ok(dmg >= 30);
+    assert.ok(dmg >= 20);
   });
 
   it('findMonstersInRadius finds nearby targets', () => {

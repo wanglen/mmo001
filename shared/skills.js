@@ -1,4 +1,4 @@
-import { distance } from './combat.js';
+import { distance, MONSTER_HIT_RADIUS, PROJECTILE_HIT_PADDING } from './combat.js';
 
 export const SKILL_SLOT_COUNT = 8;
 
@@ -33,7 +33,7 @@ export const SKILLS = {
     range: 52,
     radius: 40,
     damageStat: 'str',
-    damageMult: 1.5,
+    damageMult: 1.2,
   },
   charge: {
     id: 'charge',
@@ -46,7 +46,7 @@ export const SKILLS = {
     dashDistance: 96,
     radius: 32,
     damageStat: 'str',
-    damageMult: 2,
+    damageMult: 1.4,
   },
   fireball: {
     id: 'fireball',
@@ -57,9 +57,9 @@ export const SKILLS = {
     cooldownMs: 1500,
     type: 'projectile',
     range: 200,
-    radius: 24,
+    radius: 28,
     damageStat: 'int',
-    damageMult: 2,
+    damageMult: 1.15,
   },
   icebolt: {
     id: 'icebolt',
@@ -70,9 +70,9 @@ export const SKILLS = {
     cooldownMs: 1200,
     type: 'projectile',
     range: 200,
-    radius: 20,
+    radius: 24,
     damageStat: 'int',
-    damageMult: 1.8,
+    damageMult: 1.1,
   },
   arrow_shot: {
     id: 'arrow_shot',
@@ -84,7 +84,7 @@ export const SKILLS = {
     type: 'single_target',
     range: 160,
     damageStat: 'dex',
-    damageMult: 2,
+    damageMult: 1.25,
   },
   multishot: {
     id: 'multishot',
@@ -97,7 +97,7 @@ export const SKILLS = {
     range: 160,
     radius: 40,
     damageStat: 'dex',
-    damageMult: 1.3,
+    damageMult: 1.0,
   },
 };
 
@@ -285,6 +285,7 @@ export function findFirstMonsterOnRay(monsters, px, py, aimX, aimY, maxRange, hi
   const dx = endX - px;
   const dy = endY - py;
   const lenSq = dx * dx + dy * dy;
+  const effectiveRadius = hitRadius + MONSTER_HIT_RADIUS + PROJECTILE_HIT_PADDING;
 
   if (lenSq < 1) {
     return { monster: null, endX, endY };
@@ -301,7 +302,7 @@ export function findFirstMonsterOnRay(monsters, px, py, aimX, aimY, maxRange, hi
 
     const closestX = px + t * dx;
     const closestY = py + t * dy;
-    if (distance(monster.x, monster.y, closestX, closestY) > hitRadius) continue;
+    if (distance(monster.x, monster.y, closestX, closestY) > effectiveRadius) continue;
 
     if (t < bestT) {
       best = monster;

@@ -484,6 +484,143 @@ html, body {
   background: #c73652;
 }
 
+.character-panel {
+  max-width: 420px;
+  width: min(92vw, 420px);
+}
+
+.character-panel h1 {
+  margin-bottom: 0.25rem;
+}
+
+.character-panel h2 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ccc;
+}
+
+.character-error {
+  color: #e74c3c;
+  font-size: 0.9rem;
+  margin: 0 0 0.75rem;
+  min-height: 1.2em;
+}
+
+.character-error.hidden {
+  display: none;
+}
+
+.character-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 240px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+}
+
+.character-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  background: #0f3460;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  color: #eee;
+  cursor: pointer;
+  text-align: left;
+}
+
+.character-row:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.character-row.selected {
+  border-color: #e94560;
+}
+
+.character-row-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.character-row-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.85rem;
+}
+
+.character-row-info strong {
+  font-size: 1rem;
+}
+
+.character-row-info span {
+  color: #aaa;
+}
+
+.character-empty {
+  color: #888;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.character-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.character-actions button {
+  flex: 1 1 auto;
+  min-width: 100px;
+  padding: 0.65rem 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.character-actions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+#play-btn,
+#create-submit-btn {
+  background: #e94560;
+  color: white;
+}
+
+#play-btn:not(:disabled):hover,
+#create-submit-btn:not(:disabled):hover {
+  background: #c73652;
+}
+
+.btn-secondary {
+  background: #0f3460;
+  color: #eee;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.btn-danger {
+  background: #7b241c;
+  color: #fff;
+}
+
+.btn-danger:not(:disabled):hover {
+  background: #922b21;
+}
+
+.hidden {
+  display: none !important;
+}
+
 .skill-bar {
   position: fixed;
   bottom: 24px;

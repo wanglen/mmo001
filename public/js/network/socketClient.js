@@ -6,6 +6,8 @@ export class SocketClient {
     this.socket = io();
     this.onWorldStateCallback = null;
     this.onErrorCallback = null;
+    this.onCharacterCreatedCallback = null;
+    this.onCharactersChangedCallback = null;
 
     this.socket.on(EVENTS.WORLD_STATE, (state) => {
       if (this.onWorldStateCallback) this.onWorldStateCallback(state);
@@ -13,6 +15,14 @@ export class SocketClient {
 
     this.socket.on(EVENTS.ERROR, (err) => {
       if (this.onErrorCallback) this.onErrorCallback(err);
+    });
+
+    this.socket.on(EVENTS.CHARACTER_CREATED, (data) => {
+      if (this.onCharacterCreatedCallback) this.onCharacterCreatedCallback(data);
+    });
+
+    this.socket.on(EVENTS.CHARACTERS_CHANGED, (data) => {
+      if (this.onCharactersChangedCallback) this.onCharactersChangedCallback(data);
     });
   }
 
@@ -24,8 +34,24 @@ export class SocketClient {
     this.onErrorCallback = callback;
   }
 
-  join({ characterClass, name }) {
-    this.socket.emit(EVENTS.JOIN, { characterClass, name });
+  onCharacterCreated(callback) {
+    this.onCharacterCreatedCallback = callback;
+  }
+
+  onCharactersChanged(callback) {
+    this.onCharactersChangedCallback = callback;
+  }
+
+  join({ name }) {
+    this.socket.emit(EVENTS.JOIN, { name });
+  }
+
+  createCharacter({ name, characterClass }) {
+    this.socket.emit(EVENTS.CREATE_CHARACTER, { name, characterClass });
+  }
+
+  deleteCharacter({ name }) {
+    this.socket.emit(EVENTS.DELETE_CHARACTER, { name });
   }
 
   sendMove(direction) {

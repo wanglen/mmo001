@@ -1,21 +1,47 @@
 import { CHARACTER_CLASSES } from '/shared/constants.js';
 
 export class CharacterSelect {
-  constructor({ onStart }) {
+  constructor({ socketClient, onStart }) {
+    this.socketClient = socketClient;
     this.onStart = onStart;
+    this.characters = [];
+    this.selectedName = null;
     this.selectedClass = null;
+    this.mode = 'select';
 
     this.overlay = document.getElementById('character-select');
-    this.optionsEl = document.getElementById('class-options');
+    this.selectView = document.getElementById('character-select-view');
+    this.createView = document.getElementById('character-create-view');
+    this.listEl = document.getElementById('character-list');
+    this.emptyEl = document.getElementById('character-list-empty');
+    this.classOptionsEl = document.getElementById('class-options');
     this.nameInput = document.getElementById('player-name');
-    this.startBtn = document.getElementById('start-btn');
+    this.playBtn = document.getElementById('play-btn');
+    this.deleteBtn = document.getElementById('delete-btn');
+    this.createBtn = document.getElementById('create-btn');
+    this.showCreateBtn = document.getElementById('show-create-btn');
+    this.showSelectBtn = document.getElementById('show-select-btn');
+    this.createSubmitBtn = document.getElementById('create-submit-btn');
+    this.errorEl = document.getElementById('character-error');
 
-    this.renderOptions();
-    this.startBtn.addEventListener('click', () => this.handleStart());
+    this.renderClassOptions();
+    this.bindEvents();
+    this.socketClient.onCharacterCreated((data) => this.onCharacterCreated(data));
+    this.socketClient.onCharactersChanged(() => this.refreshCharacters());
+    this.refreshCharacters();
   }
 
-  renderOptions() {
-    this.optionsEl.innerHTML = '';
+  bindEvents() {
+    this.showCreateBtn.addEventListener('click', () => this.setMode('create'));
+    this.showSelectBtn.addEventListener('click', () => this.setMode('select'));
+    this.playBtn.addEventListener('click', () => this.handlePlay());
+    this.deleteBtn.addEventListener('click', () => this.handleDelete());
+    this.createSubmitBtn.addEventListener('click', () => this.handleCreate());
+    this.createBtn.addEventListener('click', () => this.setMode('create'));
+  }
+
+  renderClassOptions() {
+    this.classOptionsEl.innerHTML = '';
 
     for (const [key, cls] of Object.entries(CHARACTER_CLASSES)) {
       const card = document.createElement('div');
@@ -33,23 +59,135 @@ export class CharacterSelect {
       card.appendChild(label);
       card.addEventListener('click', () => this.selectClass(key, card));
 
-      this.optionsEl.appendChild(card);
+      this.classOptionsEl.appendChild(card);
     }
+  }
+
+  async refreshCharacters() {
+    try {
+      const res = await fetch('/api/characters');
+      this.characters = res.ok ? await res.json() : [];
+    } catch {
+      this.characters = [];
+    }
+
+    this.renderCharacterList();
+    if (this.characters.length === 0) {
+      this.setMode('create');
+    } else if (this.mode === 'select') {
+      this.setMode('select');
+    }
+  }
+
+  renderCharacterList() {
+    this.listEl.innerHTML = '';
+    const hasChars = this.characters.length > 0;
+
+    this.emptyEl.classList.toggle('hidden', hasChars);
+    this.playBtn.disabled = true;
+    this.deleteBtn.disabled = true;
+    this.selectedName = null;
+
+    for (const char of this.characters) {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'character-row';
+      row.dataset.name = char.name;
+
+      const cls = CHARACTER_CLASSES[char.characterClass];
+      const swatch = document.createElement('span');
+      swatch.className = 'character-row-swatch';
+      swatch.style.background = cls?.color ?? '#888';
+
+      const info = document.createElement('span');
+      info.className = 'character-row-info';
+      info.innerHTML = `<strong>${char.name}</strong><span>${cls?.label ?? char.characterClass} · Lv ${char.level}</span>`;
+
+      row.appendChild(swatch);
+      row.appendChild(info);
+      row.addEventListener('click', () => this.selectCharacter(char.name, row));
+
+      this.listEl.appendChild(row);
+    }
+  }
+
+  selectCharacter(name, rowEl) {
+    this.selectedName = name;
+    this.listEl.querySelectorAll('.character-row').forEach((el) => el.classList.remove('selected'));
+    rowEl.classList.add('selected');
+    this.playBtn.disabled = false;
+    this.deleteBtn.disabled = false;
+    this.clearError();
   }
 
   selectClass(characterClass, cardEl) {
     this.selectedClass = characterClass;
-    this.optionsEl.querySelectorAll('.class-card').forEach((el) => el.classList.remove('selected'));
+    this.classOptionsEl.querySelectorAll('.class-card').forEach((el) => el.classList.remove('selected'));
     cardEl.classList.add('selected');
-    this.startBtn.disabled = false;
+    this.createSubmitBtn.disabled = false;
+    this.clearError();
   }
 
-  handleStart() {
-    if (!this.selectedClass) return;
+  setMode(mode) {
+    this.mode = mode;
+    this.clearError();
+    this.selectView.classList.toggle('hidden', mode !== 'select');
+    this.createView.classList.toggle('hidden', mode !== 'create');
+    this.showCreateBtn.classList.toggle('hidden', mode === 'create');
+    this.showSelectBtn.classList.toggle('hidden', mode !== 'create' || this.characters.length === 0);
+  }
 
-    const name = this.nameInput.value.trim() || 'Hero';
+  showError(message) {
+    this.errorEl.textContent = message;
+    this.errorEl.classList.remove('hidden');
+  }
+
+  clearError() {
+    this.errorEl.textContent = '';
+    this.errorEl.classList.add('hidden');
+  }
+
+  handlePlay() {
+    if (!this.selectedName) return;
+
     this.nameInput.blur();
     this.overlay.classList.add('hidden');
-    this.onStart({ characterClass: this.selectedClass, name });
+    this.onStart({ name: this.selectedName });
+    this.socketClient.join({ name: this.selectedName });
+  }
+
+  handleCreate() {
+    if (!this.selectedClass) return;
+
+    const name = this.nameInput.value.trim();
+    if (!name) {
+      this.showError('Enter a character name');
+      return;
+    }
+
+    this.createSubmitBtn.disabled = true;
+    this.socketClient.createCharacter({ name, characterClass: this.selectedClass });
+  }
+
+  handleDelete() {
+    if (!this.selectedName) return;
+    if (!window.confirm(`Delete character "${this.selectedName}"? This cannot be undone.`)) return;
+
+    this.socketClient.deleteCharacter({ name: this.selectedName });
+  }
+
+  onCharacterCreated({ name }) {
+    this.clearError();
+    this.createSubmitBtn.disabled = false;
+    this.nameInput.value = '';
+    this.selectedClass = null;
+    this.classOptionsEl.querySelectorAll('.class-card').forEach((el) => el.classList.remove('selected'));
+    this.createSubmitBtn.disabled = true;
+
+    this.refreshCharacters().then(() => {
+      this.setMode('select');
+      const row = this.listEl.querySelector(`[data-name="${CSS.escape(name)}"]`);
+      if (row) this.selectCharacter(name, row);
+    });
   }
 }

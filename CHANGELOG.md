@@ -7,21 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.1] - 2026-07-05
+
 ### Added
 
-- MP regeneration (class-based; Mage 2.5/s)
-- Mage skill polish: Fireball and Icebolt projectile animations, impact bursts, miss puffs
-- Floating damage numbers and monster hit flash on damage
-
-### Fixed
-
-- Skill VFX and damage numbers used rAF timestamp instead of wall-clock time, so effects rendered off-screen
-- Monsters now provoke and fight back when damaged (chase attacker, melee counter-attack)
+- Character selection screen lists saved heroes (name + class); create and delete characters
+- `GET /api/characters` for the selection UI
+- Characters saved by **name only** (legacy `name_class` files migrate on load)
 
 ### Changed
 
-- Mage skill 2 renamed from Frost Nova to **Icebolt** (single-target ice projectile)
+- Wider projectile hit detection (less missing while moving); skills use server position for aim
+- Reduced level-1 skill damage so mobs are not one-shot
 
+### Fixed
+
+- Character delete failed for heroes still stored as legacy `name_class` save files
 
 ## [1.10.0] - 2026-07-05
 

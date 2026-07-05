@@ -16,14 +16,34 @@
   <div id="level-up-panel" class="level-up-panel hidden"></div>
 
   <div id="character-select" class="overlay">
-    <div class="panel">
-      <h1>Choose Your Hero</h1>
-      <div id="class-options" class="class-options"></div>
-      <label class="name-label">
-        Name
-        <input type="text" id="player-name" maxlength="20" placeholder="Hero" />
-      </label>
-      <button id="start-btn" disabled>Enter World</button>
+    <div class="panel character-panel">
+      <h1>MMO001</h1>
+      <p id="character-error" class="character-error hidden"></p>
+
+      <div id="character-select-view">
+        <h2>Select Character</h2>
+        <p id="character-list-empty" class="character-empty hidden">No saved characters yet.</p>
+        <div id="character-list" class="character-list"></div>
+        <div class="character-actions">
+          <button id="play-btn" type="button" disabled>Play</button>
+          <button id="delete-btn" type="button" class="btn-danger" disabled>Delete</button>
+          <button id="show-create-btn" type="button" class="btn-secondary">New Character</button>
+          <button id="create-btn" type="button" class="btn-secondary hidden">Create Character</button>
+        </div>
+      </div>
+
+      <div id="character-create-view" class="hidden">
+        <h2>Create Character</h2>
+        <label class="name-label">
+          Name
+          <input type="text" id="player-name" maxlength="20" placeholder="Hero" />
+        </label>
+        <div id="class-options" class="class-options"></div>
+        <div class="character-actions">
+          <button id="create-submit-btn" type="button" disabled>Create</button>
+          <button id="show-select-btn" type="button" class="btn-secondary hidden">Back to List</button>
+        </div>
+      </div>
     </div>
   </div>
 
