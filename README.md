@@ -8,6 +8,9 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 - Character selection (Warrior, Mage, Ranger)
 - Server-authoritative movement with collision detection
 - Animated sprite sheets per class (idle, walk, attack) with direction-facing frames
+- Combat: click enemies to attack, 3 mob types, HP bars, monster chase AI, XP on kill
+- Loot: items drop on kill (rarity-colored), click to pick up
+- Inventory: 10×4 grid, 7 equip slots, stat bonuses from gear (server-side)
 - Socket.IO architecture ready for multiplayer
 
 ## Tech stack
@@ -45,14 +48,16 @@ npm test           # run all unit tests
 npm run test:watch # re-run on file changes
 ```
 
-Tests use Node.js built-in test runner. Coverage includes pathfinding, collision, map generation, and player management.
+Tests use Node.js built-in test runner. Coverage includes pathfinding, collision, combat, items, inventory, and player management.
 
 ### Controls
 
-- **Click** — move to location (A* pathfinding around obstacles)
-- **Mouse** — aim / facing direction (yellow dashed line toward cursor)
+- **Click** — move, pick up loot, or attack/chase enemy under cursor
+- **Mouse** — aim / facing direction (character faces cursor)
 - **Scroll wheel** — zoom in/out
+- **I** — toggle inventory panel
 - **WASD** or **Arrow keys** — manual movement (cancels click path)
+- **Inventory** — click item to equip; click equipped slot to unequip
 - Choose a class and name on the character select screen before entering the world
 
 ## Project structure
@@ -63,6 +68,9 @@ mmo001/
 │   ├── index.js      # Express + Socket.IO entry point
 │   ├── map/          # Map generation and collision
 │   ├── players/      # Player model and manager
+│   ├── monsters/     # Monster entities and AI
+│   ├── items/        # Ground loot manager
+│   ├── systems/      # Combat, inventory, game loop
 │   └── network/      # Socket event handlers
 ├── public/           # Static client files
 │   ├── js/           # Game loop, rendering, UI, network
@@ -81,7 +89,11 @@ mmo001/
 | `join`       | Client → Server | Join with character class and name |
 | `move`       | Client → Server | Send movement direction          |
 | `aim`        | Client → Server | Send cursor world position for facing |
-| `worldState` | Server → Client | Map, player, and entity state    |
+| `attack`     | Client → Server | Attack monster by id                |
+| `pickup`     | Client → Server | Pick up ground loot by id           |
+| `equip`      | Client → Server | Equip item from inventory index     |
+| `unequip`    | Client → Server | Unequip item from slot              |
+| `worldState` | Server → Client | Map, player, monsters, loot, inventory |
 | `error`      | Server → Client | Error messages                   |
 
 ## Roadmap

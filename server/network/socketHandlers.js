@@ -2,6 +2,8 @@ import { EVENTS } from '../../shared/events.js';
 import { CHARACTER_CLASSES, MOVE_SPEED } from '../../shared/constants.js';
 import { facingFromTarget } from '../../shared/aim.js';
 import { canMoveTo } from '../map/collision.js';
+import { processAttack, clearAttackAnim } from '../systems/combat.js';
+import { pickupLoot, equipFromInventory, unequipSlot } from '../systems/inventory.js';
 
 const DIRECTION_DELTA = {
   up: { x: 0, y: -1 },
@@ -10,8 +12,10 @@ const DIRECTION_DELTA = {
   right: { x: 1, y: 0 },
 };
 
-function buildWorldState(map, playerManager, playerId) {
+function buildWorldState(map, playerManager, monsterManager, lootManager, playerId) {
   const player = playerManager.get(playerId);
+  if (player) clearAttackAnim(player);
+
   return {
     map: {
       tiles: map.tiles,
@@ -21,15 +25,32 @@ function buildWorldState(map, playerManager, playerId) {
     },
     player: player ? player.toJSON() : null,
     players: playerManager.getAll(),
+    monsters: monsterManager.getAll(),
+    loot: lootManager.getAll(),
   };
 }
 
-function sendWorldState(socket, map, playerManager) {
-  socket.emit(EVENTS.WORLD_STATE, buildWorldState(map, playerManager, socket.id));
+function sendWorldState(socket, map, playerManager, monsterManager, lootManager) {
+  socket.emit(
+    EVENTS.WORLD_STATE,
+    buildWorldState(map, playerManager, monsterManager, lootManager, socket.id)
+  );
 }
 
-function broadcastWorldState(_io, socket, map, playerManager) {
-  sendWorldState(socket, map, playerManager);
+function broadcastWorldState(io, map, playerManager, monsterManager, lootManager) {
+  for (const player of playerManager.getAllEntities()) {
+    clearAttackAnim(player);
+  }
+  for (const [socketId, socket] of io.sockets.sockets) {
+    socket.emit(
+      EVENTS.WORLD_STATE,
+      buildWorldState(map, playerManager, monsterManager, lootManager, socketId)
+    );
+  }
+}
+
+function broadcastWorldStateToSocket(io, socket, map, playerManager, monsterManager, lootManager) {
+  sendWorldState(socket, map, playerManager, monsterManager, lootManager);
 }
 
 function updatePlayerAim(player, x, y) {
@@ -46,7 +67,7 @@ function updatePlayerAim(player, x, y) {
   return true;
 }
 
-export function registerSocketHandlers(io, map, playerManager) {
+export function registerSocketHandlers(io, map, playerManager, monsterManager, lootManager) {
   io.on('connection', (socket) => {
     socket.on(EVENTS.JOIN, ({ characterClass, name }) => {
       if (!CHARACTER_CLASSES[characterClass]) {
@@ -66,7 +87,7 @@ export function registerSocketHandlers(io, map, playerManager) {
       player.aimX = player.x + 1;
       player.aimY = player.y;
 
-      sendWorldState(socket, map, playerManager);
+      sendWorldState(socket, map, playerManager, monsterManager, lootManager);
     });
 
     socket.on(EVENTS.AIM, ({ x, y }) => {
@@ -74,8 +95,57 @@ export function registerSocketHandlers(io, map, playerManager) {
       if (!player) return;
 
       if (updatePlayerAim(player, x, y)) {
-        broadcastWorldState(io, socket, map, playerManager);
+        broadcastWorldStateToSocket(io, socket, map, playerManager, monsterManager, lootManager);
       }
+    });
+
+    socket.on(EVENTS.ATTACK, ({ targetId }) => {
+      const player = playerManager.get(socket.id);
+      if (!player || typeof targetId !== 'string') return;
+
+      const result = processAttack({ player, targetId, monsterManager, lootManager });
+      if (!result.ok && result.reason === 'cooldown') return;
+
+      broadcastWorldStateToSocket(io, socket, map, playerManager, monsterManager, lootManager);
+    });
+
+    socket.on(EVENTS.PICKUP, ({ lootId }) => {
+      const player = playerManager.get(socket.id);
+      if (!player || typeof lootId !== 'string') return;
+
+      const result = pickupLoot({ player, lootId, lootManager });
+      if (!result.ok) {
+        socket.emit(EVENTS.ERROR, { message: `Cannot pick up: ${result.reason}` });
+        return;
+      }
+
+      broadcastWorldStateToSocket(io, socket, map, playerManager, monsterManager, lootManager);
+    });
+
+    socket.on(EVENTS.EQUIP, ({ inventoryIndex }) => {
+      const player = playerManager.get(socket.id);
+      if (!player || !Number.isInteger(inventoryIndex)) return;
+
+      const result = equipFromInventory(player, inventoryIndex);
+      if (!result.ok) {
+        socket.emit(EVENTS.ERROR, { message: `Cannot equip: ${result.reason}` });
+        return;
+      }
+
+      broadcastWorldStateToSocket(io, socket, map, playerManager, monsterManager, lootManager);
+    });
+
+    socket.on(EVENTS.UNEQUIP, ({ slot }) => {
+      const player = playerManager.get(socket.id);
+      if (!player || typeof slot !== 'string') return;
+
+      const result = unequipSlot(player, slot);
+      if (!result.ok) {
+        socket.emit(EVENTS.ERROR, { message: `Cannot unequip: ${result.reason}` });
+        return;
+      }
+
+      broadcastWorldStateToSocket(io, socket, map, playerManager, monsterManager, lootManager);
     });
 
     socket.on(EVENTS.MOVE, ({ direction }) => {
@@ -98,11 +168,15 @@ export function registerSocketHandlers(io, map, playerManager) {
         player.direction = direction;
       }
 
-      broadcastWorldState(io, socket, map, playerManager);
+      broadcastWorldStateToSocket(io, socket, map, playerManager, monsterManager, lootManager);
     });
 
     socket.on('disconnect', () => {
       playerManager.remove(socket.id);
     });
   });
+
+  return {
+    broadcastAll: () => broadcastWorldState(io, map, playerManager, monsterManager, lootManager),
+  };
 }

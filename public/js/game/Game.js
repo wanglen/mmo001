@@ -2,7 +2,10 @@ import { Input } from './Input.js';
 import { Camera } from './Camera.js';
 import { PathFollower } from './PathFollower.js';
 import { Renderer } from '../render/Renderer.js';
+import { CursorManager } from '../ui/CursorManager.js';
 import { facingFromTarget } from '/shared/aim.js';
+import { findMonsterAt, isInRange, ATTACK_COOLDOWN_MS } from '/shared/combat.js';
+import { findLootAt } from '/shared/inventory.js';
 import { CAMERA_ZOOM_STEP } from '../config.js';
 
 const LERP = 0.3;
@@ -10,11 +13,13 @@ const MOVE_INTERVAL = 50;
 const AIM_INTERVAL = 50;
 
 export class Game {
-  constructor(canvas, socketClient) {
+  constructor(canvas, socketClient, inventoryPanel = null) {
     this.canvas = canvas;
     this.socketClient = socketClient;
+    this.inventoryPanel = inventoryPanel;
     this.input = new Input(canvas);
     this.camera = new Camera(canvas);
+    this.cursorManager = new CursorManager(canvas);
     this.pathFollower = new PathFollower();
     this.renderer = new Renderer(canvas, this.camera);
 
@@ -22,7 +27,11 @@ export class Game {
     this.displayPlayer = null;
     this.lastMoveTime = 0;
     this.lastAimTime = 0;
+    this.lastAttackTime = 0;
+    this.lastChasePathTime = 0;
     this.aimTarget = null;
+    this.attackTargetId = null;
+    this.inventoryVisible = true;
 
     window.addEventListener('resize', () => this.renderer.resize());
     this.renderer.resize();
@@ -40,10 +49,12 @@ export class Game {
         x: this.displayPlayer?.x ?? state.player.x,
         y: this.displayPlayer?.y ?? state.player.y,
         facing: state.player.facing ?? this.displayPlayer?.facing,
+        attacking: state.player.attacking,
       };
       if (!this.input.getMouseScreen()) {
         this.aimTarget = { x: state.player.aimX, y: state.player.aimY };
       }
+      this.inventoryPanel?.update(state.player);
     }
   }
 
@@ -56,6 +67,7 @@ export class Game {
     this.displayPlayer.direction = server.direction;
     this.displayPlayer.facing = this.displayPlayer.facing ?? server.facing;
     this.displayPlayer.moving = server.moving;
+    this.displayPlayer.attacking = server.attacking;
     this.displayPlayer.characterClass = server.characterClass;
     this.displayPlayer.name = server.name;
     this.displayPlayer.level = server.level;
@@ -75,6 +87,22 @@ export class Game {
     if (!click || !this.worldState?.map || !this.displayPlayer) return;
 
     const world = this.camera.screenToWorld(click.screenX, click.screenY);
+    const loot = findLootAt(this.worldState.loot ?? [], world.x, world.y);
+
+    if (loot) {
+      this.socketClient.sendPickup(loot.id);
+      return;
+    }
+
+    const monsters = this.worldState.monsters ?? [];
+    const target = findMonsterAt(monsters, world.x, world.y);
+
+    if (target) {
+      this.attackTargetId = target.id;
+      return;
+    }
+
+    this.attackTargetId = null;
     this.pathFollower.setPath(
       this.worldState.map,
       this.displayPlayer.x,
@@ -90,6 +118,7 @@ export class Game {
 
     const world = this.camera.screenToWorld(mouse.screenX, mouse.screenY);
     this.aimTarget = world;
+    this.cursorManager.update(world, this.worldState.monsters ?? [], this.worldState.loot ?? []);
 
     const facing = facingFromTarget(
       this.displayPlayer.x,
@@ -111,14 +140,49 @@ export class Game {
     this.camera.adjustZoom(steps * CAMERA_ZOOM_STEP);
   }
 
+  handleAttackChase(timestamp) {
+    if (!this.attackTargetId || !this.displayPlayer || !this.worldState) return;
+
+    const target = (this.worldState.monsters ?? []).find((m) => m.id === this.attackTargetId);
+    if (!target || target.hp <= 0) {
+      this.attackTargetId = null;
+      return;
+    }
+
+    const px = this.displayPlayer.x;
+    const py = this.displayPlayer.y;
+
+    if (isInRange(px, py, target.x, target.y)) {
+      this.pathFollower.clear();
+      if (timestamp - this.lastAttackTime >= ATTACK_COOLDOWN_MS) {
+        this.socketClient.sendAttack(target.id);
+        this.lastAttackTime = timestamp;
+      }
+      return;
+    }
+
+    if (timestamp - this.lastChasePathTime >= MOVE_INTERVAL) {
+      this.pathFollower.setPath(this.worldState.map, px, py, target.x, target.y);
+      this.lastChasePathTime = timestamp;
+    }
+  }
+
+  handleInventoryToggle() {
+    if (!this.input.consumeKeyPress('i')) return;
+    this.inventoryVisible = !this.inventoryVisible;
+    this.inventoryPanel?.setVisible(this.inventoryVisible);
+  }
+
   handleInput(timestamp) {
     this.handleClick();
+    this.handleInventoryToggle();
     this.handleAim(timestamp);
     this.handleZoom();
 
     const keyboardDirection = this.input.getDirection();
 
     if (keyboardDirection) {
+      this.attackTargetId = null;
       this.pathFollower.clear();
       if (timestamp - this.lastMoveTime >= MOVE_INTERVAL) {
         this.socketClient.sendMove(keyboardDirection);
@@ -126,6 +190,8 @@ export class Game {
       }
       return;
     }
+
+    this.handleAttackChase(timestamp);
 
     if (!this.pathFollower.isActive() || !this.displayPlayer) {
       if (this.displayPlayer) this.displayPlayer.moving = false;
@@ -157,10 +223,7 @@ export class Game {
         this.worldState,
         this.displayPlayer,
         timestamp,
-        {
-          moveTarget: this.pathFollower.target,
-          aimTarget: this.aimTarget,
-        }
+        { moveTarget: this.pathFollower.target }
       );
     }
 
@@ -168,7 +231,7 @@ export class Game {
   }
 
   start() {
-    this.canvas.classList.add('game-active');
+    this.canvas.classList.add('game-active', 'cursor-move');
     requestAnimationFrame((t) => this.loop(t));
   }
 }

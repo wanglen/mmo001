@@ -1,3 +1,5 @@
+import { xpToNextLevel } from '/shared/stats.js';
+
 export class PlayerHud {
   draw(ctx, player) {
     if (!player) return;
@@ -32,6 +34,10 @@ export class PlayerHud {
       x + 6,
       y + (barHeight + 8) * 2 + 19
     );
+
+    const xpY = y + (barHeight + 8) * 3 + 8;
+    const xpNeeded = xpToNextLevel(player.level);
+    this.drawBar(ctx, x, xpY, barWidth, 10, player.xp, xpNeeded, '#f1c40f', '#5a4a0a', 'XP');
   }
 
   drawBar(ctx, x, y, width, height, current, max, fillColor, bgColor, label) {

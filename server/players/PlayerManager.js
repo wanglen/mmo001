@@ -29,4 +29,8 @@ export class PlayerManager {
   getAll() {
     return Array.from(this.players.values()).map((p) => p.toJSON());
   }
+
+  getAllEntities() {
+    return Array.from(this.players.values());
+  }
 }

@@ -36,8 +36,39 @@ export class SpriteManager {
     ctx.drawImage(sheet, sx, sy, sw, sh, screen.x - half, screen.y - half, size, size);
 
     ctx.fillStyle = '#fff';
+    this.drawDirectionIndicator(ctx, screen.x, screen.y, facing, half * 0.9);
+
+    ctx.fillStyle = '#fff';
     ctx.font = `${11 * scale}px system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.fillText(player.name, screen.x, screen.y - half - 6);
+  }
+
+  drawDirectionIndicator(ctx, x, y, direction, half) {
+    ctx.beginPath();
+    switch (direction) {
+      case 'up':
+        ctx.moveTo(x, y - half - 3);
+        ctx.lineTo(x - 3, y - half + 2);
+        ctx.lineTo(x + 3, y - half + 2);
+        break;
+      case 'down':
+        ctx.moveTo(x, y + half + 3);
+        ctx.lineTo(x - 3, y + half - 2);
+        ctx.lineTo(x + 3, y + half - 2);
+        break;
+      case 'left':
+        ctx.moveTo(x - half - 3, y);
+        ctx.lineTo(x - half + 2, y - 3);
+        ctx.lineTo(x - half + 2, y + 3);
+        break;
+      case 'right':
+        ctx.moveTo(x + half + 3, y);
+        ctx.lineTo(x + half - 2, y - 3);
+        ctx.lineTo(x + half - 2, y + 3);
+        break;
+    }
+    ctx.closePath();
+    ctx.fill();
   }
 }

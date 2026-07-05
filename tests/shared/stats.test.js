@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { createPlayerStats, xpToNextLevel, BASE_STATS } from '../../shared/stats.js';
+import { createPlayerStats, xpToNextLevel, grantXp, BASE_STATS } from '../../shared/stats.js';
 
 describe('stats', () => {
   it('createPlayerStats sets hp/mp from class base and vit/int', () => {
@@ -28,5 +28,23 @@ describe('stats', () => {
   it('xpToNextLevel increases per level', () => {
     assert.equal(xpToNextLevel(1), 100);
     assert.ok(xpToNextLevel(5) > xpToNextLevel(1));
+  });
+
+  it('grantXp adds xp without leveling when below threshold', () => {
+    const stats = createPlayerStats('warrior');
+    const result = grantXp(stats, 50, 'warrior');
+    assert.equal(stats.xp, 50);
+    assert.equal(stats.level, 1);
+    assert.equal(result.levelsGained, 0);
+  });
+
+  it('grantXp levels up and scales stats when threshold reached', () => {
+    const stats = createPlayerStats('warrior');
+    const result = grantXp(stats, 100, 'warrior');
+    assert.equal(stats.level, 2);
+    assert.equal(stats.xp, 0);
+    assert.equal(result.levelsGained, 1);
+    assert.ok(stats.str > BASE_STATS.warrior.str);
+    assert.equal(stats.hp, stats.maxHp);
   });
 });

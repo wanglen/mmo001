@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-07-05
+
+### Added
+
+- Item schema with type, rarity, stats, and equip slot
+- Rarity tiers: Common, Magic, Rare, Unique (color-coded)
+- Ground loot drops on monster kill; click to pick up
+- 10×4 inventory grid and 7 equipment slots (weapon, helm, chest, gloves, boots, ring, amulet)
+- Server-authoritative equip/unequip with stat bonuses applied to combat
+- Inventory panel UI (toggle with **I**); loot cursor on hover
+
+### Changed
+
+- Combat damage uses effective STR including equipped gear
+- `worldState` includes `loot`, player `inventory`, and `equipment`
+
+## [1.6.0] - 2026-07-03
+
+### Added
+
+- Context-sensitive cursor (pointer on ground, alias on enemies)
+- Monsters: goblin, skeleton, bat with spawn on map load
+- Click-to-attack with server damage, range check, and cooldown
+- Monster AI: aggro and chase when player is near
+- XP rewards on kill with level-up stat scaling
+- HP bars above monsters; attack animation on player sprite
+- Direction arrow retained on character facing
+
+### Changed
+
+- Removed dashed aim line to cursor (facing arrow remains)
+- Left-click on enemy attacks; left-click on ground moves
+
 ## [1.5.0] - 2026-07-03
 
 ### Added
@@ -74,6 +107,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Map generation: replaced cascading noise algorithm with grass-first clustered obstacles so ~76% of the map is walkable (was ~5%)
 
+[1.6.0]: https://github.com/user/mmo001/releases/tag/v1.6.0
 [1.5.0]: https://github.com/user/mmo001/releases/tag/v1.5.0
 [1.4.0]: https://github.com/user/mmo001/releases/tag/v1.4.0
 [1.3.0]: https://github.com/user/mmo001/releases/tag/v1.3.0

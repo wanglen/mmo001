@@ -1,5 +1,7 @@
 import { tileToPixel } from '../map/collision.js';
 import { createPlayerStats, statsToJSON } from '../../shared/stats.js';
+import { createEmptyInventory, createEmptyEquipment, getEffectiveCombatStats } from '../../shared/inventory.js';
+import { itemToJSON } from '../../shared/items.js';
 
 export class Player {
   constructor({ id, name, characterClass, x, y, stats }) {
@@ -14,11 +16,16 @@ export class Player {
     this.aimY = y;
     this.moving = false;
     this.attacking = false;
+    this.lastAttackAt = 0;
+    this.inventory = createEmptyInventory();
+    this.equipment = createEmptyEquipment();
 
     Object.assign(this, stats);
   }
 
   toJSON() {
+    const effective = getEffectiveCombatStats(this, this.equipment);
+
     return {
       id: this.id,
       name: this.name,
@@ -32,6 +39,16 @@ export class Player {
       moving: this.moving,
       attacking: this.attacking,
       ...statsToJSON(this),
+      str: effective.str,
+      dex: effective.dex,
+      int: effective.int,
+      vit: effective.vit,
+      maxHp: effective.maxHp,
+      maxMp: effective.maxMp,
+      inventory: this.inventory.map(itemToJSON),
+      equipment: Object.fromEntries(
+        Object.entries(this.equipment).map(([slot, item]) => [slot, itemToJSON(item)])
+      ),
     };
   }
 }

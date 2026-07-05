@@ -2,11 +2,14 @@ export class Input {
   constructor(canvas) {
     this.canvas = canvas;
     this.keys = new Set();
+    this.keyPresses = new Set();
     this.clickTarget = null;
     this.mouseScreen = null;
 
     window.addEventListener('keydown', (e) => {
-      this.keys.add(e.key.toLowerCase());
+      const key = e.key.toLowerCase();
+      this.keys.add(key);
+      if (!e.repeat) this.keyPresses.add(key);
     });
 
     window.addEventListener('keyup', (e) => {
@@ -68,5 +71,14 @@ export class Input {
 
   isKeyboardActive() {
     return this.getDirection() !== null;
+  }
+
+  consumeKeyPress(key) {
+    const lower = key.toLowerCase();
+    if (this.keyPresses.has(lower)) {
+      this.keyPresses.delete(lower);
+      return true;
+    }
+    return false;
   }
 }

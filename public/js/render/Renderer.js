@@ -1,5 +1,7 @@
 import { MapRenderer } from './MapRenderer.js';
 import { SpriteManager } from './SpriteManager.js';
+import { MonsterRenderer } from './MonsterRenderer.js';
+import { LootRenderer } from './LootRenderer.js';
 import { PlayerHud } from '../ui/PlayerHud.js';
 
 export class Renderer {
@@ -9,6 +11,8 @@ export class Renderer {
     this.camera = camera;
     this.mapRenderer = new MapRenderer();
     this.spriteManager = new SpriteManager();
+    this.monsterRenderer = new MonsterRenderer();
+    this.lootRenderer = new LootRenderer();
     this.playerHud = new PlayerHud();
   }
 
@@ -18,8 +22,8 @@ export class Renderer {
   }
 
   draw(worldState, displayPlayer, timestamp, overlays = {}) {
-    const { map, players } = worldState;
-    const { moveTarget = null, aimTarget = null } = overlays;
+    const { map, players, monsters = [], loot = [] } = worldState;
+    const { moveTarget = null } = overlays;
 
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -29,6 +33,9 @@ export class Renderer {
       p.id === displayPlayer.id ? displayPlayer.moving : p.moving
     );
     this.spriteManager.updateAnim(timestamp, anyMoving);
+
+    this.monsterRenderer.draw(this.ctx, monsters, this.camera);
+    this.lootRenderer.draw(this.ctx, loot, this.camera);
 
     if (moveTarget) {
       this.drawMoveTarget(moveTarget);
@@ -42,13 +49,10 @@ export class Renderer {
             y: displayPlayer.y,
             moving: displayPlayer.moving,
             facing: displayPlayer.facing ?? player.facing,
+            attacking: displayPlayer.attacking ?? player.attacking,
           }
         : player;
       this.spriteManager.drawCharacter(this.ctx, renderPlayer, this.camera);
-    }
-
-    if (aimTarget) {
-      this.drawAimLine(displayPlayer, aimTarget);
     }
 
     this.playerHud.draw(this.ctx, displayPlayer);
@@ -67,19 +71,5 @@ export class Renderer {
     this.ctx.beginPath();
     this.ctx.arc(screen.x, screen.y, 3, 0, Math.PI * 2);
     this.ctx.fill();
-  }
-
-  drawAimLine(player, aimTarget) {
-    const from = this.camera.worldToScreen(player.x, player.y);
-    const to = this.camera.worldToScreen(aimTarget.x, aimTarget.y);
-
-    this.ctx.strokeStyle = 'rgba(255, 220, 100, 0.6)';
-    this.ctx.lineWidth = 1.5;
-    this.ctx.setLineDash([4, 4]);
-    this.ctx.beginPath();
-    this.ctx.moveTo(from.x, from.y);
-    this.ctx.lineTo(to.x, to.y);
-    this.ctx.stroke();
-    this.ctx.setLineDash([]);
   }
 }

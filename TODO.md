@@ -11,32 +11,33 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 - [x] Add **mouse aim** for attacks/skills (direction from player to cursor)
 - [x] Improve camera: smooth follow, zoom, optional slight isometric tilt
 - [x] Replace colored squares with **sprite sheets** (walk, idle, attack animations)
+- [x] **Context-sensitive cursor** — change mouse icon by action (move, attack, interact, etc.)
 
 ### Combat basics
 - [x] Add player stats: `HP`, `MP`, `STR`, `DEX`, `INT`, `VIT`, `level`, `xp`
-- [ ] Implement **basic attack** (click enemy or auto-attack nearest target)
-- [ ] Server-authoritative **damage calculation** and hit validation
-- [ ] Add **attack cooldowns** and swing animations
-- [ ] Show **HP bars** above player and enemies
+- [x] Implement **basic attack** (click enemy or auto-attack nearest target)
+- [x] Server-authoritative **damage calculation** and hit validation
+- [x] Add **attack cooldowns** and swing animations
+- [x] Show **HP bars** above player and enemies
 
 ### Enemies
-- [ ] Create `Monster` entity (server-side, like `Player`)
-- [ ] Spawn mobs on the map (static spawn points or zones)
-- [ ] Simple AI: idle → aggro when player near → chase → attack
-- [ ] Mob death: despawn, drop XP, optionally drop loot
-- [ ] Add 2–3 enemy types (melee, ranged, fast)
+- [x] Create `Monster` entity (server-side, like `Player`)
+- [x] Spawn mobs on the map (static spawn points or zones)
+- [x] Simple AI: idle → aggro when player near → chase → attack
+- [x] Mob death: despawn, drop XP (loot deferred to Phase 2)
+- [x] Add 2–3 enemy types (melee, ranged, fast)
 
 ---
 
 ## Phase 2 — Loot & Character Progression
 
 ### Items & inventory
-- [ ] Define item schema: `{ id, name, type, rarity, stats, slot }`
-- [ ] Rarity tiers: Common, Magic, Rare, Unique (Diablo-style colors)
-- [ ] Ground loot drops (visible on map, click to pick up)
-- [ ] Inventory grid UI (e.g. 10×4)
-- [ ] Equip slots: weapon, helm, chest, gloves, boots, ring, amulet
-- [ ] Stat bonuses from equipped gear applied server-side
+- [x] Define item schema: `{ id, name, type, rarity, stats, slot }`
+- [x] Rarity tiers: Common, Magic, Rare, Unique (Diablo-style colors)
+- [x] Ground loot drops (visible on map, click to pick up)
+- [x] Inventory grid UI (e.g. 10×4)
+- [x] Equip slots: weapon, helm, chest, gloves, boots, ring, amulet
+- [x] Stat bonuses from equipped gear applied server-side
 
 ### Leveling
 - [ ] XP curve per level
@@ -175,7 +176,7 @@ public/js/
 ## Next 5 tasks (recommended order)
 
 1. [ ] **Enable multiplayer broadcast** — see other players (`socketHandlers.js`)
-2. [ ] **Add monsters + basic combat** — core Diablo loop
-3. [ ] **Click-to-move + mouse aim** — Diablo control scheme
-4. [ ] **HP / XP / level system** — progression loop
-5. [ ] **Ground loot + inventory** — ARPG reward loop
+2. [x] **Add monsters + basic combat** — core Diablo loop
+3. [x] **Click-to-move + mouse aim** — Diablo control scheme
+4. [x] **HP / XP / level system** — progression loop
+5. [x] **Ground loot + inventory** — ARPG reward loop

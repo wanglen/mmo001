@@ -23,6 +23,96 @@ html, body {
   cursor: crosshair;
 }
 
+#game-canvas.cursor-move {
+  cursor: pointer;
+}
+
+#game-canvas.cursor-attack {
+  cursor: alias;
+}
+
+#game-canvas.cursor-loot {
+  cursor: grab;
+}
+
+.inventory-panel {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  width: 340px;
+  background: rgba(22, 33, 62, 0.92);
+  border: 2px solid #0f3460;
+  border-radius: 10px;
+  padding: 10px;
+  z-index: 5;
+  font-size: 12px;
+}
+
+.inventory-panel.hidden {
+  display: none;
+}
+
+.inventory-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  color: #ccc;
+}
+
+.inventory-hint {
+  opacity: 0.6;
+  font-size: 11px;
+}
+
+.inventory-body {
+  display: flex;
+  gap: 10px;
+}
+
+.equipment-slots {
+  display: grid;
+  grid-template-columns: repeat(2, 44px);
+  gap: 4px;
+  width: 92px;
+}
+
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 22px);
+  gap: 3px;
+  flex: 1;
+}
+
+.equip-slot,
+.inv-slot {
+  width: 44px;
+  height: 44px;
+  background: #1a1a2e;
+  border: 2px solid #333;
+  border-radius: 4px;
+  color: #aaa;
+  font-size: 9px;
+  cursor: pointer;
+  padding: 2px;
+  overflow: hidden;
+}
+
+.inv-slot {
+  width: 22px;
+  height: 22px;
+  font-size: 7px;
+}
+
+.equip-slot.has-item,
+.inv-slot.has-item {
+  color: #fff;
+}
+
+.equip-slot:hover,
+.inv-slot:hover {
+  filter: brightness(1.2);
+}
+
 .overlay {
   position: fixed;
   inset: 0;

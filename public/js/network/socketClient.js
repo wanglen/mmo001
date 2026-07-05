@@ -35,4 +35,20 @@ export class SocketClient {
   sendAim({ x, y }) {
     this.socket.emit(EVENTS.AIM, { x, y });
   }
+
+  sendAttack(targetId) {
+    this.socket.emit(EVENTS.ATTACK, { targetId });
+  }
+
+  sendPickup(lootId) {
+    this.socket.emit(EVENTS.PICKUP, { lootId });
+  }
+
+  sendEquip(inventoryIndex) {
+    this.socket.emit(EVENTS.EQUIP, { inventoryIndex });
+  }
+
+  sendUnequip(slot) {
+    this.socket.emit(EVENTS.UNEQUIP, { slot });
+  }
 }
