@@ -569,6 +569,13 @@ html, body {
   margin-bottom: 0.25rem;
 }
 
+.app-version {
+  margin: 0 0 1rem;
+  font-size: 0.8rem;
+  color: rgba(200, 208, 220, 0.65);
+  letter-spacing: 0.04em;
+}
+
 .character-panel h2 {
   margin: 0 0 1rem;
   font-size: 1.1rem;

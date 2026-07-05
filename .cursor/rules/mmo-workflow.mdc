@@ -23,8 +23,8 @@ alwaysApply: true
 - **Remote:** `origin` → `https://github.com/wanglen/mmo001.git`
 - **Repository:** [wanglen/mmo001](https://github.com/wanglen/mmo001)
 - `main` tracks `origin/main`; pull before starting a new feature if the remote may be ahead
-- Push a feature branch: `git push -u origin HEAD`
-- Publish `main` after merge: `git push origin main` (only when the user asks)
+- Push a feature branch: `./scripts/commit-and-push.sh "..."` **or** `git push -u origin HEAD` (after a local-only commit)
+- Publish `main` after merge: `git push origin main` or `./scripts/commit-and-push.sh "..."` on `main` (only when the user asks)
 - Open PRs with `gh pr create` when the user asks; do not push or open PRs proactively
 - Never `git push --force` to `main`
 
@@ -36,7 +36,7 @@ When the user **approves** the work (e.g. "approve", "looks good", "merge it", "
 
 1. `npm test` passes
 2. Version, CHANGELOG, README, and TODO are updated if behavior changed
-3. All feature changes are **committed** on the feature branch (commit first if still uncommitted)
+3. All feature changes are **committed** on the feature branch (use `./scripts/commit-and-push.sh "..."` when the user asked to commit and push)
 
 ### Merge steps
 
@@ -52,7 +52,7 @@ git merge feature/<branch-name>
 
 ### After merge
 
-- Push `main` to GitHub when the user asks: `git push origin main`
+- Push `main` to GitHub when the user asks: `git push origin main` or `./scripts/commit-and-push.sh "..."` on `main`
 - Optionally create the next `feature/<name>` branch from `main` if continuing the roadmap
 
 ## Versioning (each merged feature)
@@ -61,6 +61,16 @@ git merge feature/<branch-name>
 2. Move [CHANGELOG.md](../../CHANGELOG.md) `[Unreleased]` entries into a dated version section
 3. Update [README.md](../../README.md) if behavior, setup, or controls changed
 4. Check off the completed item in [TODO.md](../../TODO.md)
+
+## Commit and push
+
+When the user wants changes **committed and pushed** on the current branch:
+
+```bash
+./scripts/commit-and-push.sh "Imperative message focusing on why"
+```
+
+Runs `npm test` by default; use `SKIP_TESTS=1` for docs-only. For **commit without push**, use manual git — this script always pushes.
 
 ## Commit messages
 

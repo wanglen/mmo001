@@ -90,6 +90,16 @@ After cloning the repo on a server, pull and redeploy with:
 
 The script fast-forwards `main`, rebuilds the image, and restarts Compose. Character data in `./data` is preserved. Override the branch with `BRANCH=feature/foo ./scripts/update-server.sh` if needed.
 
+### Commit and push
+
+Stage all changes, run tests, commit, and push the current branch:
+
+```bash
+./scripts/commit-and-push.sh "Add feature X"
+```
+
+Skip tests for docs-only changes: `SKIP_TESTS=1 ./scripts/commit-and-push.sh "Update README"`.
+
 ### Testing
 
 ```bash
@@ -130,6 +140,7 @@ mmo001/
 │   └── css/
 ├── shared/           # Constants and events (server + client)
 ├── tests/            # Unit tests (mirrors server/ and shared/)
+├── scripts/          # commit-and-push.sh, update-server.sh
 ├── Dockerfile        # Production server image
 ├── docker-compose.yml
 ├── TODO.md           # Development roadmap

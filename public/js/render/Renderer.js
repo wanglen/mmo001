@@ -113,7 +113,15 @@ export class Renderer {
     this.combatFxRenderer.draw(this.ctx, visibleCombatFx, this.camera, now);
 
     const zone = map ? getZoneAtPixel(map, displayPlayer.x, displayPlayer.y) : null;
-    this.playerHud.draw(this.ctx, displayPlayer, zone, map, this.canvas.width, this.canvas.height);
+    this.playerHud.draw(
+      this.ctx,
+      displayPlayer,
+      zone,
+      map,
+      this.canvas.width,
+      this.canvas.height,
+      worldState.version
+    );
   }
 
   drawMoveTarget(target) {

@@ -1,4 +1,5 @@
 import { CHARACTER_CLASSES } from '/shared/constants.js';
+import { fetchAppVersion, formatVersionLabel } from '../appVersion.js';
 
 export class CharacterSelect {
   constructor({ socketClient, onStart }) {
@@ -10,6 +11,7 @@ export class CharacterSelect {
     this.mode = 'select';
 
     this.overlay = document.getElementById('character-select');
+    this.versionEl = document.getElementById('app-version');
     this.selectView = document.getElementById('character-select-view');
     this.createView = document.getElementById('character-create-view');
     this.listEl = document.getElementById('character-list');
@@ -26,6 +28,7 @@ export class CharacterSelect {
 
     this.renderClassOptions();
     this.bindEvents();
+    this.loadVersionLabel();
     this.socketClient.onCharacterCreated((data) => this.onCharacterCreated(data));
     this.socketClient.onCharactersChanged(() => this.refreshCharacters());
     this.refreshCharacters();
@@ -38,6 +41,12 @@ export class CharacterSelect {
     this.deleteBtn.addEventListener('click', () => this.handleDelete());
     this.createSubmitBtn.addEventListener('click', () => this.handleCreate());
     this.createBtn.addEventListener('click', () => this.setMode('create'));
+  }
+
+  async loadVersionLabel() {
+    if (!this.versionEl) return;
+    const version = await fetchAppVersion();
+    this.versionEl.textContent = formatVersionLabel(version);
   }
 
   renderClassOptions() {

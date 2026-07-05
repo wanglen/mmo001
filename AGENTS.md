@@ -11,7 +11,7 @@ Diablo-like MMORPG (HTML Canvas + Node.js + Socket.IO).
 ## Workflow
 
 ```
-TODO item → plan → feature/<name> branch → implement → test → docs + version → merge main → push origin (when asked) → next branch
+TODO item → plan → feature/<name> branch → implement → test → docs + version → merge main → commit-and-push or push (when asked) → next branch
 ```
 
 ## GitHub
@@ -22,8 +22,8 @@ TODO item → plan → feature/<name> branch → implement → test → docs + v
 | Remote | `origin` → `https://github.com/wanglen/mmo001.git` |
 | Default branch | `main` (tracks `origin/main`) |
 
-- Create feature branches from `main`; push with `git push -u origin HEAD` when the user wants a remote branch or PR
-- After merging to `main`, run `git push origin main` when the user asks to publish/sync
+- Create feature branches from `main`; when the user asks to **commit and push**, run `./scripts/commit-and-push.sh "message"` on the current branch
+- After merging to `main`, run `git push origin main` or `./scripts/commit-and-push.sh "..."` when the user asks to publish/sync
 - Use `gh` for pull requests and GitHub issues when requested
 - Never force-push `main`
 
@@ -44,6 +44,8 @@ npm install
 npm test       # run unit tests
 npm start      # http://localhost:3000
 npm run dev    # auto-reload
+./scripts/commit-and-push.sh "Your message"   # test, commit, push current branch
+./scripts/update-server.sh                    # remote: pull, rebuild Docker, restart
 ```
 
 ## Rules summary

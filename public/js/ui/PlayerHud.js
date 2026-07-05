@@ -3,7 +3,7 @@ import { getAvailableMp } from '/shared/skills.js';
 import { isTownHubMap, TOWN_RECALL_CAST_MS, townRecallProgress } from '/shared/townHub.js';
 
 export class PlayerHud {
-  draw(ctx, player, zone = null, map = null, canvasWidth = 0, canvasHeight = 0) {
+  draw(ctx, player, zone = null, map = null, canvasWidth = 0, canvasHeight = 0, version = null) {
     if (!player) return;
 
     const pad = 16;
@@ -51,6 +51,8 @@ export class PlayerHud {
     const xpY = y + (barHeight + 8) * 3 + 8;
     const xpNeeded = xpToNextLevel(player.level);
     this.drawBar(ctx, x, xpY, barWidth, 10, player.xp, xpNeeded, '#f1c40f', '#5a4a0a', 'XP');
+
+    this.drawVersionLabel(ctx, version, canvasWidth, canvasHeight);
   }
 
   drawBar(ctx, x, y, width, height, current, max, fillColor, bgColor, label) {
@@ -134,5 +136,18 @@ export class PlayerHud {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(hint, width / 2, boxY + 12);
+  }
+
+  drawVersionLabel(ctx, version, canvasWidth, canvasHeight) {
+    if (!version) return;
+
+    const height = canvasHeight || ctx.canvas.height;
+    const label = `v${version}`;
+
+    ctx.font = '11px system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+    ctx.fillStyle = 'rgba(200, 208, 220, 0.55)';
+    ctx.fillText(label, 14, height - 14);
   }
 }

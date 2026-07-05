@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.19.1] - 2026-07-05
+
+### Added
+
+- Game version label (bottom-left of canvas) sourced from server `package.json`
+- Version shown on character selection screen via `/api/version`
+
+### Fixed
+
+- In-game version no longer sits under the inventory panel (moved to bottom-left)
+
 ## [1.19.0] - 2026-07-05
 
 ### Added

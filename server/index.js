@@ -9,6 +9,7 @@ import { CharacterStore } from './persistence/CharacterStore.js';
 import { registerSocketHandlers } from './network/socketHandlers.js';
 import { startGameLoop } from './systems/gameLoop.js';
 import { createWorld } from './world/World.js';
+import { APP_VERSION } from './version.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.join(__dirname, '..');
@@ -32,6 +33,10 @@ app.get('/api/characters', async (_req, res) => {
   }
 });
 
+app.get('/api/version', (_req, res) => {
+  res.json({ version: APP_VERSION });
+});
+
 const world = createWorld();
 const playerManager = new PlayerManager();
 
@@ -45,5 +50,5 @@ startGameLoop({
 });
 
 httpServer.listen(PORT, () => {
-  console.log(`MMO server running at http://localhost:${PORT}`);
+  console.log(`MMO server running at http://localhost:${PORT} (v${APP_VERSION})`);
 });

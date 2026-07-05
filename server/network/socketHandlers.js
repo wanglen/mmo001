@@ -16,6 +16,7 @@ import { usePortal } from '../systems/zoneTransition.js';
 import { startTownRecall, interruptTownRecall } from '../systems/townHub.js';
 import { DEFAULT_MAP_ID, MAP_ID } from '../../shared/worldMaps.js';
 import { npcToJSON } from '../../shared/npcs.js';
+import { APP_VERSION } from '../version.js';
 
 function sanitizePlayerName(name) {
   return (name || '').trim().slice(0, 20);
@@ -63,6 +64,7 @@ function buildWorldState(world, playerManager, playerId, { includeMapTiles = tru
     .filter((entry) => playerMapId(entry) === mapId);
 
   return {
+    version: APP_VERSION,
     map: mapPayload,
     player: player ? player.toJSON(now) : null,
     players: sameMapPlayers.map((entry) => entry.toJSON(now)),
