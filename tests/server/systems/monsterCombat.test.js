@@ -50,6 +50,18 @@ describe('monsterCombat', () => {
     assert.equal(target?.id, 'p1');
   });
 
+  it('resolveMonsterTarget ignores dead players', () => {
+    const monster = createMonster({ x: 100, y: 100, aggroRange: 200 });
+    const dead = createPlayer('dead', 120, 100);
+    dead.hp = 0;
+    dead.dead = true;
+    const alive = createPlayer('alive', 180, 100);
+
+    const target = resolveMonsterTarget(monster, [dead, alive]);
+
+    assert.equal(target?.id, 'alive');
+  });
+
   it('monsterAttackPlayer deals damage in melee range', () => {
     const monster = createMonster({ x: 100, y: 100, lastAttackAt: 0 });
     const player = createPlayer('p1', 120, 100);
@@ -59,6 +71,32 @@ describe('monsterCombat', () => {
     assert.equal(result.ok, true);
     assert.ok(result.damage >= 1);
     assert.ok(player.hp < hpBefore);
+    assert.equal(result.killed, false);
+  });
+
+  it('monsterAttackPlayer kills player at zero hp', () => {
+    const monster = createMonster({ x: 100, y: 100, lastAttackAt: 0, damage: 99 });
+    const player = createPlayer('p1', 120, 100);
+    player.hp = 5;
+
+    const result = monsterAttackPlayer(monster, player, 5000);
+
+    assert.equal(result.ok, true);
+    assert.equal(result.killed, true);
+    assert.equal(player.dead, true);
+    assert.equal(player.hp, 0);
+  });
+
+  it('monsterAttackPlayer ignores dead players', () => {
+    const monster = createMonster({ x: 100, y: 100, lastAttackAt: 0 });
+    const player = createPlayer('p1', 120, 100);
+    player.hp = 0;
+    player.dead = true;
+
+    const result = monsterAttackPlayer(monster, player, 5000);
+
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'target_dead');
   });
 
   it('monsterAttackPlayer respects cooldown', () => {

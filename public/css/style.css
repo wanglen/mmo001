@@ -621,6 +621,38 @@ html, body {
   display: none !important;
 }
 
+.death-panel {
+  max-width: 360px;
+  text-align: center;
+}
+
+.death-panel h1 {
+  color: #e74c3c;
+  margin-bottom: 0.75rem;
+}
+
+.death-panel p {
+  color: #ccc;
+  font-size: 0.95rem;
+  margin-bottom: 1.25rem;
+  line-height: 1.4;
+}
+
+#respawn-btn {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #e94560;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+#respawn-btn:hover {
+  background: #c73652;
+}
+
 .skill-bar {
   position: fixed;
   bottom: 24px;

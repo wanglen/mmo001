@@ -1,3 +1,5 @@
+import { getAvailableMp } from '/shared/skills.js';
+
 export class SkillBar {
   constructor(rootEl) {
     this.root = rootEl;
@@ -57,7 +59,7 @@ export class SkillBar {
         cd.style.height = '0%';
       }
 
-      if ((player.mp ?? 0) < skill.mpCost) {
+      if (getAvailableMp(player) < skill.mpCost) {
         slot.classList.add('no-mp');
       } else {
         slot.classList.remove('no-mp');

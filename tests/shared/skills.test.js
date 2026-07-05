@@ -5,6 +5,8 @@ import {
   getSkillBar,
   getSkillIdAtSlot,
   canUseSkill,
+  getAvailableMp,
+  spendSkillMp,
   getSkillCooldownRemaining,
   calculateSkillDamage,
   findMonstersInRadius,
@@ -45,11 +47,27 @@ describe('skills', () => {
     const lowMp = { ...warrior, mp: 2 };
     assert.equal(canUseSkill(lowMp, 'cleave').reason, 'no_mp');
 
+    const fractionalMp = { characterClass: 'mage', mp: 9.9, skillCooldowns: {} };
+    assert.equal(canUseSkill(fractionalMp, 'fireball').reason, 'no_mp');
+    assert.equal(canUseSkill({ ...fractionalMp, mp: 10.9 }, 'fireball').ok, true);
+
     const onCd = {
       ...warrior,
       skillCooldowns: { cleave: Date.now() },
     };
     assert.equal(canUseSkill(onCd, 'cleave', Date.now() + 100).reason, 'cooldown');
+  });
+
+  it('getAvailableMp floors fractional mp and rejects invalid values', () => {
+    assert.equal(getAvailableMp({ mp: 9.9 }), 9);
+    assert.equal(getAvailableMp({ mp: NaN }), 0);
+    assert.equal(getAvailableMp({}), 0);
+  });
+
+  it('spendSkillMp deducts from floored mp', () => {
+    const player = { mp: 10.9 };
+    spendSkillMp(player, 8);
+    assert.equal(player.mp, 2);
   });
 
   it('getSkillCooldownRemaining reports ms left', () => {

@@ -1,4 +1,5 @@
 import { xpToNextLevel } from '/shared/stats.js';
+import { getAvailableMp } from '/shared/skills.js';
 
 export class PlayerHud {
   draw(ctx, player) {
@@ -59,6 +60,6 @@ export class PlayerHud {
     ctx.fillStyle = '#fff';
     ctx.font = '11px system-ui, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(`${label} ${Math.ceil(current)}/${max}`, x + width / 2, y + height - 3);
+    ctx.fillText(`${label} ${getAvailableMp({ mp: current })}/${max}`, x + width / 2, y + height - 3);
   }
 }

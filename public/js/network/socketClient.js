@@ -85,4 +85,8 @@ export class SocketClient {
   sendUseSkill({ skillId, targetX, targetY, targetId }) {
     this.socket.emit(EVENTS.USE_SKILL, { skillId, targetX, targetY, targetId });
   }
+
+  sendRespawn() {
+    this.socket.emit(EVENTS.RESPAWN);
+  }
 }

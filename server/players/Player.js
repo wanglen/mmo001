@@ -20,6 +20,8 @@ export class Player {
     this.attacking = false;
     this.lastAttackAt = 0;
     this.lastSkillAt = 0;
+    this.lastDamagedAt = 0;
+    this.dead = false;
     this.skillCooldowns = {};
     this.inventory = inventory ?? createEmptyInventory();
     this.equipment = equipment ?? createEmptyEquipment();
@@ -42,6 +44,7 @@ export class Player {
       aimY: this.aimY,
       moving: this.moving,
       attacking: this.attacking,
+      dead: !!this.dead,
       ...statsToJSON(this),
       str: effective.str,
       dex: effective.dex,

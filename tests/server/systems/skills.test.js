@@ -122,6 +122,25 @@ describe('processSkill', () => {
     assert.ok(monsterManager.get('m1').hp < 40);
   });
 
+  it('rejects skill when out of mp', () => {
+    const player = createMockPlayer('mage', { mp: 0 });
+    const monsterManager = createMockMonsterManager([]);
+
+    const result = processSkill({
+      player,
+      skillId: 'fireball',
+      targetX: 200,
+      targetY: 100,
+      monsterManager,
+      map,
+      now: 5000,
+    });
+
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'no_mp');
+    assert.equal(player.mp, 0);
+  });
+
   it('rejects skill on cooldown', () => {
     const player = createMockPlayer('ranger', {
       mp: 50,

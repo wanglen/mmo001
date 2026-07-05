@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.2] - 2026-07-05
+
+### Changed
+
+- MP regen only out of combat (3s after attack/skill/damage); faster rates than first pass (mage ~40s empty→full between fights)
+
+### Fixed
+
+- Skills blocked at 0 MP (client no longer fires FX without mana; server uses floored MP for costs)
+- Character select list empty after broken `SkillBar.js` syntax prevented app startup
+- Player dies at 0 HP: actions blocked, monsters stop targeting, respawn at spawn with full HP/MP
+
 ## [1.10.1] - 2026-07-05
 
 ### Added

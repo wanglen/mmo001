@@ -12,6 +12,7 @@ import {
   resolveProjectileImpact,
   getSkill,
   getSkillFxDuration,
+  spendSkillMp,
 } from '../../shared/skills.js';
 import { applyMonsterDamage } from './combat.js';
 
@@ -83,7 +84,7 @@ function resolveSkillImpact(skill, player, aimX, aimY, hits) {
 
 function recordSkillCast(player, skill, impact, now) {
   ensureSkillState(player);
-  player.mp = Math.max(0, (player.mp ?? 0) - skill.mpCost);
+  spendSkillMp(player, skill.mpCost);
   player.skillCooldowns[skill.id] = now;
   player.attacking = true;
   player.moving = false;

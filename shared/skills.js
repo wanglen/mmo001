@@ -137,6 +137,25 @@ export function getSkillIdAtSlot(characterClass, slotIndex) {
 }
 
 /**
+ * Whole MP available for skill costs (regen may store fractional values).
+ * @param {object} player
+ */
+export function getAvailableMp(player) {
+  const mp = Number(player?.mp);
+  if (!Number.isFinite(mp)) return 0;
+  return Math.max(0, Math.floor(mp));
+}
+
+/**
+ * @param {object} player
+ * @param {number} mpCost
+ */
+export function spendSkillMp(player, mpCost) {
+  const available = getAvailableMp(player);
+  player.mp = Math.max(0, available - mpCost);
+}
+
+/**
  * @param {object} player
  * @param {string} skillId
  * @param {number} [now]
@@ -149,8 +168,7 @@ export function canUseSkill(player, skillId, now = Date.now()) {
     return { ok: false, reason: 'wrong_class' };
   }
 
-  const mp = player.mp ?? 0;
-  if (mp < skill.mpCost) return { ok: false, reason: 'no_mp' };
+  if (getAvailableMp(player) < skill.mpCost) return { ok: false, reason: 'no_mp' };
 
   const lastCast = player.skillCooldowns?.[skillId] ?? 0;
   if (now - lastCast < skill.cooldownMs) {

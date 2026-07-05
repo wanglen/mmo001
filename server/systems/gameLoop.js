@@ -1,4 +1,4 @@
-import { tickMpRegen } from '../../shared/regen.js';
+import { isInCombat, tickMpRegen } from '../../shared/regen.js';
 
 const TICK_MS = 50;
 const RESPAWN_CHECK_MS = 15000;
@@ -15,7 +15,10 @@ export function startGameLoop({ map, playerManager, monsterManager, broadcast })
 
     const deltaSec = TICK_MS / 1000;
     for (const player of players) {
-      tickMpRegen(player, player.characterClass, deltaSec);
+      if (player.dead) continue;
+      tickMpRegen(player, player.characterClass, deltaSec, {
+        inCombat: isInCombat(player, now),
+      });
     }
 
     if (now - lastRespawnCheck >= RESPAWN_CHECK_MS) {

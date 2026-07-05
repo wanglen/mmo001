@@ -6,7 +6,7 @@ import { CursorManager } from '../ui/CursorManager.js';
 import { facingFromTarget } from '/shared/aim.js';
 import { findMonsterAt, isInRange, ATTACK_COOLDOWN_MS } from '/shared/combat.js';
 import { findLootAt, isInPickupRange } from '/shared/inventory.js';
-import { getSkill, getSkillFxDuration, resolveProjectileImpact } from '/shared/skills.js';
+import { getSkill, getSkillFxDuration, resolveProjectileImpact, canUseSkill } from '/shared/skills.js';
 import { CAMERA_ZOOM_STEP } from '../config.js';
 import { FxBuffer } from './FxBuffer.js';
 
@@ -38,7 +38,13 @@ export class Game {
     this.lootTargetId = null;
     this.inventoryVisible = true;
     this.gamePaused = false;
+    this.isDead = false;
     this.fxBuffer = new FxBuffer();
+    this.deathOverlay = document.getElementById('death-overlay');
+
+    document.getElementById('respawn-btn')?.addEventListener('click', () => {
+      this.socketClient.sendRespawn();
+    });
 
     window.addEventListener('resize', () => this.renderer.resize());
     this.renderer.resize();
@@ -48,6 +54,14 @@ export class Game {
     this.worldState = state;
     this.fxBuffer.ingestCombat(state.combatFx);
     this.fxBuffer.ingestSkill(state.skillFx);
+
+    this.isDead = !!state.player?.dead;
+    this.deathOverlay?.classList.toggle('hidden', !this.isDead);
+    if (this.isDead) {
+      this.pathFollower.clear();
+      this.attackTargetId = null;
+      this.lootTargetId = null;
+    }
 
     if (!this.displayPlayer && state.player) {
       this.displayPlayer = { ...state.player };
@@ -270,6 +284,9 @@ export class Game {
     if (!skill) return;
 
     const serverPlayer = this.worldState.player;
+    const check = canUseSkill(serverPlayer, skill.id);
+    if (!check.ok) return;
+
     const px = serverPlayer.x;
     const py = serverPlayer.y;
     const aim = this.aimTarget ?? {
@@ -319,7 +336,7 @@ export class Game {
   }
 
   handleInput(timestamp) {
-    if (this.gamePaused) {
+    if (this.gamePaused || this.isDead) {
       return;
     }
 

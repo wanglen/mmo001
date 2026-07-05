@@ -9,6 +9,8 @@ import { processSkill, clearSkillAnim, collectActiveSkillFx } from '../systems/s
 import { collectCombatFx } from '../systems/combatFx.js';
 import { pickupLoot, equipFromInventory, unequipSlot } from '../systems/inventory.js';
 import { allocateStat } from '../systems/progression.js';
+import { respawnPlayer, syncDeathState } from '../systems/playerDeath.js';
+import { isPlayerAlive } from '../../shared/playerLife.js';
 import { createNewCharacterData } from '../persistence/CharacterStore.js';
 
 function sanitizePlayerName(name) {
@@ -80,6 +82,12 @@ function updatePlayerAim(player, x, y) {
 
 async function persistPlayer(characterStore, player) {
   if (player) await characterStore.save(player);
+}
+
+function getLivingPlayer(playerManager, socketId) {
+  const player = playerManager.get(socketId);
+  if (!player || !isPlayerAlive(player)) return null;
+  return player;
 }
 
 export function registerSocketHandlers(io, map, playerManager, monsterManager, lootManager, characterStore) {
@@ -155,12 +163,22 @@ export function registerSocketHandlers(io, map, playerManager, monsterManager, l
 
       player.aimX = player.x + 1;
       player.aimY = player.y;
+      syncDeathState(player);
 
       sendWorldState(socket, map, playerManager, monsterManager, lootManager);
     });
 
-    socket.on(EVENTS.AIM, ({ x, y }) => {
+    socket.on(EVENTS.RESPAWN, async () => {
       const player = playerManager.get(socket.id);
+      if (!player?.dead) return;
+
+      respawnPlayer(player, map);
+      await persistPlayer(characterStore, player);
+      broadcastWorldStateToSocket(io, socket, map, playerManager, monsterManager, lootManager);
+    });
+
+    socket.on(EVENTS.AIM, ({ x, y }) => {
+      const player = getLivingPlayer(playerManager, socket.id);
       if (!player) return;
 
       if (updatePlayerAim(player, x, y)) {
@@ -169,7 +187,7 @@ export function registerSocketHandlers(io, map, playerManager, monsterManager, l
     });
 
     socket.on(EVENTS.ATTACK, async ({ targetId }) => {
-      const player = playerManager.get(socket.id);
+      const player = getLivingPlayer(playerManager, socket.id);
       if (!player || typeof targetId !== 'string') return;
 
       const result = processAttack({ player, targetId, monsterManager, lootManager });
@@ -180,7 +198,7 @@ export function registerSocketHandlers(io, map, playerManager, monsterManager, l
     });
 
     socket.on(EVENTS.USE_SKILL, async ({ skillId, targetX, targetY, targetId }) => {
-      const player = playerManager.get(socket.id);
+      const player = getLivingPlayer(playerManager, socket.id);
       if (!player || typeof skillId !== 'string') return;
 
       const result = processSkill({
@@ -201,7 +219,7 @@ export function registerSocketHandlers(io, map, playerManager, monsterManager, l
     });
 
     socket.on(EVENTS.PICKUP, async ({ lootId }) => {
-      const player = playerManager.get(socket.id);
+      const player = getLivingPlayer(playerManager, socket.id);
       if (!player || typeof lootId !== 'string') return;
 
       const result = pickupLoot({ player, lootId, lootManager });
@@ -215,7 +233,7 @@ export function registerSocketHandlers(io, map, playerManager, monsterManager, l
     });
 
     socket.on(EVENTS.EQUIP, async ({ inventoryIndex }) => {
-      const player = playerManager.get(socket.id);
+      const player = getLivingPlayer(playerManager, socket.id);
       if (!player || !Number.isInteger(inventoryIndex)) return;
 
       const result = equipFromInventory(player, inventoryIndex);
@@ -229,7 +247,7 @@ export function registerSocketHandlers(io, map, playerManager, monsterManager, l
     });
 
     socket.on(EVENTS.UNEQUIP, async ({ slot }) => {
-      const player = playerManager.get(socket.id);
+      const player = getLivingPlayer(playerManager, socket.id);
       if (!player || typeof slot !== 'string') return;
 
       const result = unequipSlot(player, slot);
@@ -243,7 +261,7 @@ export function registerSocketHandlers(io, map, playerManager, monsterManager, l
     });
 
     socket.on(EVENTS.ALLOCATE_STAT, async ({ stat }) => {
-      const player = playerManager.get(socket.id);
+      const player = getLivingPlayer(playerManager, socket.id);
       if (!player || typeof stat !== 'string') return;
 
       const result = allocateStat(player, stat);
@@ -257,7 +275,7 @@ export function registerSocketHandlers(io, map, playerManager, monsterManager, l
     });
 
     socket.on(EVENTS.MOVE, ({ direction }) => {
-      const player = playerManager.get(socket.id);
+      const player = getLivingPlayer(playerManager, socket.id);
       if (!player || !isValidDirection(direction)) return;
 
       const delta = DIRECTION_DELTA[direction];

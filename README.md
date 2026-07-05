@@ -12,7 +12,8 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 - Loot: items drop on kill (rarity-colored), click to pick up
 - Inventory: 10×4 grid, 7 equip slots, stat bonuses from gear (server-side)
 - Leveling: XP curve, +5 stat points per level-up, allocation UI (reopen with C), JSON character save
-- Skills: class skill bar (keys 1–8), MP costs, cooldowns, MP regen, server-authoritative damage and visuals
+- Skills: class skill bar (keys 1–8), MP costs, cooldowns, out-of-combat MP regen, server-authoritative damage and visuals
+- Death at 0 HP: blocked actions, respawn button restores HP/MP at spawn
 - Socket.IO architecture ready for multiplayer
 
 ## Tech stack
