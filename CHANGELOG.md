@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Dockerfile and `docker-compose.yml` to run the game server in a container; `./data` bind-mounted for character saves
+- `scripts/update-server.sh` for remote deploys (git pull, rebuild image, restart)
 
 ## [1.18.0] - 2026-07-05
 

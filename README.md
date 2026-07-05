@@ -80,6 +80,16 @@ docker build -t mmo001:latest .
 docker run --rm -p 3000:3000 -v "$(pwd)/data:/app/data" mmo001:latest
 ```
 
+### Remote updates
+
+After cloning the repo on a server, pull and redeploy with:
+
+```bash
+./scripts/update-server.sh
+```
+
+The script fast-forwards `main`, rebuilds the image, and restarts Compose. Character data in `./data` is preserved. Override the branch with `BRANCH=feature/foo ./scripts/update-server.sh` if needed.
+
 ### Testing
 
 ```bash
