@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Architecture (Phase A):** server socket handlers refactored into a plugin registry (`server/app/HandlerRegistry.js`) with feature modules under `server/plugins/` (core, combat, loot, quests, social, economy); bootstrap moved to `server/app/createServer.js`; removed `broadcastAllFn` init workaround
+
 ## [2.1.0] - 2026-07-06
 
 ### Added
