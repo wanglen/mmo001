@@ -92,10 +92,10 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 - [x] Nameplates and class icons above other players
 
 ### Social
-- [ ] Global and zone chat
-- [ ] Whisper / private messages
-- [ ] Party system (invite, accept, shared XP range)
-- [ ] Player list / online count
+- [x] Global and zone chat
+- [x] Whisper / private messages
+- [x] Party system (invite, accept, shared XP range)
+- [x] Player list / online count
 
 ### Economy & trade
 - [ ] Gold currency

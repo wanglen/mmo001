@@ -82,6 +82,45 @@
     <ul class="quest-tracker-list" data-quest-list></ul>
   </div>
 
+  <div id="social-panel" class="social-panel hidden" aria-label="Online players">
+    <div class="social-panel-header">
+      <span class="social-panel-title">Online</span>
+      <span class="social-online-count" data-online-count>0</span>
+    </div>
+    <ul class="social-online-list" data-online-list></ul>
+    <div class="social-party-invite hidden" data-party-invite>
+      <p><span data-invite-from></span> invited you</p>
+      <div class="social-party-invite-actions">
+        <button type="button" data-party-accept>Accept</button>
+        <button type="button" class="btn-secondary" data-party-decline>Decline</button>
+      </div>
+    </div>
+    <div class="social-party hidden" data-party-section>
+      <p class="social-party-heading">Party</p>
+      <ul class="social-party-list" data-party-members></ul>
+      <button type="button" class="btn-secondary social-party-leave" data-party-leave>Leave party</button>
+    </div>
+  </div>
+
+  <div id="chat-panel" class="chat-panel hidden" aria-label="Chat">
+    <div class="chat-log" data-chat-log role="log" aria-live="polite"></div>
+    <div class="chat-input-row">
+      <select class="chat-channel" data-chat-channel aria-label="Chat channel">
+        <option value="global">Global</option>
+        <option value="zone">Zone</option>
+      </select>
+      <input type="text" class="chat-input" data-chat-input maxlength="200" placeholder="Enter to chat — /w Name msg, /p party" autocomplete="off" />
+    </div>
+  </div>
+
+  <div id="disconnect-overlay" class="overlay hidden" role="alertdialog" aria-modal="true" aria-labelledby="disconnect-title">
+    <div class="panel disconnect-panel">
+      <h1 id="disconnect-title">Disconnected</h1>
+      <p id="disconnect-message" class="disconnect-message"></p>
+      <button id="disconnect-reload-btn" type="button">Return to character select</button>
+    </div>
+  </div>
+
   <script type="module" src="/js/main.js"></script>
 </body>
 </html>

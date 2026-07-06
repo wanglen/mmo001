@@ -120,6 +120,8 @@ function damageMonsters({
   combatStats,
   monsterManager,
   lootManager,
+  partyManager,
+  playerManager,
   now,
 }) {
   const results = [];
@@ -139,6 +141,8 @@ function damageMonsters({
       player,
       monsterManager,
       lootManager,
+      partyManager,
+      playerManager,
       now,
     });
     results.push({ monsterId: monster.id, ...result });
@@ -156,6 +160,8 @@ export function processSkill({
   monsterManager,
   lootManager,
   map,
+  partyManager = null,
+  playerManager = null,
   now = Date.now(),
 }) {
   const check = canUseSkill(player, skillId, now);
@@ -275,6 +281,8 @@ export function processSkill({
     combatStats,
     monsterManager,
     lootManager,
+    partyManager,
+    playerManager,
     now,
   });
 

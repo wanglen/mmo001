@@ -23,6 +23,10 @@ import { DEFAULT_MAP_ID, MAP_ID } from '../../shared/worldMaps.js';
 import { npcToJSON } from '../../shared/npcs.js';
 import { serializeRemotePlayers } from '../../shared/playerSync.js';
 import { APP_VERSION } from '../version.js';
+import {
+  onPlayerDisconnectedSocial,
+  onPlayerJoinedSocial,
+} from './socialHandlers.js';
 
 function sanitizePlayerName(name) {
   return (name || '').trim().slice(0, 20);
@@ -118,6 +122,13 @@ function updatePlayerAim(player, x, y) {
   return true;
 }
 
+async function persistPlayers(characterStore, playerManager, playerIds = []) {
+  for (const playerId of playerIds) {
+    const entry = playerManager.get(playerId);
+    if (entry) await characterStore.save(entry);
+  }
+}
+
 async function persistPlayer(characterStore, player) {
   if (player) await characterStore.save(player);
 }
@@ -132,7 +143,45 @@ function getPlayerContext(world, player) {
   return world.getContextForPlayer(player);
 }
 
-export function registerSocketHandlers(io, world, playerManager, characterStore) {
+const SESSION_REPLACED_MSG = 'This character logged in from another session.';
+
+/** Remove every in-game session for this character name; disconnect other clients. */
+async function evictCharacterSessions({
+  io,
+  world,
+  playerManager,
+  characterStore,
+  partyManager,
+  playerName,
+  keepSocketId,
+}) {
+  const needle = sanitizePlayerName(playerName).toLowerCase();
+  if (!needle) return;
+
+  const matches = playerManager
+    .getAllEntities()
+    .filter((entry) => entry.name.toLowerCase() === needle);
+
+  if (!matches.length) return;
+
+  for (const entity of matches) {
+    onPlayerDisconnectedSocial(io, playerManager, partyManager, entity.id);
+    await persistPlayer(characterStore, entity);
+    playerManager.remove(entity.id);
+
+    if (entity.id === keepSocketId) continue;
+
+    const oldSocket = io.sockets.sockets.get(entity.id);
+    if (oldSocket) {
+      oldSocket.emit(EVENTS.SESSION_END, { message: SESSION_REPLACED_MSG });
+      oldSocket.disconnect(true);
+    }
+  }
+
+  broadcastAll(io, world, playerManager);
+}
+
+export function registerSocketHandlers(io, world, playerManager, characterStore, partyManager) {
   io.on('connection', (socket) => {
     socket.on(EVENTS.CREATE_CHARACTER, async ({ name, characterClass }) => {
       if (!CHARACTER_CLASSES[characterClass]) {
@@ -165,7 +214,7 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
       const playerName = sanitizePlayerName(name);
       if (!playerName) return;
 
-      const inGame = playerManager.getAllEntities().some((p) => p.name === playerName);
+      const inGame = !!playerManager.findByName(playerName);
       if (inGame) {
         socket.emit(EVENTS.ERROR, { message: 'Cannot delete a character that is in game' });
         return;
@@ -198,6 +247,16 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
       const map = world.getMap(mapId) ?? world.getMap(DEFAULT_MAP_ID);
       const resolvedMapId = map?.mapId ?? DEFAULT_MAP_ID;
 
+      await evictCharacterSessions({
+        io,
+        world,
+        playerManager,
+        characterStore,
+        partyManager,
+        playerName,
+        keepSocketId: socket.id,
+      });
+
       const player = playerManager.create({
         id: socket.id,
         name: playerName,
@@ -213,6 +272,7 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
       syncDeathState(player);
 
       broadcastAll(io, world, playerManager, { fullMapSocketIds: new Set([socket.id]) });
+      onPlayerJoinedSocial(io, playerManager, partyManager, socket.id);
     });
 
     socket.on(EVENTS.RESPAWN, async () => {
@@ -310,10 +370,21 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
       interruptTownRecall(player);
 
       const { map, monsterManager, lootManager } = getPlayerContext(world, player);
-      const result = processAttack({ player, targetId, monsterManager, lootManager, map });
+      const result = processAttack({
+        player,
+        targetId,
+        monsterManager,
+        lootManager,
+        map,
+        partyManager,
+        playerManager,
+      });
       if (!result.ok && result.reason === 'cooldown') return;
 
-      if (result.ok) await persistPlayer(characterStore, player);
+      if (result.ok) {
+        const saveIds = result.xpRecipientIds?.length ? result.xpRecipientIds : [player.id];
+        await persistPlayers(characterStore, playerManager, saveIds);
+      }
       broadcastAll(io, world, playerManager);
     });
 
@@ -333,11 +404,19 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
         monsterManager,
         lootManager,
         map,
+        partyManager,
+        playerManager,
       });
 
       if (!result.ok && (result.reason === 'cooldown' || result.reason === 'no_mp')) return;
 
-      if (result.ok) await persistPlayer(characterStore, player);
+      if (result.ok) {
+        const killIds = (result.hits ?? [])
+          .filter((hit) => hit.killed && hit.xpRecipientIds?.length)
+          .flatMap((hit) => hit.xpRecipientIds);
+        const saveIds = killIds.length ? [...new Set(killIds)] : [player.id];
+        await persistPlayers(characterStore, playerManager, saveIds);
+      }
       broadcastAll(io, world, playerManager);
     });
 
@@ -461,7 +540,9 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
     });
 
     socket.on('disconnect', async () => {
-      const player = playerManager.remove(socket.id);
+      const playerId = socket.id;
+      onPlayerDisconnectedSocial(io, playerManager, partyManager, playerId);
+      const player = playerManager.remove(playerId);
       await persistPlayer(characterStore, player);
       if (player) broadcastAll(io, world, playerManager);
     });

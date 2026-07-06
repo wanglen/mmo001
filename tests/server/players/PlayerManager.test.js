@@ -86,4 +86,17 @@ describe('PlayerManager', () => {
     assert.equal(all.length, 2);
     assert.ok(all.every((p) => typeof p.id === 'string' && typeof p.x === 'number'));
   });
+
+  it('findByName is case insensitive', () => {
+    const manager = new PlayerManager();
+    manager.create({
+      id: 'p1',
+      name: 'Aldric',
+      characterClass: 'warrior',
+      spawn: { x: 0, y: 0 },
+    });
+
+    assert.equal(manager.findByName('aldric')?.id, 'p1');
+    assert.equal(manager.findByName('missing'), null);
+  });
 });

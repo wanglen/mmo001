@@ -38,4 +38,10 @@ export class PlayerManager {
   getAllEntities() {
     return Array.from(this.players.values());
   }
+
+  findByName(name) {
+    const needle = (name ?? '').trim().toLowerCase();
+    if (!needle) return null;
+    return this.getAllEntities().find((entry) => entry.name.toLowerCase() === needle) ?? null;
+  }
 }

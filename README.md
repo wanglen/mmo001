@@ -20,6 +20,7 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 - Zone transitions: click glowing portals to travel between separate town, wilderness, and dungeon maps (loading overlay on travel)
 - Town hub: full HP/MP recovery in town, NPC dialogue and quests (Mira & Eldon), press **T** for interruptible 6s recall to town
 - Multiplayer sync: other players on the same map are visible in real time (position, walk/attack animation, HP) with class-colored nameplate badges
+- Social: global/zone chat, whispers (`/w Name msg`), party chat (`/p msg`), online player list, party invites, and shared XP within party range
 - Socket.IO broadcasts world state to all clients at 20 Hz
 
 ## Tech stack
@@ -123,7 +124,10 @@ Tests use Node.js built-in test runner. Coverage includes pathfinding, collision
 - **I** / **Esc** — toggle character inventory (modal sheet, dimmed world)
 - **Inventory** — left-click equip; right-click equip/use/unequip/destroy; hover bag gear to compare vs equipped
 - **T** (outside town) — start 6s recall cast to town; interrupted by movement, combat, or damage
-- **Click NPC** — talk to town residents
+- **Enter** — focus chat; **Esc** blurs chat while typing
+- **Chat** — Global / Zone channels; `/w Name message` whisper; `/p message` party chat (left column, above resource orbs)
+- **Online panel** (top-left) — player list, invite to party, accept/decline invites
+- **Resource orbs** (bottom corners) — Life (left) and Mana (right) globes with XP bar between; press **C** for full stats
 
 ## Project structure
 

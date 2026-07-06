@@ -2,6 +2,13 @@ import { directionFromKeys } from '/shared/movement.js';
 
 const GAME_SHORTCUT_KEYS = new Set(['c', 'i', 't', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'escape']);
 
+function isTypingInForm() {
+  const el = document.activeElement;
+  if (!el || el === document.body) return false;
+  const tag = el.tagName;
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
+}
+
 export class Input {
   constructor(canvas) {
     this.canvas = canvas;
@@ -12,6 +19,8 @@ export class Input {
     this.gameActive = false;
 
     const onKeyDown = (e) => {
+      if (isTypingInForm()) return;
+
       const key = e.key.toLowerCase();
       this.keys.add(key);
       if (!e.repeat) this.keyPresses.add(key);
@@ -59,6 +68,11 @@ export class Input {
 
   setGameActive(active) {
     this.gameActive = active;
+  }
+
+  clearKeys() {
+    this.keys.clear();
+    this.keyPresses.clear();
   }
 
   consumeZoomDelta() {

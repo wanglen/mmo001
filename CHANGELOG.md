@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-07-06
+
+### Added
+
+- **Social layer:** global and zone chat, whispers (`/w Name msg`), party chat (`/p msg`), online player list with count, party invites (accept/decline/leave)
+- Party XP sharing for members on the same map within range
+- Diablo-style life/mana resource orbs and bottom XP bar (HUD moved off top-left to avoid UI overlap)
+- Disconnect modal with page reload when session ends or connection drops in-game
+- `sessionEnd` socket event for server-initiated session replacement
+- One character per active session; duplicate login evicts the previous client
+
+### Changed
+
+- Chat panel and social roster layout; compact inline party invite buttons for large online lists
+- Game hotkeys (I, C, T, WASD, skills) disabled while typing in chat
+- Play reconnects the socket before join (fixes re-login after server disconnect)
+- Character select returns via full reload after forced disconnect
+
 ## [1.27.0] - 2026-07-06
 
 ### Added

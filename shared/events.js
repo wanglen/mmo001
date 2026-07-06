@@ -22,6 +22,15 @@ export const EVENTS = {
   QUEST_TURN_IN: 'questTurnIn',
   WORLD_STATE: 'worldState',
   ERROR: 'error',
+  CHAT_SEND: 'chatSend',
+  CHAT_MESSAGE: 'chatMessage',
+  PARTY_INVITE: 'partyInvite',
+  PARTY_ACCEPT: 'partyAccept',
+  PARTY_DECLINE: 'partyDecline',
+  PARTY_LEAVE: 'partyLeave',
+  PARTY_STATE: 'partyState',
+  ONLINE_PLAYERS: 'onlinePlayers',
+  SESSION_END: 'sessionEnd',
 };
 
 export const CURSOR_MODE = {

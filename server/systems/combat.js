@@ -8,6 +8,7 @@ import {
 } from '../../shared/combat.js';
 import { facingFromTarget } from '../../shared/aim.js';
 import { grantXp } from '../../shared/stats.js';
+import { getPartyXpRecipients } from '../../shared/social.js';
 import { getEffectiveCombatStats } from '../../shared/inventory.js';
 import { rollLoot } from '../../shared/items.js';
 import { pushDamageFx, pushHitFlash } from './combatFx.js';
@@ -20,12 +21,15 @@ export function applyMonsterDamage({
   player,
   monsterManager,
   lootManager,
+  partyManager = null,
+  playerManager = null,
   now = Date.now(),
 }) {
   monster.hp = Math.max(0, monster.hp - damage);
   const killed = monster.hp <= 0;
   let xpResult = null;
   let lootDrop = null;
+  let xpRecipientIds = [];
 
   provokeMonster(monster, player);
 
@@ -33,8 +37,17 @@ export function applyMonsterDamage({
   pushHitFlash({ monsterId: monster.id, now });
 
   if (killed) {
-    xpResult = grantXp(player, monster.xpReward, player.characterClass);
-    onMonsterKillQuests(player, monster.type);
+    const allPlayers = playerManager?.getAllEntities?.() ?? [player];
+    const partyMemberIds = partyManager?.getMemberIds(player.id) ?? [player.id];
+    const recipients = getPartyXpRecipients(player, partyMemberIds, allPlayers);
+
+    for (const recipient of recipients) {
+      const result = grantXp(recipient, monster.xpReward, recipient.characterClass);
+      onMonsterKillQuests(recipient, monster.type);
+      if (recipient.id === player.id) xpResult = result;
+      xpRecipientIds.push(recipient.id);
+    }
+
     if (lootManager) {
       const item = rollLoot(monster.type);
       if (item) lootDrop = lootManager.spawn(monster.x, monster.y, item);
@@ -42,10 +55,19 @@ export function applyMonsterDamage({
     monsterManager.remove(monster.id);
   }
 
-  return { damage, killed, xp: xpResult, lootDrop };
+  return { damage, killed, xp: xpResult, xpRecipientIds, lootDrop };
 }
 
-export function processAttack({ player, targetId, monsterManager, lootManager, map, now = Date.now() }) {
+export function processAttack({
+  player,
+  targetId,
+  monsterManager,
+  lootManager,
+  map,
+  partyManager = null,
+  playerManager = null,
+  now = Date.now(),
+}) {
   if (!canAttackNow(player.lastAttackAt ?? 0, now)) {
     return { ok: false, reason: 'cooldown' };
   }
@@ -77,6 +99,8 @@ export function processAttack({ player, targetId, monsterManager, lootManager, m
     player,
     monsterManager,
     lootManager,
+    partyManager,
+    playerManager,
     now,
   });
 

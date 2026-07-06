@@ -22,7 +22,7 @@ const MOVE_INTERVAL = 50;
 const AIM_INTERVAL = 50;
 
 export class Game {
-  constructor(canvas, socketClient, inventoryPanel = null, levelUpPanel = null, skillBar = null, dialoguePanel = null, questTracker = null) {
+  constructor(canvas, socketClient, inventoryPanel = null, levelUpPanel = null, skillBar = null, dialoguePanel = null, questTracker = null, chatPanel = null, socialPanel = null) {
     this.canvas = canvas;
     this.socketClient = socketClient;
     this.inventoryPanel = inventoryPanel;
@@ -30,6 +30,8 @@ export class Game {
     this.skillBar = skillBar;
     this.dialoguePanel = dialoguePanel;
     this.questTracker = questTracker;
+    this.chatPanel = chatPanel;
+    this.socialPanel = socialPanel;
     this.input = new Input(canvas);
     this.camera = new Camera(canvas);
     this.cursorManager = new CursorManager(canvas);
@@ -51,6 +53,9 @@ export class Game {
     this.fxBuffer = new FxBuffer();
     this.fogOfWar = new FogOfWar();
     this.remotePlayerDisplay = new RemotePlayerDisplay();
+    if (this.chatPanel) {
+      this.chatPanel.onFocus = () => this.input.clearKeys();
+    }
     this.deathOverlay = document.getElementById('death-overlay');
     this.mapLoadingOverlay = document.getElementById('map-loading-overlay');
     this.mapLoadingTimer = null;
@@ -143,6 +148,7 @@ export class Game {
       this.levelUpPanel?.update(state.player);
       this.skillBar?.update(state.player);
       this.questTracker?.update(state.player);
+      this.socialPanel?.setSelf(state.player);
 
       if (this.dialoguePanel?.isVisible() && this.dialoguePanel.currentNpc && state.player) {
         const npc = (state.npcs ?? []).find(
@@ -239,6 +245,7 @@ export class Game {
 
   onStatKeyDown(e) {
     if (!this.input.gameActive || e.repeat) return;
+    if (this.chatPanel?.isFocused()) return;
     if (!this.isStatKey(e)) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (!this.worldState?.player) return;
@@ -539,8 +546,20 @@ export class Game {
     });
   }
 
+  handleChatFocus() {
+    if (this.input.consumeKeyPress('enter')) {
+      this.chatPanel?.focus();
+      return true;
+    }
+    return !!this.chatPanel?.isFocused();
+  }
+
   handleInput(timestamp) {
     if (this.gamePaused || this.isDead) {
+      return;
+    }
+
+    if (this.handleChatFocus()) {
       return;
     }
 
@@ -654,5 +673,30 @@ export class Game {
     }
 
     requestAnimationFrame((t) => this.loop(t));
+  }
+
+  stop() {
+    this.input.setGameActive(false);
+    this.input.clearKeys();
+    this.canvas.classList.remove('game-active', 'cursor-move', 'cursor-attack', 'cursor-loot', 'cursor-portal');
+
+    this.worldState = null;
+    this.displayPlayer = null;
+    this.isDead = false;
+    this.gamePaused = false;
+    this.attackTargetId = null;
+    this.lootTargetId = null;
+    this.npcTargetId = null;
+    this.pathFollower.clear();
+    this.remotePlayerDisplay.clear();
+    this.fxBuffer = new FxBuffer();
+
+    this.setInventoryVisible(false);
+    this.levelUpPanel?.hide();
+    this.dialoguePanel?.hide();
+    this.deathOverlay?.classList.add('hidden');
+    this.hideMapLoading();
+
+    this.chatPanel?.blur();
   }
 }

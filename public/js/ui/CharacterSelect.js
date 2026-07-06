@@ -159,10 +159,32 @@ export class CharacterSelect {
   handlePlay() {
     if (!this.selectedName) return;
 
-    this.nameInput.blur();
-    this.overlay.classList.add('hidden');
-    this.onStart({ name: this.selectedName });
-    this.socketClient.join({ name: this.selectedName });
+    this.playBtn.disabled = true;
+    this.clearError();
+
+    this.socketClient
+      .ensureConnected()
+      .then(() => {
+        this.nameInput.blur();
+        this.overlay.classList.add('hidden');
+        this.onStart({ name: this.selectedName });
+        this.socketClient.sendJoin(this.selectedName);
+      })
+      .catch((err) => {
+        this.showError(err.message ?? 'Could not connect to server');
+      })
+      .finally(() => {
+        this.playBtn.disabled = !this.selectedName;
+      });
+  }
+
+  /** Return from an active game session (disconnect, duplicate login, etc.). */
+  returnToSelect(message = null) {
+    this.overlay.classList.remove('hidden');
+    this.setMode(this.characters.length > 0 ? 'select' : 'create');
+    this.refreshCharacters();
+    if (message) this.showError(message);
+    else this.clearError();
   }
 
   handleCreate() {

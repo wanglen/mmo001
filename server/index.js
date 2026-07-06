@@ -6,7 +6,9 @@ import { fileURLToPath } from 'url';
 import { PORT } from './config.js';
 import { PlayerManager } from './players/PlayerManager.js';
 import { CharacterStore } from './persistence/CharacterStore.js';
+import { PartyManager } from './social/PartyManager.js';
 import { registerSocketHandlers } from './network/socketHandlers.js';
+import { registerSocialHandlers } from './network/socialHandlers.js';
 import { startGameLoop } from './systems/gameLoop.js';
 import { createWorld } from './world/World.js';
 import { APP_VERSION } from './version.js';
@@ -39,8 +41,10 @@ app.get('/api/version', (_req, res) => {
 
 const world = createWorld();
 const playerManager = new PlayerManager();
+const partyManager = new PartyManager();
 
-const { broadcastAll } = registerSocketHandlers(io, world, playerManager, characterStore);
+registerSocialHandlers(io, playerManager, partyManager);
+const { broadcastAll } = registerSocketHandlers(io, world, playerManager, characterStore, partyManager);
 
 startGameLoop({
   world,
