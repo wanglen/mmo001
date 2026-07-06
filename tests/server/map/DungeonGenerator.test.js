@@ -93,6 +93,19 @@ describe('DungeonGenerator', () => {
     assert.ok(bossReachable, 'boss room should be reachable from spawn');
   });
 
+  it('places wall, door, and chest landmark tiles in rooms', () => {
+    const map = generateDungeonLayout(48, 40, { random: mulberry32(3) });
+
+    const wallCount = countTileType(map.tiles, TILE.WALL);
+    const doorCount = countTileType(map.tiles, TILE.DOOR);
+    const chestCount = countTileType(map.tiles, TILE.CHEST);
+
+    assert.ok(wallCount > 0, 'rooms should have perimeter walls');
+    assert.ok(doorCount > 0, 'corridor-facing edges should have doors');
+    assert.ok(chestCount > 0, 'side rooms should include decorative chests');
+    assert.ok(isWalkable(map, map.spawn.x, map.spawn.y));
+  });
+
   it('includes boss room zone ahead of dungeon zone', () => {
     const map = generateDungeonLayout(48, 40);
     assert.equal(map.zones[0].id, BOSS_ROOM_ZONE_ID);

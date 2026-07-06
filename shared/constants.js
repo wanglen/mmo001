@@ -3,6 +3,9 @@ export const TILE = {
   WATER: 1,
   TREE: 2,
   ROCK: 3,
+  WALL: 4,
+  DOOR: 5,
+  CHEST: 6,
 };
 
 export const TILE_WALKABLE = {
@@ -10,6 +13,9 @@ export const TILE_WALKABLE = {
   [TILE.WATER]: false,
   [TILE.TREE]: false,
   [TILE.ROCK]: false,
+  [TILE.WALL]: false,
+  [TILE.DOOR]: true,
+  [TILE.CHEST]: true,
 };
 
 export const CHARACTER_CLASSES = {

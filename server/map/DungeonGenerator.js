@@ -1,6 +1,7 @@
 import { TILE } from '../../shared/constants.js';
 import { createDungeonZone } from '../../shared/zones.js';
 import { createBossRoomZone } from '../../shared/dungeon.js';
+import { placeDungeonLandmarks } from '../../shared/landmarks.js';
 
 const MIN_ROOM_COUNT = 6;
 const MAX_ROOM_COUNT = 10;
@@ -259,6 +260,8 @@ export function generateDungeonLayout(width, height, options = {}) {
   }
 
   const { entryIdx, bossIdx } = pickEntryAndBossRooms(rooms);
+  placeDungeonLandmarks(tiles, rooms, { entryIdx, bossIdx, random });
+
   const entry = rooms[entryIdx];
   const bossRoom = rooms[bossIdx];
 

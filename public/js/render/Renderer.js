@@ -9,6 +9,7 @@ import { PortalRenderer } from './PortalRenderer.js';
 import { NpcRenderer } from './NpcRenderer.js';
 import { TownRecallRenderer } from './TownRecallRenderer.js';
 import { PlayerHud } from '../ui/PlayerHud.js';
+import { Minimap } from '../ui/Minimap.js';
 import { filterRevealedPositions, isPositionRevealed } from '/shared/fog.js';
 import { getZoneAtPixel } from '/shared/zones.js';
 import { TILE_SIZE } from '../config.js';
@@ -29,6 +30,7 @@ export class Renderer {
     this.npcRenderer = new NpcRenderer();
     this.townRecallRenderer = new TownRecallRenderer();
     this.playerHud = new PlayerHud();
+    this.minimap = new Minimap();
   }
 
   resize() {
@@ -113,6 +115,7 @@ export class Renderer {
     this.combatFxRenderer.draw(this.ctx, visibleCombatFx, this.camera, now);
 
     const zone = map ? getZoneAtPixel(map, displayPlayer.x, displayPlayer.y) : null;
+    this.minimap.draw(this.ctx, map, displayPlayer, fogOfWar, this.canvas.width);
     this.playerHud.draw(
       this.ctx,
       displayPlayer,

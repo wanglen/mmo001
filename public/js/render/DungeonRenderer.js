@@ -1,5 +1,6 @@
 import { isTileInZone, ZONE_ID } from '/shared/zones.js';
 import { BOSS_ROOM_ZONE_ID } from '/shared/dungeon.js';
+import { TILE } from '/shared/constants.js';
 import { TILE_SIZE } from '../config.js';
 
 const STONE = '#4a4450';
@@ -104,12 +105,16 @@ function decorationAt(zone, col, row) {
   return null;
 }
 
-function drawZoneOverlay(ctx, zone, camera, tileSize, startCol, startRow, endCol, endRow) {
+function drawZoneOverlay(ctx, zone, map, camera, tileSize, startCol, startRow, endCol, endRow) {
   const bossRoom = isBossRoomZone(zone);
 
   for (let row = startRow; row < endRow; row++) {
     for (let col = startCol; col < endCol; col++) {
       if (!isTileInZone(zone, col, row)) continue;
+
+      const floorTile = map.tiles[row][col];
+      const isFloor =
+        floorTile === TILE.GRASS || floorTile === TILE.DOOR || floorTile === TILE.CHEST;
 
       const worldX = col * TILE_SIZE;
       const worldY = row * TILE_SIZE;
@@ -122,7 +127,7 @@ function drawZoneOverlay(ctx, zone, camera, tileSize, startCol, startRow, endCol
       const onEdge = sides.n || sides.s || sides.w || sides.e;
       const deco = decorationAt(zone, col, row);
 
-      if (!onEdge && deco !== 'arch' && deco !== 'skull') {
+      if (!onEdge && deco !== 'arch' && deco !== 'skull' && isFloor) {
         if (bossRoom) drawBossGround(ctx, x, y, w, h);
         else drawDungeonGround(ctx, x, y, w, h);
       }
@@ -143,7 +148,7 @@ export class DungeonRenderer {
   draw(ctx, map, camera, tileSize, startCol, startRow, endCol, endRow) {
     for (const zone of map.zones ?? []) {
       if (!isDungeonZone(zone) && !isBossRoomZone(zone)) continue;
-      drawZoneOverlay(ctx, zone, camera, tileSize, startCol, startRow, endCol, endRow);
+      drawZoneOverlay(ctx, zone, map, camera, tileSize, startCol, startRow, endCol, endRow);
     }
   }
 }

@@ -2,6 +2,7 @@ import { TILE } from '/shared/constants.js';
 import { TILE_SIZE } from '../config.js';
 import { TownRenderer } from './TownRenderer.js';
 import { DungeonRenderer } from './DungeonRenderer.js';
+import { LandmarkRenderer } from './LandmarkRenderer.js';
 
 const VOID_COLOR = '#0c0e14';
 const GRASS = '#4a7c3f';
@@ -15,6 +16,9 @@ const TILE_COLORS = {
   [TILE.WATER]: '#3a7bd5',
   [TILE.TREE]: '#2d5016',
   [TILE.ROCK]: CLIFF_MID,
+  [TILE.WALL]: '#2a2430',
+  [TILE.DOOR]: '#3d3548',
+  [TILE.CHEST]: GRASS,
 };
 
 function tileAt(map, col, row) {
@@ -204,6 +208,7 @@ export class MapRenderer {
   constructor() {
     this.townRenderer = new TownRenderer();
     this.dungeonRenderer = new DungeonRenderer();
+    this.landmarkRenderer = new LandmarkRenderer();
   }
 
   draw(ctx, map, camera, canvasWidth, canvasHeight) {
@@ -251,5 +256,6 @@ export class MapRenderer {
 
     this.townRenderer.draw(ctx, map, camera, tileSize, startCol, startRow, endCol, endRow);
     this.dungeonRenderer.draw(ctx, map, camera, tileSize, startCol, startRow, endCol, endRow);
+    this.landmarkRenderer.draw(ctx, map, camera, tileSize, startCol, startRow, endCol, endRow);
   }
 }

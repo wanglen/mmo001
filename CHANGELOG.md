@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.25.0] - 2026-07-05
+
+### Added
+
+- Minimap UI (top-right): fog-of-war aware terrain, portal markers, and player dot
+
+## [1.24.0] - 2026-07-05
+
+### Added
+
+- Instanced dungeon landmark tiles: stone room walls, wooden doorways on corridor-facing edges, and decorative chests in side rooms
+
 ## [1.23.0] - 2026-07-05
 
 ### Changed
