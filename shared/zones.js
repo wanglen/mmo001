@@ -18,14 +18,33 @@ export const ZONE_META = {
 /** Fixed town radius — small hub around spawn, not scaled to map size. */
 export const TOWN_RADIUS_TILES = 4;
 
-/** Dungeon pocket radius on the wilderness map. */
-export const DUNGEON_RADIUS_TILES = 5;
+/** Scale wilderness dungeon pocket from map dimensions (~10% of min side, clamped). */
+export function wildernessDungeonRadiusTiles(width, height) {
+  const minDim = Math.min(width, height);
+  return Math.max(12, Math.min(18, Math.floor(minDim * 0.14)));
+}
 
-/** Extra dungeon-only spawns as a fraction of base population. */
+/**
+ * Perimeter tile on the dungeon zone facing the approach point (e.g. spawn).
+ * @param {{ x: number, y: number }} center
+ * @param {number} radius
+ * @param {{ x: number, y: number }} from
+ */
+export function pickDungeonGateTile(center, radius, from) {
+  const dx = from.x - center.x;
+  const dy = from.y - center.y;
+
+  if (Math.abs(dx) >= Math.abs(dy)) {
+    const nx = dx === 0 ? 1 : Math.sign(dx);
+    return { x: center.x + nx * radius, y: center.y };
+  }
+
+  const ny = dy === 0 ? 1 : Math.sign(dy);
+  return { x: center.x, y: center.y + ny * radius };
+}
+
+/** Extra dungeon-zone spawns as a fraction of base population. */
 export const DUNGEON_EXTRA_SPAWN_RATIO = 0.35;
-
-/** @deprecated Use TOWN_RADIUS_TILES */
-export const SPAWN_SAFE_RADIUS_TILES = TOWN_RADIUS_TILES;
 
 export function townRadiusTiles(_mapWidth = 40) {
   return TOWN_RADIUS_TILES;
@@ -57,19 +76,18 @@ export function createTownZone(spawn, mapWidth) {
   };
 }
 
-/** @deprecated Use createTownZone */
-export function createSpawnSafeZone(spawn, mapWidth) {
-  return createTownZone(spawn, mapWidth);
-}
-
-export function createDungeonZone(center, radius = DUNGEON_RADIUS_TILES) {
-  return {
+export function createDungeonZone(center, radius, options = {}) {
+  const zone = {
     id: ZONE_ID.DUNGEON,
     label: ZONE_META[ZONE_ID.DUNGEON].label,
     safe: false,
     center: { x: center.x, y: center.y },
     radius,
   };
+  if (options.gateTile) {
+    zone.gateTile = { x: options.gateTile.x, y: options.gateTile.y };
+  }
+  return zone;
 }
 
 /** Chebyshev distance — square zone aligned to the tile grid. */

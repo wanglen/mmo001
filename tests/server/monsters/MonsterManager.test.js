@@ -67,7 +67,7 @@ describe('MonsterManager', () => {
     const map = {
       ...createOpenMap(30, 30),
       spawn: { x: 5, y: 5 },
-      zones: [createDungeonZone({ x: 20, y: 20 })],
+      zones: [createDungeonZone({ x: 20, y: 20 }, 5)],
     };
     const manager = new MonsterManager();
     const placed = manager.spawnOnMap(map, 10);

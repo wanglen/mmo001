@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { generateMap, minConnectedTiles } from '../../../server/map/MapGenerator.js';
 import { isWalkable } from '../../../server/map/collision.js';
-import { TILE_WALKABLE, TILE, MAP_WIDTH, MAP_HEIGHT } from '../../../shared/constants.js';
+import { TILE, MAP_WIDTH, MAP_HEIGHT } from '../../../shared/constants.js';
 import { ZONE_ID, TOWN_RADIUS_TILES } from '../../../shared/zones.js';
 
 function countWalkableFromSpawn(map) {
@@ -27,54 +27,52 @@ function countWalkableFromSpawn(map) {
 }
 
 describe('MapGenerator', () => {
-  it('generates map with expected dimensions', () => {
-    const map = generateMap();
+  it('requires an explicit zone layout', () => {
+    assert.throws(() => generateMap(), /zoneLayout/);
+    assert.throws(() => generateMap(48, 36, { zoneLayout: 'combined' }), /zoneLayout/);
+  });
+
+  it('generates wilderness map with expected dimensions', () => {
+    const map = generateMap(MAP_WIDTH, MAP_HEIGHT, { zoneLayout: 'wilderness-only' });
     assert.equal(map.width, MAP_WIDTH);
     assert.equal(map.height, MAP_HEIGHT);
     assert.equal(map.tiles.length, MAP_HEIGHT);
     assert.equal(map.tiles[0].length, MAP_WIDTH);
+    assert.deepEqual(map.zones, []);
+  });
+
+  it('generates town map with a single town zone', () => {
+    const map = generateMap(48, 36, { zoneLayout: 'town-only' });
+    assert.ok(Array.isArray(map.zones));
+    assert.equal(map.zones.length, 1);
+
+    const town = map.zones.find((z) => z.id === ZONE_ID.TOWN);
+    assert.ok(town);
+    assert.equal(town.label, 'Town');
+    assert.ok(town.safe);
+    assert.equal(town.radius, TOWN_RADIUS_TILES);
   });
 
   it('places spawn on a walkable tile', () => {
-    const map = generateMap();
+    const map = generateMap(48, 36, { zoneLayout: 'town-only' });
     assert.ok(isWalkable(map, map.spawn.x, map.spawn.y));
   });
 
   it('provides a large connected walkable region from spawn', () => {
-    const map = generateMap();
+    const map = generateMap(MAP_WIDTH, MAP_HEIGHT, { zoneLayout: 'wilderness-only' });
     const connected = countWalkableFromSpawn(map);
     const minConnected = minConnectedTiles(map.width, map.height);
     assert.ok(connected >= minConnected, `expected >= ${minConnected} walkable tiles, got ${connected}`);
   });
 
   it('returns spawn coordinates within map bounds', () => {
-    const map = generateMap();
+    const map = generateMap(48, 36, { zoneLayout: 'town-only' });
     assert.ok(map.spawn.x >= 0 && map.spawn.x < map.width);
     assert.ok(map.spawn.y >= 0 && map.spawn.y < map.height);
   });
 
-  it('includes town and dungeon zones', () => {
-    const map = generateMap();
-    assert.ok(Array.isArray(map.zones));
-    assert.ok(map.zones.length >= 2);
-
-    const town = map.zones.find((z) => z.id === ZONE_ID.TOWN);
-    const dungeon = map.zones.find((z) => z.id === ZONE_ID.DUNGEON);
-    assert.ok(town);
-    assert.ok(dungeon);
-    assert.equal(town.label, 'Town');
-    assert.ok(town.safe);
-    assert.equal(town.radius, TOWN_RADIUS_TILES);
-    assert.equal(dungeon.label, 'Dungeon');
-    assert.ok(!dungeon.safe);
-    assert.ok(
-      Math.hypot(dungeon.center.x - map.spawn.x, dungeon.center.y - map.spawn.y) >= 35
-    );
-    assert.ok(isWalkable(map, dungeon.center.x, dungeon.center.y));
-  });
-
   it('rings the map edge with impassable rock tiles', () => {
-    const map = generateMap();
+    const map = generateMap(48, 36, { zoneLayout: 'town-only' });
     const { width, height, tiles } = map;
 
     for (let x = 0; x < width; x++) {

@@ -16,7 +16,7 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 - Skills: class skill bar (keys 1–7), HP/MP potion hotkeys (8/9) with stack counts, cooldowns, server-authoritative damage
 - Death at 0 HP: blocked actions, respawn button restores HP/MP at spawn
 - Map fog of war: translucent grey veil on unexplored terrain only; monsters and loot hidden until explored; explored areas stay clear
-- World zones: town safe hub, wilderness (default), instanced dungeon (room corridors + boss room), and wilderness dungeon pocket with higher mob density; zone name shown in HUD
+- World zones: town safe hub, wilderness (default), instanced dungeon (scattered rooms + branching corridors + boss room), and wilderness dungeon pocket; zone name shown in HUD
 - Zone transitions: click glowing portals to travel between separate town, wilderness, and dungeon maps (loading overlay on travel)
 - Town hub: full HP/MP recovery in town, NPC dialogue (Mira & Eldon), press **T** for interruptible 6s recall to town
 - Socket.IO architecture ready for multiplayer

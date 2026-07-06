@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.23.0] - 2026-07-05
+
+### Changed
+
+- Instanced dungeon generator: scattered non-overlapping rooms, minimum-spanning-tree corridors with optional loop paths, entry and boss rooms at opposite ends of the layout
+- Wilderness dungeon gate: larger scaled pocket (~25×25 tiles on the 120×90 map), placed far from spawn with gate on the edge facing the player and an carved path to the portal
+
 ## [1.22.0] - 2026-07-05
 
 ### Added

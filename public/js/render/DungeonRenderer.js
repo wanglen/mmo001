@@ -97,8 +97,10 @@ function decorationAt(zone, col, row) {
     if (col === cx && row === cy + zone.radius) return 'sign';
     return null;
   }
-  if (col === cx && row === cy) return 'arch';
-  if (col === cx && row === cy + zone.radius) return 'sign';
+
+  const gate = zone.gateTile;
+  if (!gate) return null;
+  if (col === gate.x && row === gate.y) return 'arch';
   return null;
 }
 

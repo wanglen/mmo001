@@ -72,7 +72,7 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 - [x] Dungeon maps: tighter layouts, higher mob density, boss room
 
 ### Map generation improvements
-- [ ] Room + corridor dungeon generator (Diablo-style)
+- [x] Room + corridor dungeon generator (Diablo-style)
 - [ ] Hand-crafted landmark tiles (walls, doors, chests)
 - [ ] Minimap UI
 

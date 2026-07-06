@@ -1,8 +1,7 @@
 import { generateDungeonLayout } from '../map/DungeonGenerator.js';
-import { generateMap, pickDungeonCenter } from '../map/MapGenerator.js';
+import { generateMap } from '../map/MapGenerator.js';
 import { MAP_ID, WORLD_MAP_SIZES } from '../../shared/worldMaps.js';
 import { createPortal } from '../../shared/portals.js';
-import { TILE_WALKABLE } from '../../shared/constants.js';
 import { buildTownNpcs } from './townNpcs.js';
 import { npcToJSON } from '../../shared/npcs.js';
 import { pickTownWildernessGate, ensurePortalReachable, placeWildernessDungeonGate } from './portalPlacement.js';
@@ -27,19 +26,12 @@ export function generateDungeonMap() {
   return { ...map, mapId: MAP_ID.DUNGEON, portals: [] };
 }
 
-/** Walkable tile far from spawn to place the wilderness → dungeon portal. */
+/** Gate tile placed by {@link placeWildernessDungeonGate} on the wilderness map. */
 export function pickWildernessDungeonGate(map) {
-  if (map.dungeonGateTile) return map.dungeonGateTile;
-
-  const center = pickDungeonCenter(map.tiles, map.width, map.height, map.spawn, null);
-  if (center) return center;
-
-  for (let y = 1; y < map.height - 1; y++) {
-    for (let x = 1; x < map.width - 1; x++) {
-      if (TILE_WALKABLE[map.tiles[y][x]]) return { x, y };
-    }
+  if (!map.dungeonGateTile) {
+    throw new Error('Wilderness map is missing dungeonGateTile');
   }
-  return { x: map.spawn.x + 5, y: map.spawn.y + 5 };
+  return map.dungeonGateTile;
 }
 
 export function attachWorldPortals(town, wilderness, dungeon) {

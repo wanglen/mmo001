@@ -1,7 +1,12 @@
 import { TILE, TILE_WALKABLE } from '../../shared/constants.js';
-import { createDungeonZone, DUNGEON_RADIUS_TILES, TOWN_RADIUS_TILES } from '../../shared/zones.js';
+import {
+  createDungeonZone,
+  TOWN_RADIUS_TILES,
+  wildernessDungeonRadiusTiles,
+  pickDungeonGateTile,
+} from '../../shared/zones.js';
 import { findPath } from '../../shared/pathfinding.js';
-import { pickDungeonCenter, clearArea } from '../map/MapGenerator.js';
+import { pickWildernessDungeonCenter, clearArea } from '../map/MapGenerator.js';
 
 function clearTile(tiles, x, y, width, height) {
   if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1) return;
@@ -21,6 +26,14 @@ export function carveGatePath(map, portalTile) {
   for (let y = yStart; y <= yEnd; y++) {
     for (let dx = -1; dx <= 1; dx++) {
       clearTile(tiles, portalTile.x + dx, y, width, height);
+    }
+  }
+
+  const xStart = Math.min(spawn.x, portalTile.x);
+  const xEnd = Math.max(spawn.x, portalTile.x);
+  for (let x = xStart; x <= xEnd; x++) {
+    for (let dy = -1; dy <= 1; dy++) {
+      clearTile(tiles, x, portalTile.y + dy, width, height);
     }
   }
 }
@@ -77,28 +90,21 @@ export function ensurePortalReachable(map, portalTile) {
  * @param {{ tiles: number[][], spawn: { x: number, y: number }, width: number, height: number, zones?: object[] }} map
  */
 export function placeWildernessDungeonGate(map) {
-  let center = pickDungeonCenter(map.tiles, map.width, map.height, map.spawn, null);
-
-  if (!center) {
-    for (let y = 1; y < map.height - 1; y++) {
-      for (let x = 1; x < map.width - 1; x++) {
-        if (!TILE_WALKABLE[map.tiles[y][x]]) continue;
-        if (Math.hypot(x - map.spawn.x, y - map.spawn.y) < 20) continue;
-        center = { x, y };
-        break;
-      }
-      if (center) break;
-    }
-  }
+  const radius = wildernessDungeonRadiusTiles(map.width, map.height);
+  let center = pickWildernessDungeonCenter(map.tiles, map.width, map.height, map.spawn, radius);
 
   if (!center) {
     center = {
-      x: Math.min(map.width - 2, map.spawn.x + 10),
-      y: Math.min(map.height - 2, map.spawn.y + 10),
+      x: Math.max(radius + 2, map.width - radius - 3),
+      y: Math.max(radius + 2, map.height - radius - 3),
     };
   }
 
-  clearArea(map.tiles, center.x, center.y, DUNGEON_RADIUS_TILES);
-  map.zones = [...(map.zones ?? []), createDungeonZone(center)];
-  return center;
+  clearArea(map.tiles, center.x, center.y, radius);
+  const gateTile = pickDungeonGateTile(center, radius, map.spawn);
+  clearTile(map.tiles, gateTile.x, gateTile.y, map.width, map.height);
+  carveGatePath(map, gateTile);
+
+  map.zones = [...(map.zones ?? []), createDungeonZone(center, radius, { gateTile })];
+  return gateTile;
 }

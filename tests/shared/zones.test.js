@@ -13,6 +13,8 @@ import {
   isTileInZone,
   isTileInAnySafeZone,
   isTileInZoneId,
+  wildernessDungeonRadiusTiles,
+  pickDungeonGateTile,
   townRadiusTiles,
 } from '../../shared/zones.js';
 import { TILE_SIZE } from '../../shared/constants.js';
@@ -48,7 +50,7 @@ describe('zones', () => {
 
   it('getZoneAt resolves dungeon and spawn bonus helpers', () => {
     const map = {
-      zones: [createDungeonZone({ x: 30, y: 30 })],
+      zones: [createDungeonZone({ x: 30, y: 30 }, 5)],
     };
     assert.equal(getZoneAt(map, 30, 30).id, ZONE_ID.DUNGEON);
     assert.ok(isTileInZoneId(map, ZONE_ID.DUNGEON, 30, 30));
@@ -73,5 +75,17 @@ describe('zones', () => {
   it('isInSafeZone treats entire town hub map as safe', () => {
     const map = { mapId: 'town', width: 48, height: 36, zones: [] };
     assert.ok(isInSafeZone(map, 999, 999));
+  });
+
+  it('wildernessDungeonRadiusTiles scales with map size', () => {
+    assert.equal(wildernessDungeonRadiusTiles(120, 90), 12);
+    assert.ok(wildernessDungeonRadiusTiles(48, 36) >= 12);
+  });
+
+  it('pickDungeonGateTile places gate on zone edge facing spawn', () => {
+    const center = { x: 80, y: 60 };
+    const gate = pickDungeonGateTile(center, 12, { x: 20, y: 20 });
+    assert.ok(isTileInZone({ center, radius: 12 }, gate.x, gate.y));
+    assert.ok(gate.x === center.x - 12 || gate.y === center.y - 12);
   });
 });

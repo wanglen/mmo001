@@ -1,5 +1,8 @@
 import { filterRevealedPositions, isPositionRevealed } from '/shared/fog.js';
 
+/** Portal ids that use zone art (stone arch) instead of the glowing orb. */
+const ARCH_PORTAL_IDS = new Set(['wilderness-dungeon']);
+
 export class PortalRenderer {
   draw(ctx, portals = [], camera, revealed = null) {
     if (!portals.length) return;
@@ -9,6 +12,7 @@ export class PortalRenderer {
       : portals;
 
     for (const portal of visible) {
+      if (ARCH_PORTAL_IDS.has(portal.id)) continue;
       this.drawPortal(ctx, portal, camera);
     }
   }

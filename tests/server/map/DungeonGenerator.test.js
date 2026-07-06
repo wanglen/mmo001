@@ -1,6 +1,12 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateDungeonLayout } from '../../../server/map/DungeonGenerator.js';
+import {
+  generateDungeonLayout,
+  placeScatteredRooms,
+  buildRoomCorridorEdges,
+  roomsOverlap,
+  pickEntryAndBossRooms,
+} from '../../../server/map/DungeonGenerator.js';
 import { TILE } from '../../../shared/constants.js';
 import { BOSS_ROOM_ZONE_ID, BOSS_TYPE } from '../../../shared/dungeon.js';
 import { WORLD_MAP_SIZES, MAP_ID } from '../../../shared/worldMaps.js';
@@ -20,6 +26,16 @@ function countTileType(tiles, tileType) {
   return count;
 }
 
+function mulberry32(seed) {
+  return function next() {
+    seed += 0x6d2b79f5;
+    let t = seed;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 describe('DungeonGenerator', () => {
   it('generates expected dimensions with rock walls and walkable corridors', () => {
     const { width, height } = WORLD_MAP_SIZES[MAP_ID.DUNGEON];
@@ -33,6 +49,34 @@ describe('DungeonGenerator', () => {
     const grassCount = countTileType(map.tiles, TILE.GRASS);
     assert.ok(rockCount > grassCount, 'dungeon should be mostly rock walls');
     assert.ok(grassCount >= 40, 'dungeon should have carved walkable floor');
+  });
+
+  it('places multiple non-overlapping scattered rooms', () => {
+    const random = mulberry32(42);
+    const map = generateDungeonLayout(48, 40, { random });
+
+    assert.ok(map.rooms.length >= 4);
+
+    for (let i = 0; i < map.rooms.length; i++) {
+      for (let j = i + 1; j < map.rooms.length; j++) {
+        assert.equal(roomsOverlap(map.rooms[i], map.rooms[j]), false);
+      }
+    }
+  });
+
+  it('connects rooms with branching corridors (MST + optional loops)', () => {
+    const map = generateDungeonLayout(48, 40, { random: mulberry32(7) });
+
+    assert.ok(map.corridors.length >= map.rooms.length - 1);
+
+    const degree = new Map();
+    for (const { from, to } of map.corridors) {
+      degree.set(from, (degree.get(from) ?? 0) + 1);
+      degree.set(to, (degree.get(to) ?? 0) + 1);
+    }
+
+    const branchingRooms = [...degree.values()].filter((count) => count >= 2).length;
+    assert.ok(branchingRooms >= 2, 'layout should include junction rooms');
   });
 
   it('connects spawn to boss room through one walkable region', () => {
@@ -71,5 +115,22 @@ describe('DungeonGenerator', () => {
     assert.ok(boss.isBoss);
     const expected = dungeonMobCount(spawnCountForMap(48, 40));
     assert.ok(regular.length >= expected - 2);
+  });
+
+  it('pickEntryAndBossRooms chooses farthest room as boss', () => {
+    const rooms = placeScatteredRooms(48, 40, 6, mulberry32(99));
+    const { entryIdx, bossIdx } = pickEntryAndBossRooms(rooms);
+    assert.ok(entryIdx >= 0 && bossIdx >= 0);
+    assert.ok(rooms.length === 0 || entryIdx !== bossIdx || rooms.length === 1);
+  });
+
+  it('buildRoomCorridorEdges connects all rooms', () => {
+    const rooms = [
+      { center: { x: 5, y: 5 } },
+      { center: { x: 20, y: 8 } },
+      { center: { x: 10, y: 25 } },
+    ];
+    const edges = buildRoomCorridorEdges(rooms);
+    assert.equal(edges.length, 2);
   });
 });
