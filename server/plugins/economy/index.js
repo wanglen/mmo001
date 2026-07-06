@@ -4,6 +4,7 @@ import {
   sellToVendor,
   validateVendorInteraction,
 } from '../../systems/vendors.js';
+import { serializeEconomyPlayer } from './serialize.js';
 
 const TRADE_ERROR_MESSAGES = {
   invalid_target: 'Invalid trade target',
@@ -273,4 +274,5 @@ export const economyPlugin = {
   events: ECONOMY_EVENTS,
   registerServer: registerEconomyHandlers,
   onDisconnect: onEconomyDisconnect,
+  serializePlayer: serializeEconomyPlayer,
 };

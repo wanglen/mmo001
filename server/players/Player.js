@@ -1,11 +1,10 @@
 import { tileToPixel, canMoveTo } from '../map/collision.js';
-import { createPlayerStats, statsToJSON } from '../../shared/stats.js';
-import { createEmptyInventory, createEmptyEquipment, getEffectiveCombatStats, refreshPlayerDerivedStats } from '../../shared/inventory.js';
-import { itemToJSON } from '../../shared/items.js';
-import { getSkillBar, getSkillCooldownRemaining } from '../../shared/skills.js';
+import { createPlayerStats } from '../../shared/stats.js';
+import { createEmptyInventory, createEmptyEquipment, refreshPlayerDerivedStats } from '../../shared/inventory.js';
 import { restoreItems } from '../persistence/CharacterStore.js';
 import { DEFAULT_MAP_ID } from '../../shared/worldMaps.js';
-import { createEmptyQuestState, normalizeQuestState, questStateToJSON } from '../../shared/quests.js';
+import { normalizeQuestState } from '../../shared/quests.js';
+import { composePlayer } from '../app/composePlayer.js';
 
 export class Player {
   constructor({ id, name, characterClass, x, y, stats, inventory, equipment, mapId, questState = null }) {
@@ -38,42 +37,7 @@ export class Player {
   }
 
   toJSON(now = Date.now()) {
-    const effective = getEffectiveCombatStats(this, this.equipment);
-
-    return {
-      id: this.id,
-      name: this.name,
-      characterClass: this.characterClass,
-      mapId: this.mapId,
-      x: this.x,
-      y: this.y,
-      direction: this.direction,
-      facing: this.facing,
-      aimX: this.aimX,
-      aimY: this.aimY,
-      moving: this.moving,
-      attacking: this.attacking,
-      dead: !!this.dead,
-      townRecallCasting: !!this.townRecallCasting,
-      townRecallCastMs: this.townRecallCasting ? (this.townRecallCastMs ?? 0) : 0,
-      ...statsToJSON(this),
-      str: effective.str,
-      dex: effective.dex,
-      int: effective.int,
-      vit: effective.vit,
-      maxHp: effective.maxHp,
-      maxMp: effective.maxMp,
-      skillBar: getSkillBar(this.characterClass).map((s) =>
-        s ? { id: s.id, name: s.name, icon: s.icon, mpCost: s.mpCost, cooldownMs: s.cooldownMs } : null
-      ),
-      skillCooldowns: getSkillCooldownRemaining(this, now),
-      inventory: this.inventory.map(itemToJSON),
-      equipment: Object.fromEntries(
-        Object.entries(this.equipment).map(([slot, item]) => [slot, itemToJSON(item)])
-      ),
-      gold: this.gold ?? 0,
-      quests: questStateToJSON(this.questState ?? createEmptyQuestState()),
-    };
+    return composePlayer(this, now);
   }
 }
 

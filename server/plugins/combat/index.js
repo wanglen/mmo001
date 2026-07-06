@@ -3,6 +3,7 @@ import { processAttack } from '../../systems/combat.js';
 import { processSkill } from '../../systems/skills.js';
 import { interruptTownRecall } from '../../systems/townHub.js';
 import { getLivingPlayer, getPlayerContext, persistPlayers } from '../../app/handlerUtils.js';
+import { serializeCombatPlayer, serializeCombatWorld } from './serialize.js';
 
 export const COMBAT_EVENTS = [EVENTS.ATTACK, EVENTS.USE_SKILL];
 
@@ -74,4 +75,6 @@ export const combatPlugin = {
   dependsOn: ['core'],
   events: COMBAT_EVENTS,
   registerServer: registerCombatHandlers,
+  serializePlayer: serializeCombatPlayer,
+  serializeWorld: serializeCombatWorld,
 };

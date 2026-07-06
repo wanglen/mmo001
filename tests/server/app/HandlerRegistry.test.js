@@ -43,6 +43,11 @@ describe('loadPlugins', () => {
       assert.equal(typeof plugin.registerServer, 'function', `${plugin.id} missing registerServer`);
     }
   });
+
+  it('core plugin serializes world and player slices', () => {
+    assert.equal(typeof corePlugin.serializeWorld, 'function');
+    assert.equal(typeof corePlugin.serializePlayer, 'function');
+  });
 });
 
 describe('plugin manifests', () => {

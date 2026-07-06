@@ -3,7 +3,7 @@
  */
 
 /**
- * Server-side plugin manifest (Phase A — handler registration only).
+ * Server-side plugin manifest.
  *
  * @typedef {object} ServerPlugin
  * @property {string} id — unique plugin id (e.g. 'combat')
@@ -12,6 +12,18 @@
  * @property {(socket: import('socket.io').Socket, ctx: ServerContext) => void} [registerServer]
  * @property {(playerId: string, ctx: ServerContext) => void | Promise<void>} [onDisconnect]
  * @property {(playerId: string, ctx: ServerContext) => void} [onPlayerJoined]
+ * @property {(player: object, now: number) => object} [serializePlayer] — partial player JSON slice
+ * @property {(ctx: WorldSerializeContext) => object} [serializeWorld] — partial world-state slice
+ */
+
+/**
+ * @typedef {object} WorldSerializeContext
+ * @property {object} world
+ * @property {import('../../server/players/PlayerManager.js').PlayerManager} playerManager
+ * @property {string} viewerId
+ * @property {number} now
+ * @property {boolean} includeMapTiles
+ * @property {(player: object) => object | null} composePlayer
  */
 
 /**
@@ -26,7 +38,6 @@
  * @property {ServerPlugin[]} plugins
  * @property {Record<string, ServerPlugin>} pluginsById
  * @property {(playerId: string) => Promise<void>} disconnectPlayer
- * @property {(playerId: string) => Promise<void>} evictSession
  * @property {(playerId: string) => void} notifyPlayerJoined
  */
 

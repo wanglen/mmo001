@@ -148,25 +148,26 @@ Each feature plugin should export:
 
 ### B.1 Extract builder
 
-- [ ] Add `server/app/WorldStateBuilder.js`
-- [ ] Move `buildWorldState()` out of `socketHandlers.js` into builder
-- [ ] Core slice: map, player shell, remote players, version
-- [ ] Combat slice: monsters, combatFx, skillFx
-- [ ] World slice: npcs, loot, portals in map payload
-- [ ] Plugins call `registerSerializeWorld(fn)` on load
+- [x] Add `server/app/WorldStateBuilder.js`
+- [x] Move `buildWorldState()` into builder (`server/app/worldState.js` delegates)
+- [x] Core slice: map, player shell, remote players, version, npcs
+- [x] Combat slice: monsters, combatFx, skillFx
+- [x] World slice: loot (`serializeLootWorld` on loot plugin; portals remain in map payload)
+- [x] Plugins expose `serializeWorld` on manifest
 
 ### B.2 Player serialization
 
-- [ ] Split `Player.toJSON()` into `composePlayer(player, now, plugins)`
-- [ ] Core: position, stats, class, dead, mapId
-- [ ] Loot plugin: inventory, equipment
-- [ ] Quest plugin: questState, gold (or economy plugin for gold)
-- [ ] Combat plugin: skill bar, cooldowns if any in JSON
+- [x] Split `Player.toJSON()` into `composePlayer(player, now, plugins)`
+- [x] Core: position, stats, class, dead, mapId
+- [x] Loot plugin: inventory, equipment
+- [x] Quest plugin: questState
+- [x] Economy plugin: gold
+- [x] Combat plugin: skill bar, cooldowns
 
 ### B.3 Tests
 
-- [ ] `tests/server/app/WorldStateBuilder.test.js` — snapshot keys stable vs. fixture player
-- [ ] Existing tests still pass; no client changes required yet
+- [x] `tests/server/app/WorldStateBuilder.test.js` — snapshot keys stable vs. fixture player
+- [x] Existing tests still pass; no client changes required yet
 
 ---
 
@@ -313,7 +314,7 @@ Each feature plugin should export:
 | `main.js` manual wiring | D | [ ] |
 | Three `io.on('connection')` | A | [x] |
 | `broadcastAllFn` closure hack | A | [x] |
-| `Player.toJSON()` kitchen sink | B | [ ] |
+| `Player.toJSON()` kitchen sink | B | [x] |
 | Full world blob every 50 ms | B, I | [ ] |
 | `combat` imports `quests` directly | C | [ ] |
 | No tests for socket wiring | A | [x] |

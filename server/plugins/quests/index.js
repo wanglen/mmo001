@@ -5,6 +5,7 @@ import {
   turnInQuestForPlayer,
 } from '../../systems/quests.js';
 import { getLivingPlayer, getPlayerContext, persistPlayer } from '../../app/handlerUtils.js';
+import { serializeQuestPlayer } from './serialize.js';
 
 export const QUEST_EVENTS = [EVENTS.NPC_INTERACT, EVENTS.QUEST_ACCEPT, EVENTS.QUEST_TURN_IN];
 
@@ -60,4 +61,5 @@ export const questsPlugin = {
   dependsOn: ['core'],
   events: QUEST_EVENTS,
   registerServer: registerQuestHandlers,
+  serializePlayer: serializeQuestPlayer,
 };

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Architecture (Phase A):** server socket handlers refactored into a plugin registry (`server/app/HandlerRegistry.js`) with feature modules under `server/plugins/` (core, combat, loot, quests, social, economy); bootstrap moved to `server/app/createServer.js`; removed `broadcastAllFn` init workaround
+- **Architecture (Phase B):** composable world-state builder (`server/app/WorldStateBuilder.js`) and plugin-driven player serialization (`server/app/composePlayer.js`); `Player.toJSON()` delegates to plugin slices
 
 ## [2.1.0] - 2026-07-06
 

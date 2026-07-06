@@ -62,3 +62,5 @@ export function registerHandlerRegistry(io, deps) {
 export const registerSocketHandlers = registerHandlerRegistry;
 
 export { buildWorldState, createBroadcastAll, broadcastWorldState } from './worldState.js';
+export { createWorldStateBuilder } from './WorldStateBuilder.js';
+export { composePlayer } from './composePlayer.js';
