@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.21.0] - 2026-07-05
+
+### Added
+
+- Inventory right-click context menu (equip, use, unequip, destroy)
+- Stat comparison when hovering bag items — green/red deltas vs currently equipped gear in the same slot
+- Server-authoritative item destroy from bag or equipment slots
+
+### Changed
+
+- Inventory panel enlarged to at least half the screen with scaled slots and typography
+- Item inspect stays visible while the cursor is anywhere in the panel (not only over slots)
+
 ## [1.20.1] - 2026-07-05
 
 ### Fixed

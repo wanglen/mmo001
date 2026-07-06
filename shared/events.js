@@ -10,6 +10,7 @@ export const EVENTS = {
   PICKUP: 'pickup',
   EQUIP: 'equip',
   UNEQUIP: 'unequip',
+  DESTROY_ITEM: 'destroyItem',
   ALLOCATE_STAT: 'allocateStat',
   USE_SKILL: 'useSkill',
   USE_CONSUMABLE: 'useConsumable',

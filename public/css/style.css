@@ -96,19 +96,28 @@ html, body {
 }
 
 .inventory-panel {
+  --inv-equip-size: clamp(52px, 6.5vmin, 80px);
+  --inv-bag-size: clamp(40px, 5vmin, 64px);
+  --inv-gap: clamp(5px, 0.7vmin, 10px);
+
   position: fixed;
   right: 16px;
   bottom: 16px;
-  width: min(388px, calc(100vw - 32px));
-  max-height: calc(100vh - 32px);
+  width: min(calc(100vw - 32px), max(50vw, 540px));
+  height: min(calc(100vh - 32px), max(50vh, 480px));
+  min-width: min(50vw, calc(100vw - 32px));
+  min-height: min(50vh, calc(100vh - 32px));
   overflow: auto;
-  background: rgba(22, 33, 62, 0.92);
+  background: rgba(22, 33, 62, 0.94);
   border: 2px solid #0f3460;
-  border-radius: 10px;
-  padding: 10px;
+  border-radius: 12px;
+  padding: clamp(12px, 1.6vmin, 20px);
   z-index: 5;
-  font-size: 12px;
+  font-size: clamp(12px, 1.35vmin, 15px);
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1vmin, 14px);
 }
 
 .inventory-panel.hidden {
@@ -118,35 +127,41 @@ html, body {
 .inventory-header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 8px;
+  align-items: baseline;
+  flex-shrink: 0;
   color: #ccc;
+  font-size: clamp(13px, 1.5vmin, 17px);
 }
 
 .inventory-hint {
   opacity: 0.6;
-  font-size: 11px;
+  font-size: clamp(10px, 1.1vmin, 12px);
 }
 
 .inventory-body {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
-  gap: 8px;
+  align-items: stretch;
+  justify-content: center;
+  gap: clamp(12px, 2vmin, 28px);
+  flex: 1;
+  min-height: 0;
 }
 
 /* Diablo-style paper doll (left) + grid (right) */
 .equipment-slots {
   display: grid;
-  grid-template-columns: repeat(3, 38px);
-  grid-template-rows: repeat(5, 38px);
+  grid-template-columns: repeat(3, var(--inv-equip-size));
+  grid-template-rows: repeat(5, var(--inv-equip-size));
   grid-template-areas:
     ". helm ."
     "amulet chest weapon"
     ". gloves ."
     ". boots ."
     "ring . .";
-  gap: 3px;
+  gap: var(--inv-gap);
   flex-shrink: 0;
+  align-self: center;
 }
 
 .equip-slot[data-slot='helm'] { grid-area: helm; }
@@ -159,17 +174,21 @@ html, body {
 
 .inventory-grid {
   display: grid;
-  grid-template-columns: repeat(10, 28px);
-  gap: 3px;
-  flex-shrink: 0;
+  grid-template-columns: repeat(10, var(--inv-bag-size));
+  grid-template-rows: repeat(4, var(--inv-bag-size));
+  gap: var(--inv-gap);
+  flex: 1;
+  align-self: center;
+  justify-content: center;
+  max-width: 100%;
 }
 
 .equip-slot {
-  width: 38px;
-  height: 38px;
+  width: var(--inv-equip-size);
+  height: var(--inv-equip-size);
   background: #1a1a2e;
   border: 2px solid #333;
-  border-radius: 4px;
+  border-radius: 6px;
   color: var(--slot-icon-color, #4a5a6a);
   cursor: pointer;
   padding: 0;
@@ -181,13 +200,13 @@ html, body {
 }
 
 .inv-slot {
-  width: 28px;
-  height: 28px;
+  width: var(--inv-bag-size);
+  height: var(--inv-bag-size);
   background: #1a1a2e;
   border: 2px solid #333;
-  border-radius: 4px;
+  border-radius: 5px;
   color: var(--slot-icon-color, #4a5a6a);
-  font-size: 7px;
+  font-size: clamp(8px, 1vmin, 10px);
   cursor: pointer;
   padding: 0;
   overflow: hidden;
@@ -228,12 +247,12 @@ html, body {
 }
 
 .item-inspect {
-  margin-top: 10px;
-  padding-top: 10px;
+  margin-top: 0;
+  padding-top: clamp(10px, 1.2vmin, 14px);
   border-top: 1px solid #0f3460;
-  height: 110px;
-  min-height: 110px;
-  max-height: 110px;
+  flex: 1 1 160px;
+  min-height: clamp(140px, 18vh, 220px);
+  max-height: 38%;
   overflow-y: auto;
   overflow-x: hidden;
   flex-shrink: 0;
@@ -247,8 +266,8 @@ html, body {
 }
 
 .item-inspect-icon .item-icon-svg {
-  width: 32px;
-  height: 32px;
+  width: clamp(36px, 5vmin, 52px);
+  height: clamp(36px, 5vmin, 52px);
 }
 
 .item-inspect-empty {
@@ -260,14 +279,14 @@ html, body {
 }
 
 .item-inspect-name {
-  font-size: 13px;
+  font-size: clamp(14px, 1.6vmin, 18px);
   font-weight: 700;
   margin-bottom: 2px;
   line-height: 1.2;
 }
 
 .item-inspect-meta {
-  font-size: 10px;
+  font-size: clamp(10px, 1.15vmin, 12px);
   color: #8a9aaa;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -288,7 +307,7 @@ html, body {
   justify-content: space-between;
   align-items: baseline;
   gap: 8px;
-  font-size: 11px;
+  font-size: clamp(11px, 1.25vmin, 14px);
   padding: 2px 0;
 }
 
@@ -300,6 +319,63 @@ html, body {
   color: #5dade2;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+.item-stat-delta {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.item-stat-delta--up {
+  color: #2ecc71;
+}
+
+.item-stat-delta--down {
+  color: #e74c3c;
+}
+
+.item-inspect-compare-header {
+  margin: 0 0 4px;
+  font-size: 10px;
+  color: #8a9aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.inv-context-menu {
+  position: fixed;
+  z-index: 20;
+  min-width: 120px;
+  background: rgba(22, 33, 62, 0.98);
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  padding: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.inv-context-menu__item {
+  display: block;
+  width: 100%;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #ddd;
+  font-size: 12px;
+  text-align: left;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.inv-context-menu__item:hover {
+  background: rgba(41, 128, 185, 0.25);
+}
+
+.inv-context-menu__item--danger {
+  color: #f1948a;
+}
+
+.inv-context-menu__item--danger:hover {
+  background: rgba(146, 43, 33, 0.35);
 }
 
 .item-inspect-no-stats {

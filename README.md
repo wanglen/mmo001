@@ -11,7 +11,7 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 - Per-template item icons on ground loot and inventory (sword, staff, bow, armor, potions, etc.)
 - Combat: click enemies to attack, 3 mob types with distinct pixel sprites, HP bars, monster chase AI, retaliate on hit, XP on kill
 - Loot: per-item pixel icons on ground (rarity glow) and in inventory; click to pick up; potions usable from bag
-- Inventory: 10×4 grid, 7 equip slots, stat bonuses from gear (server-side)
+- Inventory: 10×4 grid, 7 equip slots, stat bonuses from gear (server-side); hover to compare vs equipped, right-click for actions, destroy unwanted items
 - Leveling: XP curve, +5 stat points per level-up, allocation UI (reopen with C), JSON character save
 - Skills: class skill bar (keys 1–8), MP costs, cooldowns, out-of-combat MP regen, server-authoritative damage and visuals
 - Death at 0 HP: blocked actions, respawn button restores HP/MP at spawn
@@ -118,7 +118,7 @@ Tests use Node.js built-in test runner. Coverage includes pathfinding, collision
 - **C** — open character stats / spend stat points (when available)
 - **1**–**8** — use skills from the skill bar (class-specific; costs MP, has cooldowns; Mage: Fireball, Icebolt)
 - **WASD** / **Arrow keys** — move including diagonals (e.g. W+D); cancels click path
-- **Inventory** — click item to equip; click potions to drink (restore HP/MP)
+- **Inventory** — click item to equip or use potion; right-click for equip/use/unequip/destroy; hover bag gear to compare stats vs equipped
 - **T** (outside town) — start 6s recall cast to town; interrupted by movement, combat, or damage
 - **Click NPC** — talk to town residents
 
@@ -159,6 +159,7 @@ mmo001/
 | `pickup`     | Client → Server | Pick up ground loot by id           |
 | `equip`      | Client → Server | Equip item from inventory index     |
 | `unequip`    | Client → Server | Unequip item from slot              |
+| `destroyItem`| Client → Server | Destroy item from bag or equipment  |
 | `allocateStat` | Client → Server | Spend stat point (str/dex/int/vit) |
 | `worldState` | Server → Client | Map, player, monsters, loot, inventory |
 | `error`      | Server → Client | Error messages                   |

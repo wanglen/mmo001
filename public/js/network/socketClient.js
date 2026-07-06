@@ -78,6 +78,10 @@ export class SocketClient {
     this.socket.emit(EVENTS.UNEQUIP, { slot });
   }
 
+  sendDestroyItem({ inventoryIndex, slot } = {}) {
+    this.socket.emit(EVENTS.DESTROY_ITEM, { inventoryIndex, slot });
+  }
+
   sendAllocateStat(stat) {
     this.socket.emit(EVENTS.ALLOCATE_STAT, { stat });
   }

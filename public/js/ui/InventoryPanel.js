@@ -17,7 +17,11 @@ export class InventoryPanel {
     this.onEquip = null;
     this.onUnequip = null;
     this.onUseConsumable = null;
+    this.onDestroy = null;
     this.player = null;
+    this.inspectKey = '';
+    this.activeSlotEl = null;
+    this.contextMenuEl = null;
     this.build();
   }
 
@@ -25,7 +29,7 @@ export class InventoryPanel {
     this.root.innerHTML = `
       <div class="inventory-header">
         <span>Inventory</span>
-        <span class="inventory-hint">I toggle · C stats</span>
+        <span class="inventory-hint">I toggle · right-click item</span>
       </div>
       <div class="inventory-body">
         <div class="equipment-slots" id="equipment-slots"></div>
@@ -39,23 +43,25 @@ export class InventoryPanel {
     this.equipmentEl = this.root.querySelector('#equipment-slots');
     this.gridEl = this.root.querySelector('#inventory-grid');
     this.inspectEl = this.root.querySelector('#item-inspect');
-    this.inspectKey = '';
 
-    const hoverZone = this.root.querySelector('.inventory-body');
+    const hoverZone = this.root;
     hoverZone.addEventListener('mouseleave', (e) => {
       if (hoverZone.contains(e.relatedTarget)) return;
       this.clearInspect();
     });
+
+    document.addEventListener('click', () => this.hideContextMenu());
+    document.addEventListener('contextmenu', () => this.hideContextMenu());
+    window.addEventListener('blur', () => this.hideContextMenu());
 
     for (const slot of EQUIP_SLOTS) {
       const el = document.createElement('button');
       el.type = 'button';
       el.className = 'equip-slot';
       el.dataset.slot = slot;
-      el.addEventListener('click', () => {
-        if (this.onUnequip) this.onUnequip(slot);
-      });
+      el.addEventListener('click', () => this.handlePrimaryAction(el));
       el.addEventListener('mouseenter', () => this.inspectSlot(el));
+      el.addEventListener('contextmenu', (e) => this.showContextMenu(e, el));
       this.equipmentEl.appendChild(el);
     }
 
@@ -64,15 +70,9 @@ export class InventoryPanel {
       el.type = 'button';
       el.className = 'inv-slot';
       el.dataset.index = String(i);
-      el.addEventListener('click', () => {
-        const item = this.player?.inventory?.[i] ?? null;
-        if (isConsumable(item) && this.onUseConsumable) {
-          this.onUseConsumable(i);
-          return;
-        }
-        if (this.onEquip) this.onEquip(i);
-      });
+      el.addEventListener('click', () => this.handlePrimaryAction(el));
       el.addEventListener('mouseenter', () => this.inspectSlot(el));
+      el.addEventListener('contextmenu', (e) => this.showContextMenu(e, el));
       this.gridEl.appendChild(el);
     }
   }
@@ -99,31 +99,152 @@ export class InventoryPanel {
       const item = player.inventory?.[index] ?? null;
       this.renderSlot(el, item);
     }
+
+    if (this.activeSlotEl) {
+      this.inspectSlot(this.activeSlotEl, true);
+    }
   }
 
-  inspectSlot(slotEl) {
+  handlePrimaryAction(slotEl) {
+    const item = this.getItemFromSlotEl(slotEl);
+    if (!item) return;
+
+    if (slotEl.classList.contains('equip-slot')) {
+      if (this.onUnequip) this.onUnequip(slotEl.dataset.slot);
+      return;
+    }
+
+    const index = Number(slotEl.dataset.index);
+    if (isConsumable(item)) {
+      if (this.onUseConsumable) this.onUseConsumable(index);
+      return;
+    }
+
+    if (this.onEquip) this.onEquip(index);
+  }
+
+  handleDestroy(slotEl) {
+    if (!this.onDestroy) return;
+
+    const item = this.getItemFromSlotEl(slotEl);
+    if (!item) return;
+
+    if (slotEl.classList.contains('equip-slot')) {
+      this.onDestroy({ slot: slotEl.dataset.slot });
+      return;
+    }
+
+    this.onDestroy({ inventoryIndex: Number(slotEl.dataset.index) });
+  }
+
+  getSlotActions(slotEl) {
+    const item = this.getItemFromSlotEl(slotEl);
+    if (!item) return [];
+
+    if (slotEl.classList.contains('equip-slot')) {
+      return [
+        { id: 'primary', label: 'Unequip' },
+        { id: 'destroy', label: 'Destroy' },
+      ];
+    }
+
+    if (isConsumable(item)) {
+      return [
+        { id: 'primary', label: 'Use' },
+        { id: 'destroy', label: 'Destroy' },
+      ];
+    }
+
+    return [
+      { id: 'primary', label: 'Equip' },
+      { id: 'destroy', label: 'Destroy' },
+    ];
+  }
+
+  showContextMenu(event, slotEl) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const item = this.getItemFromSlotEl(slotEl);
+    if (!item) return;
+
+    this.inspectSlot(slotEl);
+    this.hideContextMenu();
+
+    const menu = document.createElement('div');
+    menu.className = 'inv-context-menu';
+    menu.setAttribute('role', 'menu');
+
+    for (const action of this.getSlotActions(slotEl)) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `inv-context-menu__item${action.id === 'destroy' ? ' inv-context-menu__item--danger' : ''}`;
+      button.textContent = action.label;
+      button.dataset.action = action.id;
+      button.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (action.id === 'primary') {
+          this.handlePrimaryAction(slotEl);
+        } else {
+          this.handleDestroy(slotEl);
+        }
+        this.hideContextMenu();
+      });
+      menu.appendChild(button);
+    }
+
+    document.body.appendChild(menu);
+    this.contextMenuEl = menu;
+
+    const menuRect = menu.getBoundingClientRect();
+    const maxX = window.innerWidth - menuRect.width - 8;
+    const maxY = window.innerHeight - menuRect.height - 8;
+    menu.style.left = `${Math.max(8, Math.min(event.clientX, maxX))}px`;
+    menu.style.top = `${Math.max(8, Math.min(event.clientY, maxY))}px`;
+  }
+
+  hideContextMenu() {
+    this.contextMenuEl?.remove();
+    this.contextMenuEl = null;
+  }
+
+  inspectSlot(slotEl, force = false) {
     const item = this.getItemFromSlotEl(slotEl);
     const key = this.getInspectKey(slotEl, item);
-    if (this.inspectKey === key) return;
+    if (!force && this.inspectKey === key) return;
 
     this.inspectKey = key;
+    this.activeSlotEl = slotEl;
     this.clearSlotInspectHighlight();
     slotEl.classList.add('slot-inspect');
 
     if (item) {
+      const isEquipSlot = slotEl.classList.contains('equip-slot');
+      const compareWith =
+        !isEquipSlot && item.slot && !isConsumable(item)
+          ? this.player?.equipment?.[item.slot] ?? null
+          : null;
       const actionHint = isConsumable(item)
-        ? 'Click to use'
-        : slotEl.classList.contains('equip-slot')
-          ? 'Click to unequip'
-          : 'Click to equip';
-      const fallbackSlot = slotEl.classList.contains('equip-slot') ? slotEl.dataset.slot : '';
+        ? 'Click to use · Right-click for menu'
+        : isEquipSlot
+          ? 'Click to unequip · Right-click for menu'
+          : 'Click to equip · Right-click for menu';
+      const fallbackSlot = isEquipSlot ? slotEl.dataset.slot : '';
       const iconKey = resolveItemIconKey(item, fallbackSlot);
       const iconColor = getInventoryIconColor(item);
       const iconHtml = `<div class="item-inspect-icon" style="color: ${iconColor}">${buildItemIconSvg(iconKey)}</div>`;
-      this.showInspect(iconHtml + buildItemInspectHtml(item, { actionHint }));
+      this.showInspect(
+        iconHtml +
+          buildItemInspectHtml(item, {
+            actionHint,
+            compareWith,
+            compareHeader: compareWith ? `vs ${compareWith.name}` : '',
+          })
+      );
       return;
     }
 
+    this.activeSlotEl = null;
     if (slotEl.classList.contains('equip-slot')) {
       this.showInspect(buildSlotHintHtml(slotEl.dataset.slot));
     } else {
@@ -141,6 +262,7 @@ export class InventoryPanel {
 
   clearInspect() {
     this.inspectKey = '';
+    this.activeSlotEl = null;
     this.clearSlotInspectHighlight();
     this.showInspect(buildEmptyInspectHtml());
   }

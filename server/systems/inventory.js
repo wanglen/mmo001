@@ -69,3 +69,25 @@ export function unequipSlot(player, slot) {
 
   return { ok: true, index: result.index };
 }
+
+export function destroyFromInventory(player, inventoryIndex) {
+  if (!Number.isInteger(inventoryIndex) || inventoryIndex < 0 || inventoryIndex >= player.inventory.length) {
+    return { ok: false, reason: 'invalid_index' };
+  }
+
+  if (!player.inventory[inventoryIndex]) return { ok: false, reason: 'empty_slot' };
+
+  player.inventory[inventoryIndex] = null;
+  return { ok: true, source: 'inventory', index: inventoryIndex };
+}
+
+export function destroyFromEquipment(player, slot) {
+  if (!EQUIP_SLOTS.includes(slot)) return { ok: false, reason: 'invalid_slot' };
+
+  if (!player.equipment[slot]) return { ok: false, reason: 'empty_slot' };
+
+  player.equipment[slot] = null;
+  refreshPlayerDerivedStats(player, player.equipment);
+
+  return { ok: true, source: 'equipment', slot };
+}

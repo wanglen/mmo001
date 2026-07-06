@@ -34,6 +34,47 @@ export function getItemStatLines(item) {
   }));
 }
 
+/**
+ * Stat lines for a candidate item with optional delta vs equipped gear.
+ * @param {object} candidate
+ * @param {object | null | undefined} equipped
+ */
+export function getStatCompareLines(candidate, equipped) {
+  if (isConsumable(candidate)) return getConsumableLines(candidate);
+
+  const candidateStats = candidate?.stats ?? {};
+  const equippedStats = equipped?.stats ?? {};
+  const keys = STAT_ORDER.filter(
+    (key) => (candidateStats[key] ?? 0) > 0 || (equippedStats[key] ?? 0) > 0
+  );
+
+  return keys.map((key) => {
+    const value = candidateStats[key] ?? 0;
+    const equippedValue = equippedStats[key] ?? 0;
+    return {
+      key,
+      label: STAT_LABELS[key] ?? key.toUpperCase(),
+      value,
+      delta: equipped ? value - equippedValue : null,
+    };
+  });
+}
+
+function formatStatValue(line) {
+  if (typeof line.value === 'string') {
+    return `<span class="item-stat-value">${escapeHtml(String(line.value))}</span>`;
+  }
+
+  const base = `+${line.value}`;
+  if (line.delta == null || line.delta === 0) {
+    return `<span class="item-stat-value">${base}</span>`;
+  }
+
+  const deltaText = line.delta > 0 ? `(+${line.delta})` : `(${line.delta})`;
+  const deltaClass = line.delta > 0 ? 'item-stat-delta--up' : 'item-stat-delta--down';
+  return `<span class="item-stat-value">${base} <span class="item-stat-delta ${deltaClass}">${deltaText}</span></span>`;
+}
+
 /** Restore amount lines for potions and other consumables. */
 export function getConsumableLines(item) {
   if (!isConsumable(item)) return [];
@@ -59,24 +100,27 @@ export function formatSlotType(slot) {
 /**
  * Build inspect-panel HTML for an item.
  * @param {object} item
- * @param {{ actionHint?: string }} [options]
+ * @param {{ actionHint?: string, compareWith?: object | null, compareHeader?: string }} [options]
  */
-export function buildItemInspectHtml(item, { actionHint = '' } = {}) {
+export function buildItemInspectHtml(item, { actionHint = '', compareWith = null, compareHeader = '' } = {}) {
   if (!item) return '';
 
   const color = getRarityColor(item.rarity);
-  const statLines = isConsumable(item) ? getConsumableLines(item) : getItemStatLines(item);
+  const statLines = isConsumable(item)
+    ? getConsumableLines(item)
+    : getStatCompareLines(item, compareWith);
   const slotLabel = isConsumable(item)
     ? 'Consumable'
     : formatSlotType(item.slot ?? item.type);
   const rarityLabel = capitalizeWord(item.rarity);
+  const showCompareHeader = !isConsumable(item) && compareWith && compareHeader;
 
   const statsHtml =
     statLines.length > 0
-      ? `<ul class="item-stat-list">${statLines
+      ? `${showCompareHeader ? `<p class="item-inspect-compare-header">${escapeHtml(compareHeader)}</p>` : ''}<ul class="item-stat-list">${statLines
           .map(
             (line) =>
-              `<li><span class="item-stat-label">${line.label}</span><span class="item-stat-value">${typeof line.value === 'number' ? `+${line.value}` : escapeHtml(String(line.value))}</span></li>`
+              `<li><span class="item-stat-label">${line.label}</span>${formatStatValue(line)}</li>`
           )
           .join('')}</ul>`
       : '<p class="item-inspect-no-stats">No stat bonuses</p>';

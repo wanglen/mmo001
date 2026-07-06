@@ -7,7 +7,7 @@ import { canMoveTo } from '../map/collision.js';
 import { processAttack, clearAttackAnim } from '../systems/combat.js';
 import { processSkill, clearSkillAnim, collectActiveSkillFx } from '../systems/skills.js';
 import { collectCombatFx } from '../systems/combatFx.js';
-import { pickupLoot, equipFromInventory, unequipSlot, useConsumableFromInventory } from '../systems/inventory.js';
+import { pickupLoot, equipFromInventory, unequipSlot, useConsumableFromInventory, destroyFromInventory, destroyFromEquipment } from '../systems/inventory.js';
 import { allocateStat } from '../systems/progression.js';
 import { respawnPlayer, syncDeathState } from '../systems/playerDeath.js';
 import { isPlayerAlive } from '../../shared/playerLife.js';
@@ -357,6 +357,25 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
       const result = unequipSlot(player, slot);
       if (!result.ok) {
         socket.emit(EVENTS.ERROR, { message: `Cannot unequip: ${result.reason}` });
+        return;
+      }
+
+      await persistPlayer(characterStore, player);
+      broadcastWorldStateToSocket(io, socket, world, playerManager);
+    });
+
+    socket.on(EVENTS.DESTROY_ITEM, async ({ inventoryIndex, slot }) => {
+      const player = getLivingPlayer(playerManager, socket.id);
+      if (!player) return;
+
+      const result = Number.isInteger(inventoryIndex)
+        ? destroyFromInventory(player, inventoryIndex)
+        : typeof slot === 'string'
+          ? destroyFromEquipment(player, slot)
+          : { ok: false, reason: 'invalid_target' };
+
+      if (!result.ok) {
+        socket.emit(EVENTS.ERROR, { message: `Cannot destroy item: ${result.reason}` });
         return;
       }
 

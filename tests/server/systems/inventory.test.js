@@ -1,10 +1,10 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { pickupLoot, equipFromInventory, unequipSlot, useConsumableFromInventory } from '../../../server/systems/inventory.js';
+import { pickupLoot, equipFromInventory, unequipSlot, useConsumableFromInventory, destroyFromInventory, destroyFromEquipment } from '../../../server/systems/inventory.js';
 import { LootManager, resetLootIdCounter } from '../../../server/items/LootManager.js';
 import { createItem, createPotion, POTION_TEMPLATES, RARITY, resetItemIdCounter } from '../../../shared/items.js';
 import { createPlayerStats } from '../../../shared/stats.js';
-import { createEmptyInventory, createEmptyEquipment } from '../../../shared/inventory.js';
+import { createEmptyInventory, createEmptyEquipment, refreshPlayerDerivedStats } from '../../../shared/inventory.js';
 
 const swordTemplate = {
   name: 'Sword',
@@ -121,5 +121,37 @@ describe('useConsumableFromInventory', () => {
     assert.equal(result.ok, false);
     assert.equal(result.reason, 'full_hp');
     assert.ok(player.inventory[0]);
+  });
+});
+
+describe('destroyFromInventory', () => {
+  it('removes item from inventory slot', () => {
+    resetItemIdCounter();
+    const player = createMockPlayer();
+    const item = createItem(swordTemplate, RARITY.COMMON);
+    player.inventory[3] = item;
+
+    const result = destroyFromInventory(player, 3);
+    assert.equal(result.ok, true);
+    assert.equal(player.inventory[3], null);
+  });
+});
+
+describe('destroyFromEquipment', () => {
+  it('removes equipped item and refreshes derived stats', () => {
+    resetItemIdCounter();
+    const player = createMockPlayer();
+    const item = createItem(
+      { name: 'Vest', type: 'chest', slot: 'chest', baseStats: { vit: 4 } },
+      RARITY.RARE
+    );
+    player.equipment.chest = item;
+    refreshPlayerDerivedStats(player, player.equipment);
+    const maxBefore = player.maxHp;
+
+    const result = destroyFromEquipment(player, 'chest');
+    assert.equal(result.ok, true);
+    assert.equal(player.equipment.chest, null);
+    assert.ok(player.maxHp < maxBefore);
   });
 });
