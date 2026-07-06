@@ -5,7 +5,10 @@ import {
   canAttackNow,
   findMonsterAt,
   isInRange,
+  isInAttackRange,
   ATTACK_COOLDOWN_MS,
+  ATTACK_RANGE,
+  ATTACK_RANGE_LEEWAY,
 } from '../../shared/combat.js';
 
 describe('combat', () => {
@@ -23,8 +26,14 @@ describe('combat', () => {
   });
 
   it('isInRange checks distance threshold', () => {
-    assert.equal(isInRange(0, 0, 10, 0, 48), true);
-    assert.equal(isInRange(0, 0, 100, 0, 48), false);
+    assert.equal(isInRange(0, 0, 10, 0, 52), true);
+    assert.equal(isInRange(0, 0, 100, 0, 52), false);
+  });
+
+  it('isInAttackRange allows server leeway beyond client melee range', () => {
+    assert.equal(isInAttackRange(0, 0, ATTACK_RANGE, 0, 0), true);
+    assert.equal(isInAttackRange(0, 0, ATTACK_RANGE + ATTACK_RANGE_LEEWAY, 0, ATTACK_RANGE_LEEWAY), true);
+    assert.equal(isInAttackRange(0, 0, ATTACK_RANGE + ATTACK_RANGE_LEEWAY + 1, 0, ATTACK_RANGE_LEEWAY), false);
   });
 
   it('findMonsterAt picks monster under cursor', () => {

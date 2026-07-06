@@ -52,16 +52,16 @@ const ICON_SHAPES = {
     <rect x="7" y="8" width="2" height="2" opacity="0.4" />
   `,
   health_potion: `
-    <rect x="6" y="2" width="4" height="2" rx="0.5" />
-    <rect x="7" y="1" width="2" height="1" />
-    <path d="M5 4h6l-1 10H6L5 4z" />
-    <rect x="6" y="7" width="4" height="4" rx="1" opacity="0.45" />
+    <rect x="6" y="2" width="4" height="2" rx="0.5" fill="#bdc3c7" />
+    <rect x="7" y="1" width="2" height="1" fill="#95a5a6" />
+    <path d="M5 4h6l-1 10H6L5 4z" fill="#c0392b" />
+    <rect x="6" y="7" width="4" height="4" rx="1" fill="#e74c3c" />
   `,
   mana_potion: `
-    <rect x="6" y="2" width="4" height="2" rx="0.5" />
-    <rect x="7" y="1" width="2" height="1" />
-    <path d="M5 4h6l-1 10H6L5 4z" />
-    <rect x="6" y="8" width="4" height="3" rx="0.5" opacity="0.5" />
+    <rect x="6" y="2" width="4" height="2" rx="0.5" fill="#bdc3c7" />
+    <rect x="7" y="1" width="2" height="1" fill="#95a5a6" />
+    <path d="M5 4h6l-1 10H6L5 4z" fill="#5dade2" />
+    <rect x="6" y="8" width="4" height="3" rx="0.5" fill="#87ceeb" />
   `,
   weapon: `
     <rect x="7" y="1" width="2" height="6" />
@@ -97,6 +97,8 @@ const ICON_SHAPES = {
 
 const DEFAULT_ICON = 'chest';
 
+const POTION_ICON_KEYS = new Set(['health_potion', 'mana_potion']);
+
 /**
  * Build inline SVG markup for an item icon key.
  * @param {string} type
@@ -104,6 +106,7 @@ const DEFAULT_ICON = 'chest';
 export function buildItemIconSvg(type) {
   const key = ICON_SHAPES[type] ? type : DEFAULT_ICON;
   const shapes = ICON_SHAPES[key];
+  const fillAttr = POTION_ICON_KEYS.has(key) ? '' : ' fill="currentColor"';
 
-  return `<svg class="item-icon-svg" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="currentColor">${shapes}</g></svg>`;
+  return `<svg class="item-icon-svg" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g${fillAttr}>${shapes}</g></svg>`;
 }

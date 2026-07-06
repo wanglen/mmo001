@@ -1,6 +1,7 @@
 import { TILE, TILE_WALKABLE } from '../../shared/constants.js';
-import { TOWN_RADIUS_TILES } from '../../shared/zones.js';
+import { createDungeonZone, DUNGEON_RADIUS_TILES, TOWN_RADIUS_TILES } from '../../shared/zones.js';
 import { findPath } from '../../shared/pathfinding.js';
+import { pickDungeonCenter, clearArea } from '../map/MapGenerator.js';
 
 function clearTile(tiles, x, y, width, height) {
   if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1) return;
@@ -69,4 +70,35 @@ export function pickTownWildernessGate(map) {
 export function ensurePortalReachable(map, portalTile) {
   carveGatePath(map, portalTile);
   return portalTile;
+}
+
+/**
+ * Place a visible dungeon pocket on the wilderness map and return the gate tile.
+ * @param {{ tiles: number[][], spawn: { x: number, y: number }, width: number, height: number, zones?: object[] }} map
+ */
+export function placeWildernessDungeonGate(map) {
+  let center = pickDungeonCenter(map.tiles, map.width, map.height, map.spawn, null);
+
+  if (!center) {
+    for (let y = 1; y < map.height - 1; y++) {
+      for (let x = 1; x < map.width - 1; x++) {
+        if (!TILE_WALKABLE[map.tiles[y][x]]) continue;
+        if (Math.hypot(x - map.spawn.x, y - map.spawn.y) < 20) continue;
+        center = { x, y };
+        break;
+      }
+      if (center) break;
+    }
+  }
+
+  if (!center) {
+    center = {
+      x: Math.min(map.width - 2, map.spawn.x + 10),
+      y: Math.min(map.height - 2, map.spawn.y + 10),
+    };
+  }
+
+  clearArea(map.tiles, center.x, center.y, DUNGEON_RADIUS_TILES);
+  map.zones = [...(map.zones ?? []), createDungeonZone(center)];
+  return center;
 }

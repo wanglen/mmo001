@@ -1,6 +1,6 @@
 import { canMoveTo } from '../map/collision.js';
 import { facingFromTarget } from '../../shared/aim.js';
-import { distance, isInRange } from '../../shared/combat.js';
+import { distance, isInRange, SKILL_AIM_RADIUS } from '../../shared/combat.js';
 import { getEffectiveCombatStats } from '../../shared/inventory.js';
 import {
   canUseSkill,
@@ -241,7 +241,7 @@ export function processSkill({
           aimX,
           aimY,
           skill.range ?? 160,
-          20
+          SKILL_AIM_RADIUS
         );
       }
       if (!monster || monster.hp <= 0) {

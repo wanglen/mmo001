@@ -103,10 +103,10 @@ function drawManaPotion(ctx, ox, oy) {
   ctx.fillStyle = '#bdc3c7';
   ctx.fillRect(ox + 6, oy + 2, 4, 2);
   ctx.fillRect(ox + 7, oy + 1, 2, 1);
-  ctx.fillStyle = '#1a5276';
+  ctx.fillStyle = '#5dade2';
   ctx.fillRect(ox + 5, oy + 4, 6, 1);
   ctx.fillRect(ox + 6, oy + 5, 4, 9);
-  ctx.fillStyle = '#3498db';
+  ctx.fillStyle = '#87ceeb';
   ctx.fillRect(ox + 6, oy + 8, 4, 3);
 }
 

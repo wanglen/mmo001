@@ -65,7 +65,7 @@ function placeObstacleClusters(tiles, width, height) {
   }
 }
 
-function clearArea(tiles, centerX, centerY, radius) {
+export function clearArea(tiles, centerX, centerY, radius) {
   const height = tiles.length;
   const width = tiles[0].length;
 

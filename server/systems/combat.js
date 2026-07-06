@@ -1,9 +1,10 @@
 import { isInSafeZone } from '../../shared/zones.js';
 import {
   ATTACK_ANIM_MS,
+  ATTACK_RANGE_LEEWAY,
   calculateDamage,
   canAttackNow,
-  isInRange,
+  isInAttackRange,
 } from '../../shared/combat.js';
 import { facingFromTarget } from '../../shared/aim.js';
 import { grantXp } from '../../shared/stats.js';
@@ -56,7 +57,7 @@ export function processAttack({ player, targetId, monsterManager, lootManager, m
     return { ok: false, reason: 'invalid_target' };
   }
 
-  if (!isInRange(player.x, player.y, monster.x, monster.y)) {
+  if (!isInAttackRange(player.x, player.y, monster.x, monster.y, ATTACK_RANGE_LEEWAY)) {
     return { ok: false, reason: 'out_of_range' };
   }
 

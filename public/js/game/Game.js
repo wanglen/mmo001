@@ -42,7 +42,6 @@ export class Game {
     this.aimTarget = null;
     this.attackTargetId = null;
     this.lootTargetId = null;
-    this.portalTargetId = null;
     this.inventoryVisible = true;
     this.gamePaused = false;
     this.isDead = false;
@@ -70,7 +69,6 @@ export class Game {
       this.pathFollower.clear();
       this.attackTargetId = null;
       this.lootTargetId = null;
-      this.portalTargetId = null;
       this.dialoguePanel?.hide();
     } else if (prevMap && state.map && !state.map.tiles) {
       state = {
@@ -171,7 +169,6 @@ export class Game {
     this.pathFollower.clear();
     this.attackTargetId = null;
     this.lootTargetId = null;
-    this.portalTargetId = null;
     this.socketClient.sendCastTownRecall();
   }
 
@@ -249,10 +246,16 @@ export class Game {
     const portal = findPortalAt(portals, world.x, world.y);
 
     if (portal) {
-      this.portalTargetId = portal.id;
       this.attackTargetId = null;
       this.lootTargetId = null;
-      this.pathFollower.clear();
+      const px = this.displayPlayer.x;
+      const py = this.displayPlayer.y;
+      if (isInPortalRange(px, py, portal)) {
+        this.pathFollower.clear();
+        this.socketClient.sendUsePortal(portal.id);
+      } else {
+        this.pathFollower.setPath(this.worldState.map, px, py, portal.x, portal.y);
+      }
       return;
     }
 
@@ -261,7 +264,6 @@ export class Game {
     if (loot) {
       this.lootTargetId = loot.id;
       this.attackTargetId = null;
-      this.portalTargetId = null;
       return;
     }
 
@@ -271,13 +273,11 @@ export class Game {
     if (target) {
       this.attackTargetId = target.id;
       this.lootTargetId = null;
-      this.portalTargetId = null;
       return;
     }
 
     this.attackTargetId = null;
     this.lootTargetId = null;
-    this.portalTargetId = null;
     this.pathFollower.setPath(
       this.worldState.map,
       this.displayPlayer.x,
@@ -342,32 +342,6 @@ export class Game {
 
     if (timestamp - this.lastChasePathTime >= MOVE_INTERVAL) {
       this.pathFollower.setPath(this.worldState.map, px, py, drop.x, drop.y);
-      this.lastChasePathTime = timestamp;
-    }
-  }
-
-  handlePortalChase(timestamp) {
-    if (!this.portalTargetId || !this.displayPlayer || !this.worldState) return;
-
-    const portals = this.worldState.map?.portals ?? [];
-    const portal = portals.find((entry) => entry.id === this.portalTargetId);
-    if (!portal) {
-      this.portalTargetId = null;
-      return;
-    }
-
-    const px = this.displayPlayer.x;
-    const py = this.displayPlayer.y;
-
-    if (isInPortalRange(px, py, portal)) {
-      this.pathFollower.clear();
-      this.socketClient.sendUsePortal(portal.id);
-      this.portalTargetId = null;
-      return;
-    }
-
-    if (timestamp - this.lastChasePathTime >= MOVE_INTERVAL) {
-      this.pathFollower.setPath(this.worldState.map, px, py, portal.x, portal.y);
       this.lastChasePathTime = timestamp;
     }
   }
@@ -491,7 +465,6 @@ export class Game {
     if (keyboardDirection) {
       this.attackTargetId = null;
       this.lootTargetId = null;
-      this.portalTargetId = null;
       this.pathFollower.clear();
       if (timestamp - this.lastMoveTime >= MOVE_INTERVAL) {
         this.socketClient.sendMove(keyboardDirection);
@@ -502,7 +475,6 @@ export class Game {
 
     this.handleLootChase(timestamp);
     this.handleAttackChase(timestamp);
-    this.handlePortalChase(timestamp);
 
     if (!this.pathFollower.isActive() || !this.displayPlayer) {
       if (this.displayPlayer) this.displayPlayer.moving = false;

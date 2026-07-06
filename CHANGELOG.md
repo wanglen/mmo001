@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.20.1] - 2026-07-05
+
+### Fixed
+
+- Wilderness maps again show a dungeon entrance (stone arch zone + portal) leading to the instanced dungeon
+- Portals require an explicit click to use; walking into range no longer auto-triggers travel
+
+### Changed
+
+- Reduced attack miss rate: wider melee range, larger click/projectile hit areas, server attack leeway for movement lag
+- HP and mana potions use red and light blue inventory icons for quick identification
+
 ## [1.20.0] - 2026-07-05
 
 ### Added

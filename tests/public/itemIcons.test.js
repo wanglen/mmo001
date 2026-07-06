@@ -18,4 +18,9 @@ describe('itemIconSvg (client)', () => {
     assert.ok(buildItemIconSvg('health_potion').includes('<path'));
     assert.ok(buildItemIconSvg('mana_potion').includes('<path'));
   });
+
+  it('potion icons use red and light blue fills', () => {
+    assert.ok(buildItemIconSvg('health_potion').includes('#e74c3c'));
+    assert.ok(buildItemIconSvg('mana_potion').includes('#87ceeb'));
+  });
 });

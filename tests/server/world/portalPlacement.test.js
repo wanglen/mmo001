@@ -23,4 +23,18 @@ describe('portalPlacement', () => {
     const path = findPath(town, town.spawn.x, town.spawn.y, portal.tile.x, portal.tile.y);
     assert.ok(path.length > 0);
   });
+
+  it('wilderness map includes a dungeon gate zone and portal tile', () => {
+    const world = createWorld();
+    const wilderness = world.getMap(MAP_ID.WILDERNESS);
+    const dungeonZone = wilderness.zones?.find((zone) => zone.id === 'dungeon');
+    assert.ok(dungeonZone);
+    assert.ok(wilderness.dungeonGateTile);
+    assert.deepEqual(wilderness.dungeonGateTile, dungeonZone.center);
+
+    const dungeonPortal = wilderness.portals.find((portal) => portal.id === 'wilderness-dungeon');
+    assert.ok(dungeonPortal);
+    assert.equal(dungeonPortal.tile.x, wilderness.dungeonGateTile.x);
+    assert.equal(dungeonPortal.tile.y, wilderness.dungeonGateTile.y);
+  });
 });

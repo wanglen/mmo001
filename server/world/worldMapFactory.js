@@ -5,7 +5,7 @@ import { createPortal } from '../../shared/portals.js';
 import { TILE_WALKABLE } from '../../shared/constants.js';
 import { buildTownNpcs } from './townNpcs.js';
 import { npcToJSON } from '../../shared/npcs.js';
-import { pickTownWildernessGate, ensurePortalReachable } from './portalPlacement.js';
+import { pickTownWildernessGate, ensurePortalReachable, placeWildernessDungeonGate } from './portalPlacement.js';
 
 export function generateTownMap() {
   const { width, height } = WORLD_MAP_SIZES[MAP_ID.TOWN];
@@ -17,7 +17,8 @@ export function generateTownMap() {
 export function generateWildernessMap() {
   const { width, height } = WORLD_MAP_SIZES[MAP_ID.WILDERNESS];
   const map = generateMap(width, height, { zoneLayout: 'wilderness-only' });
-  return { ...map, mapId: MAP_ID.WILDERNESS, portals: [] };
+  const dungeonGate = placeWildernessDungeonGate(map);
+  return { ...map, mapId: MAP_ID.WILDERNESS, portals: [], dungeonGateTile: dungeonGate };
 }
 
 export function generateDungeonMap() {
@@ -28,6 +29,8 @@ export function generateDungeonMap() {
 
 /** Walkable tile far from spawn to place the wilderness → dungeon portal. */
 export function pickWildernessDungeonGate(map) {
+  if (map.dungeonGateTile) return map.dungeonGateTile;
+
   const center = pickDungeonCenter(map.tiles, map.width, map.height, map.spawn, null);
   if (center) return center;
 

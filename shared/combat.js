@@ -1,9 +1,13 @@
-export const ATTACK_RANGE = 48;
+export const ATTACK_RANGE = 52;
 export const ATTACK_COOLDOWN_MS = 600;
 export const ATTACK_ANIM_MS = 250;
-export const MONSTER_HIT_RADIUS = 18;
+/** Server accepts attacks slightly beyond client range to account for movement lag. */
+export const ATTACK_RANGE_LEEWAY = 8;
+export const MONSTER_HIT_RADIUS = 24;
 /** Extra padding added to projectile ray hit tests (monster body + aim forgiveness). */
-export const PROJECTILE_HIT_PADDING = 14;
+export const PROJECTILE_HIT_PADDING = 22;
+/** Ground-click radius for single-target skills (e.g. arrow shot). */
+export const SKILL_AIM_RADIUS = 28;
 export const MONSTER_ATTACK_COOLDOWN_MS = 1200;
 /** Provoked monsters chase their attacker up to this distance. */
 export const MONSTER_PROVOKE_CHASE_RANGE = 600;
@@ -20,6 +24,11 @@ export function calculateDamage(attackerStr, defenderVit = 0) {
 
 export function isInRange(x1, y1, x2, y2, range = ATTACK_RANGE) {
   return distance(x1, y1, x2, y2) <= range;
+}
+
+/** Melee attack validation — optional leeway for server-side lag forgiveness. */
+export function isInAttackRange(x1, y1, x2, y2, leeway = 0) {
+  return isInRange(x1, y1, x2, y2, ATTACK_RANGE + leeway);
 }
 
 export function canAttackNow(lastAttackAt, now = Date.now(), cooldownMs = ATTACK_COOLDOWN_MS) {

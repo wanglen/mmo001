@@ -1,8 +1,7 @@
 import { INVENTORY_COLS, INVENTORY_ROWS } from '/shared/inventory.js';
 import { isConsumable } from '/shared/consumables.js';
-import { getRarityColor } from '/shared/items.js';
 import { EQUIP_SLOTS } from '/shared/items.js';
-import { buildSlotIconHtml, buildItemIconSvg } from './itemIcons.js';
+import { buildSlotIconHtml, buildItemIconSvg, getInventoryIconColor } from './itemIcons.js';
 import { resolveItemIconKey } from '/shared/itemIcons.js';
 import {
   buildEmptyInspectHtml,
@@ -119,7 +118,7 @@ export class InventoryPanel {
           : 'Click to equip';
       const fallbackSlot = slotEl.classList.contains('equip-slot') ? slotEl.dataset.slot : '';
       const iconKey = resolveItemIconKey(item, fallbackSlot);
-      const iconColor = getRarityColor(item.rarity);
+      const iconColor = getInventoryIconColor(item);
       const iconHtml = `<div class="item-inspect-icon" style="color: ${iconColor}">${buildItemIconSvg(iconKey)}</div>`;
       this.showInspect(iconHtml + buildItemInspectHtml(item, { actionHint }));
       return;
@@ -167,7 +166,7 @@ export class InventoryPanel {
   }
 
   renderSlot(el, item, slotType = '') {
-    const iconColor = item ? getRarityColor(item.rarity) : EMPTY_SLOT_COLOR;
+    const iconColor = getInventoryIconColor(item, EMPTY_SLOT_COLOR);
 
     el.style.borderColor = item ? iconColor : '#333';
     el.style.setProperty('--slot-icon-color', iconColor);
