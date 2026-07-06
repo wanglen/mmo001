@@ -51,6 +51,23 @@ describe('pickupLoot', () => {
     assert.equal(result.ok, false);
     assert.equal(result.reason, 'out_of_range');
   });
+
+  it('rejects pickup when player is not eligible', () => {
+    resetItemIdCounter();
+    resetLootIdCounter();
+    const player = createMockPlayer();
+    player.id = 'player-b';
+    const lootManager = new LootManager();
+    const item = createItem(swordTemplate, RARITY.COMMON);
+    const drop = lootManager.spawn(110, 100, item, {
+      eligiblePlayerIds: ['player-a'],
+      freeForAllAt: Date.now() + 30_000,
+    });
+
+    const result = pickupLoot({ player, lootId: drop.id, lootManager });
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'not_eligible');
+  });
 });
 
 describe('equipFromInventory', () => {

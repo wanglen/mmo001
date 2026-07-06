@@ -6,10 +6,15 @@ import {
 } from '../../shared/inventory.js';
 import { EQUIP_SLOTS } from '../../shared/items.js';
 import { applyConsumable } from '../../shared/consumables.js';
+import { canPlayerPickupDrop } from '../items/LootManager.js';
 
-export function pickupLoot({ player, lootId, lootManager }) {
+export function pickupLoot({ player, lootId, lootManager, now = Date.now() }) {
   const drop = lootManager.get(lootId);
   if (!drop) return { ok: false, reason: 'not_found' };
+
+  if (!canPlayerPickupDrop(drop, player.id, now)) {
+    return { ok: false, reason: 'not_eligible' };
+  }
 
   if (distance(player.x, player.y, drop.x, drop.y) > PICKUP_RANGE) {
     return { ok: false, reason: 'out_of_range' };

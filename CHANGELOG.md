@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-07-06
+
+### Added
+
+- **Economy & trade:** monster gold drops, town vendor Brok (buy potions/gear, sell loot at 40% buy price)
+- Player-to-player trade window (4 item slots + gold per side, ready/confirm, range check)
+- Multiplayer loot rules: killer + nearby party members get 30s exclusive pickup; then free-for-all
+- Locked loot shown dimmed on ground; non-eligible players cannot click to pick up
+
 ## [2.0.0] - 2026-07-06
 
 ### Added

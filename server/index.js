@@ -7,8 +7,10 @@ import { PORT } from './config.js';
 import { PlayerManager } from './players/PlayerManager.js';
 import { CharacterStore } from './persistence/CharacterStore.js';
 import { PartyManager } from './social/PartyManager.js';
+import { TradeManager } from './social/TradeManager.js';
 import { registerSocketHandlers } from './network/socketHandlers.js';
 import { registerSocialHandlers } from './network/socialHandlers.js';
+import { registerEconomyHandlers } from './network/economyHandlers.js';
 import { startGameLoop } from './systems/gameLoop.js';
 import { createWorld } from './world/World.js';
 import { APP_VERSION } from './version.js';
@@ -42,9 +44,22 @@ app.get('/api/version', (_req, res) => {
 const world = createWorld();
 const playerManager = new PlayerManager();
 const partyManager = new PartyManager();
+const tradeManager = new TradeManager();
 
 registerSocialHandlers(io, playerManager, partyManager);
-const { broadcastAll } = registerSocketHandlers(io, world, playerManager, characterStore, partyManager);
+
+let broadcastAllFn = () => {};
+registerEconomyHandlers(io, world, playerManager, tradeManager, characterStore, () => broadcastAllFn());
+
+const { broadcastAll } = registerSocketHandlers(
+  io,
+  world,
+  playerManager,
+  characterStore,
+  partyManager,
+  tradeManager
+);
+broadcastAllFn = broadcastAll;
 
 startGameLoop({
   world,

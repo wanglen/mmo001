@@ -98,10 +98,10 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 - [x] Player list / online count
 
 ### Economy & trade
-- [ ] Gold currency
-- [ ] Vendor NPCs (buy/sell items)
-- [ ] Player-to-player trade window
-- [ ] Item drop rules in multiplayer (who gets loot)
+- [x] Gold currency
+- [x] Vendor NPCs (buy/sell items)
+- [x] Player-to-player trade window
+- [x] Item drop rules in multiplayer (who gets loot)
 
 ---
 

@@ -31,6 +31,17 @@ export const EVENTS = {
   PARTY_STATE: 'partyState',
   ONLINE_PLAYERS: 'onlinePlayers',
   SESSION_END: 'sessionEnd',
+  VENDOR_OPEN: 'vendorOpen',
+  VENDOR_CATALOG: 'vendorCatalog',
+  VENDOR_BUY: 'vendorBuy',
+  VENDOR_SELL: 'vendorSell',
+  TRADE_REQUEST: 'tradeRequest',
+  TRADE_ACCEPT: 'tradeAccept',
+  TRADE_DECLINE: 'tradeDecline',
+  TRADE_CANCEL: 'tradeCancel',
+  TRADE_UPDATE: 'tradeUpdate',
+  TRADE_READY: 'tradeReady',
+  TRADE_STATE: 'tradeState',
 };
 
 export const CURSOR_MODE = {

@@ -27,6 +27,7 @@ import {
   onPlayerDisconnectedSocial,
   onPlayerJoinedSocial,
 } from './socialHandlers.js';
+import { onPlayerDisconnectedEconomy } from './economyHandlers.js';
 
 function sanitizePlayerName(name) {
   return (name || '').trim().slice(0, 20);
@@ -79,7 +80,7 @@ function buildWorldState(world, playerManager, playerId, { includeMapTiles = tru
     player: player ? player.toJSON(now) : null,
     players: serializeRemotePlayers(sameMapPlayers, playerId, now),
     monsters: monsterManager.getAll(),
-    loot: lootManager.getAll(),
+    loot: lootManager.getAllForViewer(playerId, now),
     npcs: (map.npcs ?? map.npcsJson ?? []).map((entry) =>
       entry.dialogue ? entry : npcToJSON(entry)
     ),
@@ -181,7 +182,7 @@ async function evictCharacterSessions({
   broadcastAll(io, world, playerManager);
 }
 
-export function registerSocketHandlers(io, world, playerManager, characterStore, partyManager) {
+export function registerSocketHandlers(io, world, playerManager, characterStore, partyManager, tradeManager) {
   io.on('connection', (socket) => {
     socket.on(EVENTS.CREATE_CHARACTER, async ({ name, characterClass }) => {
       if (!CHARACTER_CLASSES[characterClass]) {
@@ -542,6 +543,7 @@ export function registerSocketHandlers(io, world, playerManager, characterStore,
     socket.on('disconnect', async () => {
       const playerId = socket.id;
       onPlayerDisconnectedSocial(io, playerManager, partyManager, playerId);
+      onPlayerDisconnectedEconomy(io, tradeManager, playerManager, playerId);
       const player = playerManager.remove(playerId);
       await persistPlayer(characterStore, player);
       if (player) broadcastAll(io, world, playerManager);

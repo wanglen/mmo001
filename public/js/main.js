@@ -6,9 +6,12 @@ import { DialoguePanel } from './ui/DialoguePanel.js';
 import { QuestTracker } from './ui/QuestTracker.js';
 import { ChatPanel } from './ui/ChatPanel.js';
 import { SocialPanel } from './ui/SocialPanel.js';
+import { VendorPanel } from './ui/VendorPanel.js';
+import { TradePanel } from './ui/TradePanel.js';
 import { DisconnectModal } from './ui/DisconnectModal.js';
 import { SocketClient } from './network/socketClient.js';
 import { Game } from './game/Game.js';
+import { CHAT_CHANNEL } from '/shared/social.js';
 
 const canvas = document.getElementById('game-canvas');
 const socketClient = new SocketClient();
@@ -31,6 +34,8 @@ const dialoguePanel = new DialoguePanel(document.getElementById('dialogue-panel'
 const questTracker = new QuestTracker(document.getElementById('quest-tracker'));
 const chatPanel = new ChatPanel(document.getElementById('chat-panel'));
 const socialPanel = new SocialPanel(document.getElementById('social-panel'));
+const vendorPanel = new VendorPanel(document.getElementById('vendor-panel'));
+const tradePanel = new TradePanel(document.getElementById('trade-panel'));
 chatPanel.setCanvas(canvas);
 
 const disconnectModal = new DisconnectModal(
@@ -49,6 +54,16 @@ socialPanel.onInvite = (targetName) => socketClient.sendPartyInvite(targetName);
 socialPanel.onAcceptInvite = () => socketClient.sendPartyAccept();
 socialPanel.onDeclineInvite = () => socketClient.sendPartyDecline();
 socialPanel.onLeaveParty = () => socketClient.sendPartyLeave();
+socialPanel.onTrade = (targetName) => socketClient.sendTradeRequest(targetName);
+
+vendorPanel.onBuy = (npcId, templateKey) => socketClient.sendVendorBuy(npcId, templateKey);
+vendorPanel.onSell = (npcId, inventoryIndex) => socketClient.sendVendorSell(npcId, inventoryIndex);
+
+tradePanel.onAccept = () => socketClient.sendTradeAccept();
+tradePanel.onDecline = () => socketClient.sendTradeDecline();
+tradePanel.onCancel = () => socketClient.sendTradeCancel();
+tradePanel.onUpdate = (offer) => socketClient.sendTradeUpdate(offer);
+tradePanel.onReady = (ready) => socketClient.sendTradeReady(ready);
 
 const game = new Game(
   canvas,
@@ -59,7 +74,9 @@ const game = new Game(
   dialoguePanel,
   questTracker,
   chatPanel,
-  socialPanel
+  socialPanel,
+  vendorPanel,
+  tradePanel
 );
 levelUpPanel.onPauseChange = (paused) => game.onGamePause(paused);
 
@@ -73,6 +90,8 @@ function handleForcedDisconnect(message) {
   game.stop();
   chatPanel.hide();
   socialPanel.hide();
+  vendorPanel.hide();
+  tradePanel.hide();
   questTracker.update(null);
   document.getElementById('character-select')?.classList.add('hidden');
   disconnectModal.show(message);
@@ -85,6 +104,8 @@ socketClient.onWorldState((state) => {
 socketClient.onChatMessage((msg) => chatPanel.appendMessage(msg));
 socketClient.onOnlinePlayers((payload) => socialPanel.updateOnline(payload));
 socketClient.onPartyState((state) => socialPanel.updateParty(state));
+socketClient.onVendorCatalog(({ catalog, npcId }) => game.openVendor(npcId, catalog));
+socketClient.onTradeState((state) => game.updateTradeState(state));
 
 const characterSelect = new CharacterSelect({
   socketClient,
@@ -98,10 +119,15 @@ const characterSelect = new CharacterSelect({
 
 socketClient.onError((err) => {
   console.error('Server error:', err.message);
-  if (!inGame) {
-    characterSelect.showError(err.message);
-    document.getElementById('create-submit-btn')?.removeAttribute('disabled');
+  if (inGame) {
+    chatPanel.appendMessage({
+      channel: CHAT_CHANNEL.SYSTEM,
+      text: err.message,
+    });
+    return;
   }
+  characterSelect.showError(err.message);
+  document.getElementById('create-submit-btn')?.removeAttribute('disabled');
 });
 
 socketClient.onSessionEnd(({ message } = {}) => {

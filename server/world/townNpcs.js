@@ -1,5 +1,6 @@
 import { createNpc, NPC_ROLE } from '../../shared/npcs.js';
 import { QUESTS } from '../../shared/quests.js';
+import { VENDOR_ID } from '../../shared/vendors.js';
 
 function questIdsForNpc(npcId) {
   return Object.values(QUESTS)
@@ -33,6 +34,14 @@ export function buildTownNpcs(town) {
         'The wilderness lies beyond the southern gate.',
         'Monsters grow bolder in the dungeon — venture there only when ready.',
       ],
+    }),
+    createNpc({
+      id: VENDOR_ID.TOWN_MERCHANT,
+      name: 'Brok',
+      role: NPC_ROLE.VENDOR,
+      vendorId: VENDOR_ID.TOWN_MERCHANT,
+      tile: { x: spawn.x + 3, y: spawn.y - 1 },
+      dialogue: ['Need supplies? I buy and sell adventurer gear.'],
     }),
   ];
 }

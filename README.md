@@ -13,6 +13,8 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 - Loot: per-item pixel icons on ground (rarity glow) and in inventory; click to pick up; potions usable from bag
 - Inventory: 10×4 grid, 7 equip slots, stat bonuses from gear (server-side); hover to compare vs equipped, right-click for actions, destroy unwanted items
 - Leveling: XP curve, +5 stat points per level-up, allocation UI (reopen with C), JSON character save; quest rewards grant XP, gold, and items
+- **Economy:** gold from quests and monster kills; vendor NPC Brok in town (buy/sell); player trade via online list (⇄)
+- **Loot rules:** party-shared pickup lock for 30s after a kill, then free-for-all
 - Skills: class skill bar (keys 1–7), HP/MP potion hotkeys (8/9) with stack counts, cooldowns, server-authoritative damage
 - Death at 0 HP: blocked actions, respawn button restores HP/MP at spawn
 - Map fog of war: translucent grey veil on unexplored terrain only; monsters and loot hidden until explored; explored areas stay clear; top-right minimap shows revealed terrain, portals, and player position
@@ -126,7 +128,9 @@ Tests use Node.js built-in test runner. Coverage includes pathfinding, collision
 - **T** (outside town) — start 6s recall cast to town; interrupted by movement, combat, or damage
 - **Enter** — focus chat; **Esc** blurs chat while typing
 - **Chat** — Global / Zone channels; `/w Name message` whisper; `/p message` party chat (left column, above resource orbs)
-- **Online panel** (top-left) — player list, invite to party, accept/decline invites
+- **Online panel** (top-left) — player list, invite to party (+), trade (⇄), accept/decline invites
+- **Vendor** — click Brok in town to buy potions/gear or sell items from your bag
+- **Trade** — stand near the other player on the same map, then request from the online list (⇄); both mark ready to exchange items and gold (chat shows a hint if you are too far)
 - **Resource orbs** (bottom corners) — Life (left) and Mana (right) globes with XP bar between; press **C** for full stats
 
 ## Project structure

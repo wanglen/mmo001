@@ -16,6 +16,7 @@ export class SocialPanel {
     this.onAcceptInvite = null;
     this.onDeclineInvite = null;
     this.onLeaveParty = null;
+    this.onTrade = null;
 
     this.inviteEl?.querySelector('[data-party-accept]')?.addEventListener('click', () => {
       this.onAcceptInvite?.();
@@ -57,6 +58,9 @@ export class SocialPanel {
         !isSelf && !this.party.partyId && !this.party.pendingInvite
           ? `<button type="button" class="btn-invite" data-invite="${escapeAttr(entry.name)}" title="Invite to party">+</button>`
           : '';
+      const tradeBtn = !isSelf
+        ? `<button type="button" class="btn-trade" data-trade="${escapeAttr(entry.name)}" title="Trade">⇄</button>`
+        : '';
 
       return `<li class="social-player-row${isSelf ? ' social-player-row--self' : ''}">
         <div class="social-player-info">
@@ -64,15 +68,25 @@ export class SocialPanel {
           <span class="social-player-meta">L${entry.level} ${escapeHtml(classLabel)} · ${escapeHtml(mapLabel)}</span>
         </div>
         ${inviteBtn}
+        ${tradeBtn}
       </li>`;
     });
 
     this.listEl.innerHTML = rows.join('') || '<li class="social-empty">No one online</li>';
 
     this.listEl.querySelectorAll('[data-invite]').forEach((btn) => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         const name = btn.getAttribute('data-invite');
         if (name) this.onInvite?.(name);
+      });
+    });
+
+    this.listEl.querySelectorAll('[data-trade]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const name = btn.getAttribute('data-trade');
+        if (name) this.onTrade?.(name);
       });
     });
   }

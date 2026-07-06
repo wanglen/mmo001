@@ -113,6 +113,60 @@
     </div>
   </div>
 
+  <div id="vendor-backdrop" class="vendor-backdrop hidden" aria-hidden="true"></div>
+  <div id="vendor-panel" class="vendor-panel hidden">
+    <div class="vendor-panel-inner">
+      <div class="vendor-header">
+        <h2 data-vendor-name>Vendor</h2>
+        <button type="button" class="btn-secondary" data-vendor-close aria-label="Close vendor">×</button>
+      </div>
+      <p class="vendor-gold">Gold: <span data-vendor-gold>0</span></p>
+      <div class="vendor-columns">
+        <section>
+          <h3>Buy</h3>
+          <ul class="vendor-list" data-vendor-stock></ul>
+        </section>
+        <section>
+          <h3>Sell</h3>
+          <ul class="vendor-list" data-vendor-sell></ul>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div id="trade-backdrop" class="trade-backdrop hidden" aria-hidden="true"></div>
+  <div id="trade-panel" class="trade-panel hidden">
+    <div class="trade-panel-inner">
+      <div class="trade-header">
+        <h2>Trade — <span data-trade-partner>Player</span></h2>
+        <button type="button" class="btn-secondary" data-trade-close aria-label="Cancel trade">×</button>
+      </div>
+      <p class="trade-status" data-trade-status></p>
+      <div class="trade-incoming hidden" data-trade-incoming>
+        <p>Incoming trade request</p>
+        <div class="trade-incoming-actions">
+          <button type="button" data-trade-accept>Accept</button>
+          <button type="button" class="btn-secondary" data-trade-decline>Decline</button>
+        </div>
+      </div>
+      <div class="trade-active" data-trade-active>
+        <div class="trade-columns">
+          <section>
+            <h3>Your offer</h3>
+            <div class="trade-slots" data-trade-my-slots></div>
+            <label class="trade-gold-row">Gold <input type="number" min="0" step="1" data-trade-my-gold /></label>
+            <button type="button" data-trade-my-ready data-trade-ready>Ready</button>
+          </section>
+          <section>
+            <h3>Their offer</h3>
+            <div class="trade-slots" data-trade-their-slots></div>
+            <p class="trade-gold-row">Gold: <span data-trade-their-gold>0</span></p>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="disconnect-overlay" class="overlay hidden" role="alertdialog" aria-modal="true" aria-labelledby="disconnect-title">
     <div class="panel disconnect-panel">
       <h1 id="disconnect-title">Disconnected</h1>

@@ -13,6 +13,8 @@ export class SocketClient {
     this.onPartyStateCallback = null;
     this.onDisconnectCallback = null;
     this.onSessionEndCallback = null;
+    this.onVendorCatalogCallback = null;
+    this.onTradeStateCallback = null;
 
     this.socket.on(EVENTS.WORLD_STATE, (state) => {
       if (this.onWorldStateCallback) this.onWorldStateCallback(state);
@@ -48,6 +50,14 @@ export class SocketClient {
 
     this.socket.on(EVENTS.SESSION_END, (payload) => {
       if (this.onSessionEndCallback) this.onSessionEndCallback(payload);
+    });
+
+    this.socket.on(EVENTS.VENDOR_CATALOG, (payload) => {
+      if (this.onVendorCatalogCallback) this.onVendorCatalogCallback(payload);
+    });
+
+    this.socket.on(EVENTS.TRADE_STATE, (state) => {
+      if (this.onTradeStateCallback) this.onTradeStateCallback(state);
     });
   }
 
@@ -159,6 +169,42 @@ export class SocketClient {
     this.socket.emit(EVENTS.PARTY_LEAVE);
   }
 
+  sendVendorOpen(npcId) {
+    this.socket.emit(EVENTS.VENDOR_OPEN, { npcId });
+  }
+
+  sendVendorBuy(npcId, templateKey) {
+    this.socket.emit(EVENTS.VENDOR_BUY, { npcId, templateKey });
+  }
+
+  sendVendorSell(npcId, inventoryIndex) {
+    this.socket.emit(EVENTS.VENDOR_SELL, { npcId, inventoryIndex });
+  }
+
+  sendTradeRequest(targetName) {
+    this.socket.emit(EVENTS.TRADE_REQUEST, { targetName });
+  }
+
+  sendTradeAccept() {
+    this.socket.emit(EVENTS.TRADE_ACCEPT);
+  }
+
+  sendTradeDecline() {
+    this.socket.emit(EVENTS.TRADE_DECLINE);
+  }
+
+  sendTradeCancel() {
+    this.socket.emit(EVENTS.TRADE_CANCEL);
+  }
+
+  sendTradeUpdate(offer) {
+    this.socket.emit(EVENTS.TRADE_UPDATE, offer);
+  }
+
+  sendTradeReady(ready) {
+    this.socket.emit(EVENTS.TRADE_READY, { ready });
+  }
+
   onChatMessage(callback) {
     this.onChatMessageCallback = callback;
   }
@@ -177,6 +223,14 @@ export class SocketClient {
 
   onSessionEnd(callback) {
     this.onSessionEndCallback = callback;
+  }
+
+  onVendorCatalog(callback) {
+    this.onVendorCatalogCallback = callback;
+  }
+
+  onTradeState(callback) {
+    this.onTradeStateCallback = callback;
   }
 
   isConnected() {

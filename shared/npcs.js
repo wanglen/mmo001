@@ -8,6 +8,7 @@ export const NPC_INTERACT_RANGE = 40;
 export const NPC_ROLE = {
   INNKEEPER: 'innkeeper',
   GUIDE: 'guide',
+  VENDOR: 'vendor',
 };
 
 /**
@@ -18,6 +19,7 @@ export function createNpc(spec) {
     id: spec.id,
     name: spec.name,
     role: spec.role,
+    vendorId: spec.vendorId ?? null,
     x: spec.tile.x * TILE_SIZE + TILE_SIZE / 2,
     y: spec.tile.y * TILE_SIZE + TILE_SIZE / 2,
     tile: spec.tile,
@@ -31,6 +33,7 @@ export function npcToJSON(npc) {
     id: npc.id,
     name: npc.name,
     role: npc.role,
+    vendorId: npc.vendorId ?? null,
     x: npc.x,
     y: npc.y,
     dialogue: npc.dialogue,

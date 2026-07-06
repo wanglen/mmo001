@@ -21,6 +21,7 @@ export class LootRenderer {
     const zoom = camera.zoom ?? 1;
 
     for (const drop of lootDrops) {
+      const locked = !!drop.pickupLocked;
       const screen = camera.worldToScreen(drop.x, drop.y);
       const bob = Math.sin(timestamp * 0.004 + hashDropId(drop.id) * 0.17) * 2 * zoom;
       const x = screen.x;
@@ -43,6 +44,7 @@ export class LootRenderer {
 
       ctx.save();
       ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = locked ? 0.35 : 1;
       ctx.drawImage(icon, x - half, y - half, size, size);
       ctx.restore();
 

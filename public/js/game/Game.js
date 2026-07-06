@@ -7,7 +7,7 @@ import { facingFromTarget } from '/shared/aim.js';
 import { findMonsterAt, isInRange, ATTACK_COOLDOWN_MS } from '/shared/combat.js';
 import { findLootAt, isInPickupRange } from '/shared/inventory.js';
 import { findPortalAt, isInPortalRange } from '/shared/portals.js';
-import { findNpcAt, isNearNpc } from '/shared/npcs.js';
+import { findNpcAt, isNearNpc, NPC_ROLE } from '/shared/npcs.js';
 import { isTownHubMap } from '/shared/townHub.js';
 import { getSkill, getSkillFxDuration, resolveProjectileImpact, canUseSkill } from '/shared/skills.js';
 import { CONSUMABLE_KIND, canQuickUsePotion } from '/shared/consumables.js';
@@ -22,7 +22,7 @@ const MOVE_INTERVAL = 50;
 const AIM_INTERVAL = 50;
 
 export class Game {
-  constructor(canvas, socketClient, inventoryPanel = null, levelUpPanel = null, skillBar = null, dialoguePanel = null, questTracker = null, chatPanel = null, socialPanel = null) {
+  constructor(canvas, socketClient, inventoryPanel = null, levelUpPanel = null, skillBar = null, dialoguePanel = null, questTracker = null, chatPanel = null, socialPanel = null, vendorPanel = null, tradePanel = null) {
     this.canvas = canvas;
     this.socketClient = socketClient;
     this.inventoryPanel = inventoryPanel;
@@ -32,6 +32,8 @@ export class Game {
     this.questTracker = questTracker;
     this.chatPanel = chatPanel;
     this.socialPanel = socialPanel;
+    this.vendorPanel = vendorPanel;
+    this.tradePanel = tradePanel;
     this.input = new Input(canvas);
     this.camera = new Camera(canvas);
     this.cursorManager = new CursorManager(canvas);
@@ -94,6 +96,7 @@ export class Game {
       this.attackTargetId = null;
       this.lootTargetId = null;
       this.dialoguePanel?.hide();
+      this.vendorPanel?.hide();
       this.remotePlayerDisplay.clear();
     } else if (prevMap && state.map && !state.map.tiles) {
       state = {
@@ -149,6 +152,9 @@ export class Game {
       this.skillBar?.update(state.player);
       this.questTracker?.update(state.player);
       this.socialPanel?.setSelf(state.player);
+      if (this.vendorPanel?.isVisible()) {
+        this.vendorPanel.update(state.player);
+      }
 
       if (this.dialoguePanel?.isVisible() && this.dialoguePanel.currentNpc && state.player) {
         const npc = (state.npcs ?? []).find(
@@ -174,7 +180,24 @@ export class Game {
   beginNpcInteraction(npc) {
     if (!npc) return;
     this.socketClient.sendNpcInteract(npc.id);
+    if (npc.role === NPC_ROLE.VENDOR || npc.vendorId) {
+      this.socketClient.sendVendorOpen(npc.id);
+      return;
+    }
     this.openNpcDialogue(npc);
+  }
+
+  openVendor(npcId, catalog) {
+    const npc = (this.worldState?.npcs ?? []).find((entry) => entry.id === npcId) ?? { id: npcId };
+    this.vendorPanel?.open(npc, catalog, this.worldState?.player);
+  }
+
+  updateTradeState(state) {
+    this.tradePanel?.update(state, this.worldState?.player);
+  }
+
+  pickableLoot() {
+    return (this.worldState?.loot ?? []).filter((drop) => !drop.pickupLocked);
   }
 
   updateDisplayPlayer() {
@@ -324,7 +347,7 @@ export class Game {
       return;
     }
 
-    const loot = findLootAt(this.worldState.loot ?? [], world.x, world.y);
+    const loot = findLootAt(this.pickableLoot(), world.x, world.y);
 
     if (loot) {
       this.lootTargetId = loot.id;
@@ -362,7 +385,7 @@ export class Game {
     this.cursorManager.update(
       world,
       this.worldState.monsters ?? [],
-      this.worldState.loot ?? [],
+      this.pickableLoot(),
       this.worldState.map?.portals ?? []
     );
 
@@ -415,7 +438,7 @@ export class Game {
     if (!this.lootTargetId || !this.displayPlayer || !this.worldState) return;
 
     const drop = (this.worldState.loot ?? []).find((l) => l.id === this.lootTargetId);
-    if (!drop) {
+    if (!drop || drop.pickupLocked) {
       this.lootTargetId = null;
       return;
     }

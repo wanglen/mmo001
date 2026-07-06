@@ -9,6 +9,8 @@ import {
 import { facingFromTarget } from '../../shared/aim.js';
 import { grantXp } from '../../shared/stats.js';
 import { getPartyXpRecipients } from '../../shared/social.js';
+import { buildLootDropMeta } from '../../shared/lootRules.js';
+import { addGold, rollMonsterGold } from '../../shared/economy.js';
 import { getEffectiveCombatStats } from '../../shared/inventory.js';
 import { rollLoot } from '../../shared/items.js';
 import { pushDamageFx, pushHitFlash } from './combatFx.js';
@@ -48,9 +50,14 @@ export function applyMonsterDamage({
       xpRecipientIds.push(recipient.id);
     }
 
+    addGold(player, rollMonsterGold(monster.type));
+
     if (lootManager) {
       const item = rollLoot(monster.type);
-      if (item) lootDrop = lootManager.spawn(monster.x, monster.y, item);
+      if (item) {
+        const lootMeta = buildLootDropMeta(player, partyMemberIds, allPlayers, now);
+        lootDrop = lootManager.spawn(monster.x, monster.y, item, lootMeta);
+      }
     }
     monsterManager.remove(monster.id);
   }
