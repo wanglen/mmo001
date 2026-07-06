@@ -7,7 +7,7 @@ import { tickPlayerTownSystems } from './townHub.js';
 const TICK_MS = 50;
 const RESPAWN_CHECK_MS = 15000;
 
-export function startGameLoop({ world, playerManager, characterStore, broadcast }) {
+export function startGameLoop({ world, playerManager, characterStore, broadcast, eventBus = null }) {
   let lastRespawnCheck = 0;
 
   setInterval(async () => {
@@ -27,7 +27,7 @@ export function startGameLoop({ world, playerManager, characterStore, broadcast 
       if (player.dead) continue;
 
       const { map } = world.getContextForPlayer(player);
-      const result = tickPlayerTownSystems(player, map, world, TICK_MS);
+      const result = tickPlayerTownSystems(player, map, world, TICK_MS, eventBus);
       if (result.teleported) {
         teleportedIds.add(player.id);
         if (characterStore) await characterStore.save(player);

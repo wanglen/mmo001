@@ -9,13 +9,10 @@ import {
 import { facingFromTarget } from '../../shared/aim.js';
 import { grantXp } from '../../shared/stats.js';
 import { getPartyXpRecipients } from '../../shared/social.js';
-import { buildLootDropMeta } from '../../shared/lootRules.js';
-import { addGold, rollMonsterGold } from '../../shared/economy.js';
 import { getEffectiveCombatStats } from '../../shared/inventory.js';
-import { rollLoot } from '../../shared/items.js';
 import { pushDamageFx, pushHitFlash } from './combatFx.js';
 import { provokeMonster } from './monsterCombat.js';
-import { onMonsterKillQuests } from './quests.js';
+import { DOMAIN_EVENTS } from '../../shared/plugins/domainEvents.js';
 
 export function applyMonsterDamage({
   monster,
@@ -25,6 +22,7 @@ export function applyMonsterDamage({
   lootManager,
   partyManager = null,
   playerManager = null,
+  eventBus = null,
   now = Date.now(),
 }) {
   monster.hp = Math.max(0, monster.hp - damage);
@@ -45,21 +43,21 @@ export function applyMonsterDamage({
 
     for (const recipient of recipients) {
       const result = grantXp(recipient, monster.xpReward, recipient.characterClass);
-      onMonsterKillQuests(recipient, monster.type);
       if (recipient.id === player.id) xpResult = result;
       xpRecipientIds.push(recipient.id);
     }
 
-    addGold(player, rollMonsterGold(monster.type));
-
-    if (lootManager) {
-      const item = rollLoot(monster.type);
-      if (item) {
-        const lootMeta = buildLootDropMeta(player, partyMemberIds, allPlayers, now);
-        lootDrop = lootManager.spawn(monster.x, monster.y, item, lootMeta);
-      }
-    }
     monsterManager.remove(monster.id);
+
+    eventBus?.emit(DOMAIN_EVENTS.MONSTER_KILLED, {
+      killer: player,
+      monster,
+      recipients,
+      partyMemberIds,
+      allPlayers,
+      lootManager,
+      now,
+    });
   }
 
   return { damage, killed, xp: xpResult, xpRecipientIds, lootDrop };
@@ -73,6 +71,7 @@ export function processAttack({
   map,
   partyManager = null,
   playerManager = null,
+  eventBus = null,
   now = Date.now(),
 }) {
   if (!canAttackNow(player.lastAttackAt ?? 0, now)) {
@@ -108,6 +107,7 @@ export function processAttack({
     lootManager,
     partyManager,
     playerManager,
+    eventBus,
     now,
   });
 

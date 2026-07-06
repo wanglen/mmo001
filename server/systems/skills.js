@@ -122,6 +122,7 @@ function damageMonsters({
   lootManager,
   partyManager,
   playerManager,
+  eventBus = null,
   now,
 }) {
   const results = [];
@@ -143,6 +144,7 @@ function damageMonsters({
       lootManager,
       partyManager,
       playerManager,
+      eventBus,
       now,
     });
     results.push({ monsterId: monster.id, ...result });
@@ -162,6 +164,7 @@ export function processSkill({
   map,
   partyManager = null,
   playerManager = null,
+  eventBus = null,
   now = Date.now(),
 }) {
   const check = canUseSkill(player, skillId, now);
@@ -283,6 +286,7 @@ export function processSkill({
     lootManager,
     partyManager,
     playerManager,
+    eventBus,
     now,
   });
 

@@ -178,19 +178,19 @@ Each feature plugin should export:
 
 ### C.1 Bus
 
-- [ ] Add `server/app/EventBus.js` — sync, in-process `on` / `emit`
-- [ ] Document event names in `shared/plugins/events.js` (domain events, not socket events)
+- [x] Add `server/app/EventBus.js` — sync, in-process `on` / `emit`
+- [x] Document event names in `shared/plugins/domainEvents.js` (domain events, not socket events)
 
 ### C.2 Rewire cross-talk
 
-- [ ] `monster:killed` — combat emits; quests + loot + economy subscribe
-- [ ] `player:disconnect` — core emits; social + economy subscribe
-- [ ] `player:teleported` — zones emit; combat/AI reset if needed
-- [ ] Remove direct imports: `combat.js` → `quests.js` (and similar)
+- [x] `monster:killed` — combat emits; quests + loot + economy subscribe
+- [x] `player:disconnect` — core emits; social + economy subscribe
+- [x] `player:teleported` — zones emit; combat/AI reset if needed
+- [x] Remove direct imports: `combat.js` → `quests.js` (and similar)
 
 ### C.3 Tests
 
-- [ ] Unit tests for quest progress on `monster:killed` via bus (no socket)
+- [x] Unit tests for quest progress on `monster:killed` via bus (no socket)
 
 ---
 

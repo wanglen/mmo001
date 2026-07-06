@@ -5,6 +5,7 @@ import {
   TOWN_RECALL_TARGET_MAP_ID,
 } from '../../shared/townHub.js';
 import { refreshPlayerDerivedStats } from '../../shared/inventory.js';
+import { emitPlayerTeleported } from '../plugins/core/bus.js';
 
 export function restoreVitalityInTown(player, map) {
   if (!isTownHubMap(map) || player.dead) return false;
@@ -52,7 +53,7 @@ export function startTownRecall(player, map) {
  * Advance recall cast; teleports when complete.
  * @returns {{ teleported: boolean }}
  */
-export function tickTownRecall(player, map, world, deltaMs) {
+export function tickTownRecall(player, map, world, deltaMs, eventBus = null) {
   if (!player.townRecallCasting) {
     player.townRecallCastMs = 0;
     return { teleported: false };
@@ -68,11 +69,11 @@ export function tickTownRecall(player, map, world, deltaMs) {
     return { teleported: false };
   }
 
-  teleportToTown({ world, player });
+  teleportToTown({ world, player, eventBus });
   return { teleported: true };
 }
 
-export function teleportToTown({ world, player }) {
+export function teleportToTown({ world, player, eventBus = null }) {
   const targetMap = world.getMap(TOWN_RECALL_TARGET_MAP_ID);
   if (!targetMap) return { ok: false, reason: 'missing_town' };
 
@@ -85,17 +86,19 @@ export function teleportToTown({ world, player }) {
   player.townRecallCasting = false;
   player.townRecallCastMs = 0;
 
+  emitPlayerTeleported(eventBus, player, player.mapId, 'town_recall');
+
   return { ok: true, mapId: player.mapId };
 }
 
-export function tickTownHub(player, map, world, deltaMs) {
+export function tickTownHub(player, map, world, deltaMs, eventBus = null) {
   restoreVitalityInTown(player, map);
-  return tickTownRecall(player, map, world, deltaMs);
+  return tickTownRecall(player, map, world, deltaMs, eventBus);
 }
 
-export function tickPlayerTownSystems(player, map, world, deltaMs) {
+export function tickPlayerTownSystems(player, map, world, deltaMs, eventBus = null) {
   if (isTownHubMap(map)) {
     restoreVitalityInTown(player, map);
   }
-  return tickTownRecall(player, map, world, deltaMs);
+  return tickTownRecall(player, map, world, deltaMs, eventBus);
 }

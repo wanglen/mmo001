@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Architecture (Phase A):** server socket handlers refactored into a plugin registry (`server/app/HandlerRegistry.js`) with feature modules under `server/plugins/` (core, combat, loot, quests, social, economy); bootstrap moved to `server/app/createServer.js`; removed `broadcastAllFn` init workaround
 - **Architecture (Phase B):** composable world-state builder (`server/app/WorldStateBuilder.js`) and plugin-driven player serialization (`server/app/composePlayer.js`); `Player.toJSON()` delegates to plugin slices
+- **Architecture (Phase C):** in-process server event bus (`server/app/EventBus.js`) with domain events in `shared/plugins/domainEvents.js`; combat, quests, loot, economy, social, and combat plugins subscribe via `registerBus` instead of direct cross-imports
 
 ## [2.1.0] - 2026-07-06
 

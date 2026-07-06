@@ -11,6 +11,7 @@ import { allocateStat } from '../../systems/progression.js';
 import { interruptTownRecall } from '../../systems/townHub.js';
 import { getLivingPlayer, getPlayerContext, persistPlayer } from '../../app/handlerUtils.js';
 import { serializeLootPlayer, serializeLootWorld } from './serialize.js';
+import { registerLootBusHandlers } from './bus.js';
 
 export const LOOT_EVENTS = [
   EVENTS.USE_CONSUMABLE,
@@ -125,6 +126,7 @@ export const lootPlugin = {
   dependsOn: ['core'],
   events: LOOT_EVENTS,
   registerServer: registerLootHandlers,
+  registerBus: registerLootBusHandlers,
   serializePlayer: serializeLootPlayer,
   serializeWorld: serializeLootWorld,
 };

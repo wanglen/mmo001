@@ -44,6 +44,13 @@ describe('loadPlugins', () => {
     }
   });
 
+  it('feature plugins expose registerBus for domain events', () => {
+    for (const plugin of loadPlugins()) {
+      if (plugin.id === 'core') continue;
+      assert.equal(typeof plugin.registerBus, 'function', `${plugin.id} missing registerBus`);
+    }
+  });
+
   it('core plugin serializes world and player slices', () => {
     assert.equal(typeof corePlugin.serializeWorld, 'function');
     assert.equal(typeof corePlugin.serializePlayer, 'function');

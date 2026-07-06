@@ -5,6 +5,7 @@ import {
   validateVendorInteraction,
 } from '../../systems/vendors.js';
 import { serializeEconomyPlayer } from './serialize.js';
+import { registerEconomyBusHandlers } from './bus.js';
 
 const TRADE_ERROR_MESSAGES = {
   invalid_target: 'Invalid trade target',
@@ -273,6 +274,6 @@ export const economyPlugin = {
   dependsOn: ['core', 'loot'],
   events: ECONOMY_EVENTS,
   registerServer: registerEconomyHandlers,
-  onDisconnect: onEconomyDisconnect,
+  registerBus: registerEconomyBusHandlers,
   serializePlayer: serializeEconomyPlayer,
 };

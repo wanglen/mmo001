@@ -4,6 +4,7 @@ import { processSkill } from '../../systems/skills.js';
 import { interruptTownRecall } from '../../systems/townHub.js';
 import { getLivingPlayer, getPlayerContext, persistPlayers } from '../../app/handlerUtils.js';
 import { serializeCombatPlayer, serializeCombatWorld } from './serialize.js';
+import { registerCombatBusHandlers } from './bus.js';
 
 export const COMBAT_EVENTS = [EVENTS.ATTACK, EVENTS.USE_SKILL];
 
@@ -26,6 +27,7 @@ export function registerCombatHandlers(socket, ctx) {
       map,
       partyManager,
       playerManager,
+      eventBus: ctx.eventBus,
     });
     if (!result.ok && result.reason === 'cooldown') return;
 
@@ -54,6 +56,7 @@ export function registerCombatHandlers(socket, ctx) {
       map,
       partyManager,
       playerManager,
+      eventBus: ctx.eventBus,
     });
 
     if (!result.ok && (result.reason === 'cooldown' || result.reason === 'no_mp')) return;
@@ -75,6 +78,7 @@ export const combatPlugin = {
   dependsOn: ['core'],
   events: COMBAT_EVENTS,
   registerServer: registerCombatHandlers,
+  registerBus: registerCombatBusHandlers,
   serializePlayer: serializeCombatPlayer,
   serializeWorld: serializeCombatWorld,
 };

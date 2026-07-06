@@ -15,6 +15,7 @@ import {
   updatePlayerAim,
 } from '../../app/handlerUtils.js';
 import { evictCharacterSessions } from './session.js';
+import { emitPlayerTeleported } from './bus.js';
 
 export const CORE_EVENTS = [
   EVENTS.CREATE_CHARACTER,
@@ -29,7 +30,7 @@ export const CORE_EVENTS = [
 
 /** @param {import('socket.io').Socket} socket @param {import('../../../shared/plugins/types.js').ServerContext} ctx */
 export function registerCoreHandlers(socket, ctx) {
-  const { io, world, playerManager, characterStore, broadcastAll } = ctx;
+  const { io, world, playerManager, characterStore, broadcastAll, eventBus } = ctx;
 
   socket.on(EVENTS.CREATE_CHARACTER, async ({ name, characterClass }) => {
     if (!CHARACTER_CLASSES[characterClass]) {
@@ -142,6 +143,8 @@ export function registerCoreHandlers(socket, ctx) {
       socket.emit(EVENTS.ERROR, { message: 'Cannot use portal' });
       return;
     }
+
+    emitPlayerTeleported(eventBus, player, result.mapId, 'portal');
 
     await persistPlayer(characterStore, player);
     broadcastAll({ teleportedIds: new Set([socket.id]) });

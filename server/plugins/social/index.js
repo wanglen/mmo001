@@ -5,6 +5,7 @@ import {
   isValidChatChannel,
 } from '../../../shared/social.js';
 import { buildSystemChatMessage, getChatRecipients, resolveChatSend } from '../../systems/chat.js';
+import { registerSocialBusHandlers } from './bus.js';
 
 function emitToPlayerIds(io, playerIds, event, payload) {
   for (const playerId of playerIds) {
@@ -180,6 +181,6 @@ export const socialPlugin = {
   dependsOn: ['core'],
   events: SOCIAL_EVENTS,
   registerServer: registerSocialHandlers,
-  onDisconnect: onSocialDisconnect,
+  registerBus: registerSocialBusHandlers,
   onPlayerJoined: onSocialPlayerJoined,
 };

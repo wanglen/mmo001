@@ -1,5 +1,7 @@
 import { loadPlugins } from './loadPlugins.js';
 import { createBroadcastAll } from './worldState.js';
+import { createEventBus } from './EventBus.js';
+import { DOMAIN_EVENTS } from '../../shared/plugins/domainEvents.js';
 import { onCoreDisconnect } from '../plugins/core/handlers.js';
 
 /**
@@ -15,6 +17,7 @@ import { onCoreDisconnect } from '../plugins/core/handlers.js';
  */
 export function registerHandlerRegistry(io, deps) {
   const { world, playerManager, characterStore, partyManager, tradeManager } = deps;
+  const eventBus = createEventBus();
   const broadcastAll = createBroadcastAll(io, world, playerManager);
   const plugins = loadPlugins();
   const pluginsById = Object.fromEntries(plugins.map((plugin) => [plugin.id, plugin]));
@@ -28,15 +31,11 @@ export function registerHandlerRegistry(io, deps) {
     partyManager,
     tradeManager,
     broadcastAll,
+    eventBus,
     plugins,
     pluginsById,
     disconnectPlayer: async (playerId) => {
-      for (const plugin of plugins) {
-        if (plugin.id === 'core') continue;
-        if (plugin.onDisconnect) {
-          await plugin.onDisconnect(playerId, ctx);
-        }
-      }
+      eventBus.emit(DOMAIN_EVENTS.PLAYER_DISCONNECT, { playerId, ctx });
       await onCoreDisconnect(playerId, ctx);
     },
     notifyPlayerJoined: (playerId) => {
@@ -44,6 +43,10 @@ export function registerHandlerRegistry(io, deps) {
       social?.onPlayerJoined?.(playerId, ctx);
     },
   };
+
+  for (const plugin of plugins) {
+    plugin.registerBus?.(eventBus, ctx);
+  }
 
   io.on('connection', (socket) => {
     for (const plugin of plugins) {
@@ -55,7 +58,7 @@ export function registerHandlerRegistry(io, deps) {
     });
   });
 
-  return { broadcastAll, ctx, plugins };
+  return { broadcastAll, ctx, plugins, eventBus };
 }
 
 /** @deprecated Use registerHandlerRegistry — kept for transitional imports */
@@ -64,3 +67,4 @@ export const registerSocketHandlers = registerHandlerRegistry;
 export { buildWorldState, createBroadcastAll, broadcastWorldState } from './worldState.js';
 export { createWorldStateBuilder } from './WorldStateBuilder.js';
 export { composePlayer } from './composePlayer.js';
+export { createEventBus } from './EventBus.js';

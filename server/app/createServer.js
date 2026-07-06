@@ -52,7 +52,7 @@ export function createServerApp(options = {}) {
   const partyManager = new PartyManager();
   const tradeManager = new TradeManager();
 
-  const { broadcastAll } = registerHandlerRegistry(io, {
+  const { broadcastAll, eventBus } = registerHandlerRegistry(io, {
     world,
     playerManager,
     characterStore,
@@ -65,9 +65,10 @@ export function createServerApp(options = {}) {
     playerManager,
     characterStore,
     broadcast: broadcastAll,
+    eventBus,
   });
 
-  return { app, httpServer, io, world, playerManager, broadcastAll };
+  return { app, httpServer, io, world, playerManager, broadcastAll, eventBus };
 }
 
 /**

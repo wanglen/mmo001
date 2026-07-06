@@ -1,4 +1,5 @@
 import { EVENTS } from '../../../shared/events.js';
+import { DOMAIN_EVENTS } from '../../../shared/plugins/domainEvents.js';
 import { persistPlayer, sanitizePlayerName } from '../../app/handlerUtils.js';
 
 const SESSION_REPLACED_MSG = 'This character logged in from another session.';
@@ -10,7 +11,7 @@ const SESSION_REPLACED_MSG = 'This character logged in from another session.';
  * @param {import('../../../shared/plugins/types.js').ServerContext} ctx
  */
 export async function evictCharacterSessions(ctx, { playerName, keepSocketId }) {
-  const { io, playerManager, characterStore } = ctx;
+  const { io, playerManager } = ctx;
   const needle = sanitizePlayerName(playerName).toLowerCase();
   if (!needle) return;
 
@@ -37,10 +38,7 @@ export async function evictCharacterSessions(ctx, { playerName, keepSocketId }) 
 
 /** @param {string} playerId @param {import('../../../shared/plugins/types.js').ServerContext} ctx */
 export async function evictSession(ctx, playerId) {
-  const social = ctx.pluginsById.social;
-  if (social?.onDisconnect) {
-    await social.onDisconnect(playerId, ctx);
-  }
+  ctx.eventBus.emit(DOMAIN_EVENTS.PLAYER_DISCONNECT, { playerId, ctx });
 
   const player = ctx.playerManager.get(playerId);
   await persistPlayer(ctx.characterStore, player);
