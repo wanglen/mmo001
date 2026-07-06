@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.26.0] - 2026-07-06
+
+### Added
+
+- Quest system with kill, fetch, and talk objectives; quest dialogue with accept/turn-in; left-side quest tracker; gold rewards persisted on character save
+- Starter quest chain from town NPCs Mira and Eldon (goblin hunt, healing supplies, report errand)
+
 ## [1.25.0] - 2026-07-05
 
 ### Added

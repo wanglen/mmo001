@@ -38,7 +38,7 @@ export class PlayerHud {
     ctx.font = '12px system-ui, sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText(
-      `Lv ${player.level}  STR ${player.str}  DEX ${player.dex}  INT ${player.int}  VIT ${player.vit}`,
+      `Lv ${player.level}  Gold ${player.gold ?? 0}  STR ${player.str}  DEX ${player.dex}  INT ${player.int}  VIT ${player.vit}`,
       x + 6,
       y + (barHeight + 8) * 2 + 19
     );

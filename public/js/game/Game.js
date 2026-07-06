@@ -7,7 +7,7 @@ import { facingFromTarget } from '/shared/aim.js';
 import { findMonsterAt, isInRange, ATTACK_COOLDOWN_MS } from '/shared/combat.js';
 import { findLootAt, isInPickupRange } from '/shared/inventory.js';
 import { findPortalAt, isInPortalRange } from '/shared/portals.js';
-import { findNpcAt } from '/shared/npcs.js';
+import { findNpcAt, isNearNpc } from '/shared/npcs.js';
 import { isTownHubMap } from '/shared/townHub.js';
 import { getSkill, getSkillFxDuration, resolveProjectileImpact, canUseSkill } from '/shared/skills.js';
 import { CONSUMABLE_KIND, canQuickUsePotion } from '/shared/consumables.js';
@@ -21,13 +21,14 @@ const MOVE_INTERVAL = 50;
 const AIM_INTERVAL = 50;
 
 export class Game {
-  constructor(canvas, socketClient, inventoryPanel = null, levelUpPanel = null, skillBar = null, dialoguePanel = null) {
+  constructor(canvas, socketClient, inventoryPanel = null, levelUpPanel = null, skillBar = null, dialoguePanel = null, questTracker = null) {
     this.canvas = canvas;
     this.socketClient = socketClient;
     this.inventoryPanel = inventoryPanel;
     this.levelUpPanel = levelUpPanel;
     this.skillBar = skillBar;
     this.dialoguePanel = dialoguePanel;
+    this.questTracker = questTracker;
     this.input = new Input(canvas);
     this.camera = new Camera(canvas);
     this.cursorManager = new CursorManager(canvas);
@@ -52,6 +53,7 @@ export class Game {
     this.mapLoadingOverlay = document.getElementById('map-loading-overlay');
     this.mapLoadingTimer = null;
     this.inventoryBackdrop = document.getElementById('inventory-backdrop');
+    this.npcTargetId = null;
 
     this.inventoryBackdrop?.addEventListener('click', () => {
       if (this.inventoryVisible) this.setInventoryVisible(false);
@@ -137,7 +139,33 @@ export class Game {
       this.inventoryPanel?.update(state.player);
       this.levelUpPanel?.update(state.player);
       this.skillBar?.update(state.player);
+      this.questTracker?.update(state.player);
+
+      if (this.dialoguePanel?.isVisible() && this.dialoguePanel.currentNpc && state.player) {
+        const npc = (state.npcs ?? []).find(
+          (entry) => entry.id === this.dialoguePanel.currentNpc.id
+        );
+        if (npc) this.openNpcDialogue(npc, state.player);
+      }
     }
+  }
+
+  npcDialogueHandlers(npc) {
+    return {
+      onAccept: (questId) => this.socketClient.sendQuestAccept(questId, npc.id),
+      onTurnIn: (questId) => this.socketClient.sendQuestTurnIn(questId, npc.id),
+    };
+  }
+
+  openNpcDialogue(npc, player = this.worldState?.player) {
+    if (!npc || !player) return;
+    this.dialoguePanel?.show(npc, player, this.npcDialogueHandlers(npc));
+  }
+
+  beginNpcInteraction(npc) {
+    if (!npc) return;
+    this.socketClient.sendNpcInteract(npc.id);
+    this.openNpcDialogue(npc);
   }
 
   updateDisplayPlayer() {
@@ -165,6 +193,8 @@ export class Game {
     this.displayPlayer.dex = server.dex;
     this.displayPlayer.int = server.int;
     this.displayPlayer.vit = server.vit;
+    this.displayPlayer.gold = server.gold;
+    this.displayPlayer.quests = server.quests;
     this.displayPlayer.skillCooldowns = server.skillCooldowns;
     this.displayPlayer.skillBar = server.skillBar;
     this.displayPlayer.townRecallCasting = server.townRecallCasting;
@@ -252,8 +282,18 @@ export class Game {
     const npc = findNpcAt(this.worldState.npcs ?? [], world.x, world.y);
 
     if (npc) {
-      this.dialoguePanel?.show(npc);
-      this.pathFollower.clear();
+      this.attackTargetId = null;
+      this.lootTargetId = null;
+      const px = this.displayPlayer.x;
+      const py = this.displayPlayer.y;
+      if (isNearNpc(px, py, npc)) {
+        this.npcTargetId = null;
+        this.pathFollower.clear();
+        this.beginNpcInteraction(npc);
+      } else {
+        this.npcTargetId = npc.id;
+        this.pathFollower.setPath(this.worldState.map, px, py, npc.x, npc.y);
+      }
       return;
     }
 
@@ -334,6 +374,31 @@ export class Game {
     const steps = this.input.consumeZoomDelta();
     if (steps === 0) return;
     this.camera.adjustZoom(steps * CAMERA_ZOOM_STEP);
+  }
+
+  handleNpcChase(timestamp) {
+    if (!this.npcTargetId || !this.displayPlayer || !this.worldState) return;
+
+    const npc = (this.worldState.npcs ?? []).find((entry) => entry.id === this.npcTargetId);
+    if (!npc) {
+      this.npcTargetId = null;
+      return;
+    }
+
+    const px = this.displayPlayer.x;
+    const py = this.displayPlayer.y;
+
+    if (isNearNpc(px, py, npc)) {
+      this.pathFollower.clear();
+      this.npcTargetId = null;
+      this.beginNpcInteraction(npc);
+      return;
+    }
+
+    if (timestamp - this.lastChasePathTime >= MOVE_INTERVAL) {
+      this.pathFollower.setPath(this.worldState.map, px, py, npc.x, npc.y);
+      this.lastChasePathTime = timestamp;
+    }
   }
 
   handleLootChase(timestamp) {
@@ -511,6 +576,7 @@ export class Game {
       return;
     }
 
+    this.handleNpcChase(timestamp);
     this.handleLootChase(timestamp);
     this.handleAttackChase(timestamp);
 

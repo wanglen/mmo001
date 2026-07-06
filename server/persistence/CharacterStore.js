@@ -3,6 +3,7 @@ import path from 'path';
 import { itemToJSON } from '../../shared/items.js';
 import { createEmptyInventory, createEmptyEquipment } from '../../shared/inventory.js';
 import { createPlayerStats } from '../../shared/stats.js';
+import { createEmptyQuestState } from '../../shared/quests.js';
 import { tileToPixel } from '../map/collision.js';
 import { DEFAULT_MAP_ID } from '../../shared/worldMaps.js';
 
@@ -32,6 +33,8 @@ export function playerToSaveData(player) {
     equipment: Object.fromEntries(
       Object.entries(player.equipment).map(([slot, item]) => [slot, itemToJSON(item)])
     ),
+    gold: player.gold ?? 0,
+    quests: player.questState ?? createEmptyQuestState(),
     savedAt: new Date().toISOString(),
   };
 }
@@ -59,6 +62,8 @@ export function createNewCharacterData(name, characterClass, spawn) {
     mp: stats.mp,
     inventory: createEmptyInventory(),
     equipment: createEmptyEquipment(),
+    gold: 0,
+    quests: createEmptyQuestState(),
     savedAt: new Date().toISOString(),
   };
 }

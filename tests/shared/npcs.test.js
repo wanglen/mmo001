@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { createNpc, findNpcAt, NPC_ROLE } from '../../shared/npcs.js';
+import { createNpc, findNpcAt, isNearNpc, NPC_INTERACT_RANGE, NPC_ROLE } from '../../shared/npcs.js';
 import { TILE_SIZE } from '../../shared/constants.js';
 
 describe('npcs', () => {
@@ -31,5 +31,18 @@ describe('npcs', () => {
     const hit = findNpcAt(npcs, npcs[0].x, npcs[0].y);
     assert.equal(hit?.id, 'a');
     assert.equal(findNpcAt(npcs, 0, 0), null);
+  });
+
+  it('isNearNpc checks player distance for interaction', () => {
+    const npc = createNpc({
+      id: 'a',
+      name: 'A',
+      role: NPC_ROLE.GUIDE,
+      tile: { x: 10, y: 10 },
+    });
+
+    assert.ok(isNearNpc(npc.x, npc.y, npc));
+    assert.ok(!isNearNpc(0, 0, npc));
+    assert.ok(isNearNpc(npc.x + NPC_INTERACT_RANGE - 1, npc.y, npc));
   });
 });

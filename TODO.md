@@ -77,10 +77,10 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 - [x] Minimap UI
 
 ### NPCs & quests
-- [ ] NPC entity type (static, interactable)
-- [ ] Dialogue UI (simple text boxes)
-- [ ] Quest system: kill X, fetch item, talk to NPC
-- [ ] Quest rewards: XP, gold, items
+- [x] NPC entity type (static, interactable)
+- [x] Dialogue UI (simple text boxes)
+- [x] Quest system: kill X, fetch item, talk to NPC
+- [x] Quest rewards: XP, gold, items
 
 ---
 

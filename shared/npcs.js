@@ -2,13 +2,16 @@ import { TILE_SIZE } from './constants.js';
 
 export const NPC_HIT_RADIUS = 22;
 
+/** Range from player position to allow NPC interaction (server-authoritative). */
+export const NPC_INTERACT_RANGE = 40;
+
 export const NPC_ROLE = {
   INNKEEPER: 'innkeeper',
   GUIDE: 'guide',
 };
 
 /**
- * @param {{ id: string, name: string, role: string, tile: { x: number, y: number }, dialogue?: string[] }} spec
+ * @param {{ id: string, name: string, role: string, tile: { x: number, y: number }, dialogue?: string[], questIds?: string[] }} spec
  */
 export function createNpc(spec) {
   return {
@@ -19,6 +22,7 @@ export function createNpc(spec) {
     y: spec.tile.y * TILE_SIZE + TILE_SIZE / 2,
     tile: spec.tile,
     dialogue: spec.dialogue ?? [],
+    questIds: spec.questIds ?? [],
   };
 }
 
@@ -30,6 +34,7 @@ export function npcToJSON(npc) {
     x: npc.x,
     y: npc.y,
     dialogue: npc.dialogue,
+    questIds: npc.questIds ?? [],
   };
 }
 
@@ -45,4 +50,9 @@ export function findNpcAt(npcs, x, y, radius = NPC_HIT_RADIUS) {
     }
   }
   return nearest;
+}
+
+export function isNearNpc(px, py, npc, radius = NPC_INTERACT_RANGE) {
+  if (!npc) return false;
+  return Math.hypot(npc.x - px, npc.y - py) <= radius;
 }

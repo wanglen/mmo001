@@ -12,6 +12,7 @@ import { getEffectiveCombatStats } from '../../shared/inventory.js';
 import { rollLoot } from '../../shared/items.js';
 import { pushDamageFx, pushHitFlash } from './combatFx.js';
 import { provokeMonster } from './monsterCombat.js';
+import { onMonsterKillQuests } from './quests.js';
 
 export function applyMonsterDamage({
   monster,
@@ -33,6 +34,7 @@ export function applyMonsterDamage({
 
   if (killed) {
     xpResult = grantXp(player, monster.xpReward, player.characterClass);
+    onMonsterKillQuests(player, monster.type);
     if (lootManager) {
       const item = rollLoot(monster.type);
       if (item) lootDrop = lootManager.spawn(monster.x, monster.y, item);

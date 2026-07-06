@@ -5,9 +5,10 @@ import { itemToJSON } from '../../shared/items.js';
 import { getSkillBar, getSkillCooldownRemaining } from '../../shared/skills.js';
 import { restoreItems } from '../persistence/CharacterStore.js';
 import { DEFAULT_MAP_ID } from '../../shared/worldMaps.js';
+import { createEmptyQuestState, normalizeQuestState, questStateToJSON } from '../../shared/quests.js';
 
 export class Player {
-  constructor({ id, name, characterClass, x, y, stats, inventory, equipment, mapId }) {
+  constructor({ id, name, characterClass, x, y, stats, inventory, equipment, mapId, questState = null }) {
     this.id = id;
     this.name = name;
     this.characterClass = characterClass;
@@ -29,6 +30,8 @@ export class Player {
     this.skillCooldowns = {};
     this.inventory = inventory ?? createEmptyInventory();
     this.equipment = equipment ?? createEmptyEquipment();
+    this.gold = stats.gold ?? 0;
+    this.questState = normalizeQuestState(questState ?? stats.questState);
 
     Object.assign(this, stats);
   }
@@ -67,6 +70,8 @@ export class Player {
       equipment: Object.fromEntries(
         Object.entries(this.equipment).map(([slot, item]) => [slot, itemToJSON(item)])
       ),
+      gold: this.gold ?? 0,
+      quests: questStateToJSON(this.questState ?? createEmptyQuestState()),
     };
   }
 }
@@ -98,6 +103,7 @@ export function createPlayerFromSave({ id, name, characterClass, spawn, map, sav
     vit: saved.vit,
     hp: saved.hp,
     mp: saved.mp,
+    gold: saved.gold,
   });
 
   const { inventory, equipment } = restoreItems(saved);
@@ -112,6 +118,7 @@ export function createPlayerFromSave({ id, name, characterClass, spawn, map, sav
     inventory,
     equipment,
     mapId: resolvedMapId,
+    questState: saved.quests,
   });
 
   refreshPlayerDerivedStats(player, player.equipment);

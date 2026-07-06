@@ -66,12 +66,20 @@
   <div id="dialogue-panel" class="dialogue-panel hidden">
     <div class="dialogue-panel-inner">
       <p class="dialogue-name" data-dialogue-name></p>
+      <p class="dialogue-quest-title hidden" data-dialogue-quest-title></p>
       <p class="dialogue-text" data-dialogue-text></p>
       <div class="dialogue-actions">
+        <button type="button" class="hidden" data-dialogue-accept>Accept Quest</button>
+        <button type="button" class="hidden" data-dialogue-turn-in>Turn In</button>
         <button type="button" data-dialogue-next>Next</button>
         <button type="button" class="btn-secondary" data-dialogue-close>Close</button>
       </div>
     </div>
+  </div>
+
+  <div id="quest-tracker" class="quest-tracker hidden" aria-label="Quest log">
+    <p class="quest-tracker-heading">Quests</p>
+    <ul class="quest-tracker-list" data-quest-list></ul>
   </div>
 
   <script type="module" src="/js/main.js"></script>

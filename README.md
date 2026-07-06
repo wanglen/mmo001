@@ -12,13 +12,13 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 - Combat: click enemies to attack, 3 mob types with distinct pixel sprites, HP bars, monster chase AI, retaliate on hit, XP on kill
 - Loot: per-item pixel icons on ground (rarity glow) and in inventory; click to pick up; potions usable from bag
 - Inventory: 10×4 grid, 7 equip slots, stat bonuses from gear (server-side); hover to compare vs equipped, right-click for actions, destroy unwanted items
-- Leveling: XP curve, +5 stat points per level-up, allocation UI (reopen with C), JSON character save
+- Leveling: XP curve, +5 stat points per level-up, allocation UI (reopen with C), JSON character save; quest rewards grant XP, gold, and items
 - Skills: class skill bar (keys 1–7), HP/MP potion hotkeys (8/9) with stack counts, cooldowns, server-authoritative damage
 - Death at 0 HP: blocked actions, respawn button restores HP/MP at spawn
 - Map fog of war: translucent grey veil on unexplored terrain only; monsters and loot hidden until explored; explored areas stay clear; top-right minimap shows revealed terrain, portals, and player position
 - World zones: town safe hub, wilderness (default), instanced dungeon (scattered rooms + branching corridors + boss room, with wall/door/chest landmarks), and wilderness dungeon pocket; zone name shown in HUD
 - Zone transitions: click glowing portals to travel between separate town, wilderness, and dungeon maps (loading overlay on travel)
-- Town hub: full HP/MP recovery in town, NPC dialogue (Mira & Eldon), press **T** for interruptible 6s recall to town
+- Town hub: full HP/MP recovery in town, NPC dialogue and quests (Mira & Eldon), press **T** for interruptible 6s recall to town
 - Socket.IO architecture ready for multiplayer
 
 ## Tech stack

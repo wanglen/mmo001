@@ -3,6 +3,7 @@ import { InventoryPanel } from './ui/InventoryPanel.js';
 import { SkillBar } from './ui/SkillBar.js';
 import { LevelUpPanel } from './ui/LevelUpPanel.js';
 import { DialoguePanel } from './ui/DialoguePanel.js';
+import { QuestTracker } from './ui/QuestTracker.js';
 import { SocketClient } from './network/socketClient.js';
 import { Game } from './game/Game.js';
 
@@ -24,8 +25,9 @@ levelUpPanel.onAllocate = (stat) => socketClient.sendAllocateStat(stat);
 levelUpPanel.onRequestCanvasFocus = () => canvas.focus();
 
 const dialoguePanel = new DialoguePanel(document.getElementById('dialogue-panel'));
+const questTracker = new QuestTracker(document.getElementById('quest-tracker'));
 
-const game = new Game(canvas, socketClient, inventoryPanel, levelUpPanel, skillBar, dialoguePanel);
+const game = new Game(canvas, socketClient, inventoryPanel, levelUpPanel, skillBar, dialoguePanel, questTracker);
 levelUpPanel.onPauseChange = (paused) => game.onGamePause(paused);
 
 socketClient.onWorldState((state) => {

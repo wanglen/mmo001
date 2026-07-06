@@ -17,6 +17,9 @@ export const EVENTS = {
   RESPAWN: 'respawn',
   USE_PORTAL: 'usePortal',
   CAST_TOWN_RECALL: 'castTownRecall',
+  NPC_INTERACT: 'npcInteract',
+  QUEST_ACCEPT: 'questAccept',
+  QUEST_TURN_IN: 'questTurnIn',
   WORLD_STATE: 'worldState',
   ERROR: 'error',
 };

@@ -105,4 +105,16 @@ export class SocketClient {
   sendCastTownRecall() {
     this.socket.emit(EVENTS.CAST_TOWN_RECALL);
   }
+
+  sendNpcInteract(npcId) {
+    this.socket.emit(EVENTS.NPC_INTERACT, { npcId });
+  }
+
+  sendQuestAccept(questId, npcId) {
+    this.socket.emit(EVENTS.QUEST_ACCEPT, { questId, npcId });
+  }
+
+  sendQuestTurnIn(questId, npcId) {
+    this.socket.emit(EVENTS.QUEST_TURN_IN, { questId, npcId });
+  }
 }

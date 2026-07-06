@@ -37,6 +37,7 @@ export function createPlayerStats(characterClass, level = 1, options = {}) {
   const stats = {
     level,
     xp: options.xp ?? 0,
+    gold: options.gold ?? 0,
     statPoints: options.statPoints ?? 0,
     skillPoints: options.skillPoints ?? 0,
     str: options.str ?? base.str,
@@ -115,6 +116,7 @@ export function statsToJSON(stats) {
   return {
     level: stats.level,
     xp: stats.xp,
+    gold: stats.gold ?? 0,
     statPoints: stats.statPoints ?? 0,
     skillPoints: stats.skillPoints ?? 0,
     hp: stats.hp,
