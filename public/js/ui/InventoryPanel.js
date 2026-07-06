@@ -28,12 +28,18 @@ export class InventoryPanel {
   build() {
     this.root.innerHTML = `
       <div class="inventory-header">
-        <span>Inventory</span>
-        <span class="inventory-hint">I toggle · right-click item</span>
+        <span class="inventory-title">Inventory</span>
+        <span class="inventory-hint">I or Esc close · Right-click item menu</span>
       </div>
-      <div class="inventory-body">
-        <div class="equipment-slots" id="equipment-slots"></div>
-        <div class="inventory-grid" id="inventory-grid"></div>
+      <div class="inventory-main">
+        <section class="inventory-equipment-section" aria-label="Equipped items">
+          <h3 class="inventory-section-label">Equipped</h3>
+          <div class="equipment-slots" id="equipment-slots"></div>
+        </section>
+        <section class="inventory-bag-section" aria-label="Backpack">
+          <h3 class="inventory-section-label">Backpack</h3>
+          <div class="inventory-grid" id="inventory-grid"></div>
+        </section>
       </div>
       <div class="item-inspect" id="item-inspect" aria-live="polite">
         ${buildEmptyInspectHtml()}
@@ -79,6 +85,10 @@ export class InventoryPanel {
 
   setVisible(visible) {
     this.root.classList.toggle('hidden', !visible);
+    const backdrop = document.getElementById('inventory-backdrop');
+    backdrop?.classList.toggle('hidden', !visible);
+    backdrop?.setAttribute('aria-hidden', visible ? 'false' : 'true');
+    this.root.setAttribute('aria-hidden', visible ? 'false' : 'true');
   }
 
   update(player) {
@@ -233,13 +243,13 @@ export class InventoryPanel {
       const iconKey = resolveItemIconKey(item, fallbackSlot);
       const iconColor = getInventoryIconColor(item);
       const iconHtml = `<div class="item-inspect-icon" style="color: ${iconColor}">${buildItemIconSvg(iconKey)}</div>`;
+      const detailsHtml = buildItemInspectHtml(item, {
+        actionHint,
+        compareWith,
+        compareHeader: compareWith ? `vs ${compareWith.name}` : '',
+      });
       this.showInspect(
-        iconHtml +
-          buildItemInspectHtml(item, {
-            actionHint,
-            compareWith,
-            compareHeader: compareWith ? `vs ${compareWith.name}` : '',
-          })
+        `<div class="item-inspect-layout">${iconHtml}<div class="item-inspect-details">${detailsHtml}</div></div>`
       );
       return;
     }

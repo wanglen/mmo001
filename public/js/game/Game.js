@@ -10,6 +10,7 @@ import { findPortalAt, isInPortalRange } from '/shared/portals.js';
 import { findNpcAt } from '/shared/npcs.js';
 import { isTownHubMap } from '/shared/townHub.js';
 import { getSkill, getSkillFxDuration, resolveProjectileImpact, canUseSkill } from '/shared/skills.js';
+import { CONSUMABLE_KIND, canQuickUsePotion } from '/shared/consumables.js';
 import { CAMERA_ZOOM_STEP, TILE_SIZE } from '../config.js';
 import { filterRevealedPositions } from '/shared/fog.js';
 import { FxBuffer } from './FxBuffer.js';
@@ -42,7 +43,7 @@ export class Game {
     this.aimTarget = null;
     this.attackTargetId = null;
     this.lootTargetId = null;
-    this.inventoryVisible = true;
+    this.inventoryVisible = false;
     this.gamePaused = false;
     this.isDead = false;
     this.fxBuffer = new FxBuffer();
@@ -50,6 +51,11 @@ export class Game {
     this.deathOverlay = document.getElementById('death-overlay');
     this.mapLoadingOverlay = document.getElementById('map-loading-overlay');
     this.mapLoadingTimer = null;
+    this.inventoryBackdrop = document.getElementById('inventory-backdrop');
+
+    this.inventoryBackdrop?.addEventListener('click', () => {
+      if (this.inventoryVisible) this.setInventoryVisible(false);
+    });
 
     document.getElementById('respawn-btn')?.addEventListener('click', () => {
       this.socketClient.sendRespawn();
@@ -57,6 +63,15 @@ export class Game {
 
     window.addEventListener('resize', () => this.renderer.resize());
     this.renderer.resize();
+    this.inventoryPanel?.setVisible(false);
+  }
+
+  setInventoryVisible(visible) {
+    this.inventoryVisible = visible;
+    this.inventoryPanel?.setVisible(visible);
+    if (!visible) {
+      this.inventoryPanel?.hideContextMenu?.();
+    }
   }
 
   setWorldState(state) {
@@ -375,9 +390,25 @@ export class Game {
 
   handleInventoryToggle() {
     if (this.gamePaused) return;
+    if (this.input.consumeKeyPress('escape') && this.inventoryVisible) {
+      this.setInventoryVisible(false);
+      return;
+    }
     if (!this.input.consumeKeyPress('i')) return;
-    this.inventoryVisible = !this.inventoryVisible;
-    this.inventoryPanel?.setVisible(this.inventoryVisible);
+    this.setInventoryVisible(!this.inventoryVisible);
+  }
+
+  handlePotionHotkeys() {
+    if (this.gamePaused || this.isDead || !this.worldState?.player) return;
+
+    const kind = this.input.consumePotionHotkey();
+    if (!kind) return;
+
+    const consumableKind = kind === 'health' ? CONSUMABLE_KIND.HEALTH : CONSUMABLE_KIND.MANA;
+    const check = canQuickUsePotion(this.worldState.player, consumableKind);
+    if (!check.ok) return;
+
+    this.socketClient.sendUseConsumable(check.index);
   }
 
   handleSkills() {
@@ -454,8 +485,15 @@ export class Game {
       return;
     }
 
-    this.handleClick();
     this.handleInventoryToggle();
+    if (this.inventoryVisible) {
+      this.handlePotionHotkeys();
+      this.handleSkills();
+      return;
+    }
+
+    this.handleClick();
+    this.handlePotionHotkeys();
     this.handleSkills();
     this.handleAim(timestamp);
     this.handleZoom();

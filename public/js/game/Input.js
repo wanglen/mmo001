@@ -1,6 +1,6 @@
 import { directionFromKeys } from '/shared/movement.js';
 
-const GAME_SHORTCUT_KEYS = new Set(['c', 'i', 't', '1', '2', '3', '4', '5', '6', '7', '8']);
+const GAME_SHORTCUT_KEYS = new Set(['c', 'i', 't', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'escape']);
 
 export class Input {
   constructor(canvas) {
@@ -103,11 +103,18 @@ export class Input {
     return false;
   }
 
-  /** @returns {number | null} slot index 0–7 for keys 1–8 */
+  /** @returns {number | null} slot index 0–6 for keys 1–7 */
   consumeSkillSlot() {
-    for (let i = 1; i <= 8; i++) {
+    for (let i = 1; i <= 7; i++) {
       if (this.consumeKeyPress(String(i))) return i - 1;
     }
+    return null;
+  }
+
+  /** @returns {'health' | 'mana' | null} potion hotkey from keys 8–9 */
+  consumePotionHotkey() {
+    if (this.consumeKeyPress('8')) return 'health';
+    if (this.consumeKeyPress('9')) return 'mana';
     return null;
   }
 }

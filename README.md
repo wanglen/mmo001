@@ -13,7 +13,7 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 - Loot: per-item pixel icons on ground (rarity glow) and in inventory; click to pick up; potions usable from bag
 - Inventory: 10×4 grid, 7 equip slots, stat bonuses from gear (server-side); hover to compare vs equipped, right-click for actions, destroy unwanted items
 - Leveling: XP curve, +5 stat points per level-up, allocation UI (reopen with C), JSON character save
-- Skills: class skill bar (keys 1–8), MP costs, cooldowns, out-of-combat MP regen, server-authoritative damage and visuals
+- Skills: class skill bar (keys 1–7), HP/MP potion hotkeys (8/9) with stack counts, cooldowns, server-authoritative damage
 - Death at 0 HP: blocked actions, respawn button restores HP/MP at spawn
 - Map fog of war: translucent grey veil on unexplored terrain only; monsters and loot hidden until explored; explored areas stay clear
 - World zones: town safe hub, wilderness (default), instanced dungeon (room corridors + boss room), and wilderness dungeon pocket with higher mob density; zone name shown in HUD
@@ -114,11 +114,13 @@ Tests use Node.js built-in test runner. Coverage includes pathfinding, collision
 - **Click** — move (8-way pathfinding with diagonals), pick up loot, attack/chase enemy, or use portals
 - **Mouse** — aim / facing direction (character faces cursor)
 - **Scroll wheel** — zoom in/out
-- **I** — toggle inventory panel
+
 - **C** — open character stats / spend stat points (when available)
-- **1**–**8** — use skills from the skill bar (class-specific; costs MP, has cooldowns; Mage: Fireball, Icebolt)
+- **1**–**7** — class skills (MP cost, cooldowns)
+- **8** / **9** — use health / mana potion from bag (dimmed when none or resource full)
 - **WASD** / **Arrow keys** — move including diagonals (e.g. W+D); cancels click path
-- **Inventory** — click item to equip or use potion; right-click for equip/use/unequip/destroy; hover bag gear to compare stats vs equipped
+- **I** / **Esc** — toggle character inventory (modal sheet, dimmed world)
+- **Inventory** — left-click equip; right-click equip/use/unequip/destroy; hover bag gear to compare vs equipped
 - **T** (outside town) — start 6s recall cast to town; interrupted by movement, combat, or damage
 - **Click NPC** — talk to town residents
 

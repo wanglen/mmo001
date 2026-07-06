@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.22.0] - 2026-07-05
+
+### Added
+
+- Modal character inventory (Diablo-style sheet with dimmed backdrop); open with **I**, close with **Esc** or backdrop click
+- Potion hotkeys on skill bar: **8** health, **9** mana — dimmed when empty or resource full, stack count when quantity > 1
+
+### Changed
+
+- Skill bar split into skills (keys 1–7) and potion slots; polished styling with cooldown timers and MP costs
+- Inventory layout: labeled Equipped/Backpack sections, horizontal item inspect footer, no overlap with skill bar
+
 ## [1.21.0] - 2026-07-05
 
 ### Added
