@@ -21,6 +21,7 @@ import {
 } from '../systems/quests.js';
 import { DEFAULT_MAP_ID, MAP_ID } from '../../shared/worldMaps.js';
 import { npcToJSON } from '../../shared/npcs.js';
+import { serializeRemotePlayers } from '../../shared/playerSync.js';
 import { APP_VERSION } from '../version.js';
 
 function sanitizePlayerName(name) {
@@ -72,7 +73,7 @@ function buildWorldState(world, playerManager, playerId, { includeMapTiles = tru
     version: APP_VERSION,
     map: mapPayload,
     player: player ? player.toJSON(now) : null,
-    players: sameMapPlayers.map((entry) => entry.toJSON(now)),
+    players: serializeRemotePlayers(sameMapPlayers, playerId, now),
     monsters: monsterManager.getAll(),
     loot: lootManager.getAll(),
     npcs: (map.npcs ?? map.npcsJson ?? []).map((entry) =>
@@ -81,13 +82,6 @@ function buildWorldState(world, playerManager, playerId, { includeMapTiles = tru
     skillFx: collectActiveSkillFx(playerManager, now),
     combatFx: collectCombatFx(now),
   };
-}
-
-function sendWorldState(socket, world, playerManager, { includeMapTiles = true } = {}) {
-  socket.emit(
-    EVENTS.WORLD_STATE,
-    buildWorldState(world, playerManager, socket.id, { includeMapTiles })
-  );
 }
 
 function broadcastWorldState(io, world, playerManager, { fullMapSocketIds = null } = {}) {
@@ -106,11 +100,8 @@ function broadcastWorldState(io, world, playerManager, { fullMapSocketIds = null
   }
 }
 
-function broadcastWorldStateToSocket(io, socket, world, playerManager, { includeMapTiles = false } = {}) {
-  socket.emit(
-    EVENTS.WORLD_STATE,
-    buildWorldState(world, playerManager, socket.id, { includeMapTiles })
-  );
+function broadcastAll(io, world, playerManager, { fullMapSocketIds = null } = {}) {
+  broadcastWorldState(io, world, playerManager, { fullMapSocketIds });
 }
 
 function updatePlayerAim(player, x, y) {
@@ -221,7 +212,7 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
       player.aimY = player.y;
       syncDeathState(player);
 
-      sendWorldState(socket, world, playerManager, { includeMapTiles: true });
+      broadcastAll(io, world, playerManager, { fullMapSocketIds: new Set([socket.id]) });
     });
 
     socket.on(EVENTS.RESPAWN, async () => {
@@ -231,7 +222,7 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
       const town = world.getMap(MAP_ID.TOWN);
       respawnPlayer(player, town);
       await persistPlayer(characterStore, player);
-      broadcastWorldStateToSocket(io, socket, world, playerManager, { includeMapTiles: true });
+      broadcastAll(io, world, playerManager, { fullMapSocketIds: new Set([socket.id]) });
     });
 
     socket.on(EVENTS.USE_PORTAL, async ({ portalId }) => {
@@ -248,7 +239,7 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
       }
 
       await persistPlayer(characterStore, player);
-      broadcastWorldStateToSocket(io, socket, world, playerManager, { includeMapTiles: true });
+      broadcastAll(io, world, playerManager, { fullMapSocketIds: new Set([socket.id]) });
     });
 
     socket.on(EVENTS.CAST_TOWN_RECALL, () => {
@@ -259,7 +250,7 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
       const result = startTownRecall(player, map);
       if (!result.ok && result.reason !== 'already_casting') return;
 
-      broadcastWorldStateToSocket(io, socket, world, playerManager);
+      broadcastAll(io, world, playerManager);
     });
 
     socket.on(EVENTS.NPC_INTERACT, async ({ npcId }) => {
@@ -272,7 +263,7 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
       if (!result.ok) return;
 
       await persistPlayer(characterStore, player);
-      broadcastWorldStateToSocket(io, socket, world, playerManager);
+      broadcastAll(io, world, playerManager);
     });
 
     socket.on(EVENTS.QUEST_ACCEPT, async ({ questId, npcId }) => {
@@ -286,7 +277,7 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
       }
 
       await persistPlayer(characterStore, player);
-      broadcastWorldStateToSocket(io, socket, world, playerManager);
+      broadcastAll(io, world, playerManager);
     });
 
     socket.on(EVENTS.QUEST_TURN_IN, async ({ questId, npcId }) => {
@@ -300,7 +291,7 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
       }
 
       await persistPlayer(characterStore, player);
-      broadcastWorldStateToSocket(io, socket, world, playerManager);
+      broadcastAll(io, world, playerManager);
     });
 
     socket.on(EVENTS.AIM, ({ x, y }) => {
@@ -308,7 +299,7 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
       if (!player) return;
 
       if (updatePlayerAim(player, x, y)) {
-        broadcastWorldStateToSocket(io, socket, world, playerManager);
+        broadcastAll(io, world, playerManager);
       }
     });
 
@@ -323,7 +314,7 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
       if (!result.ok && result.reason === 'cooldown') return;
 
       if (result.ok) await persistPlayer(characterStore, player);
-      broadcastWorldStateToSocket(io, socket, world, playerManager);
+      broadcastAll(io, world, playerManager);
     });
 
     socket.on(EVENTS.USE_SKILL, async ({ skillId, targetX, targetY, targetId }) => {
@@ -347,7 +338,7 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
       if (!result.ok && (result.reason === 'cooldown' || result.reason === 'no_mp')) return;
 
       if (result.ok) await persistPlayer(characterStore, player);
-      broadcastWorldStateToSocket(io, socket, world, playerManager);
+      broadcastAll(io, world, playerManager);
     });
 
     socket.on(EVENTS.USE_CONSUMABLE, async ({ inventoryIndex }) => {
@@ -362,7 +353,7 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
       }
 
       await persistPlayer(characterStore, player);
-      broadcastWorldStateToSocket(io, socket, world, playerManager);
+      broadcastAll(io, world, playerManager);
     });
 
     socket.on(EVENTS.PICKUP, async ({ lootId }) => {
@@ -379,7 +370,7 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
       }
 
       await persistPlayer(characterStore, player);
-      broadcastWorldStateToSocket(io, socket, world, playerManager);
+      broadcastAll(io, world, playerManager);
     });
 
     socket.on(EVENTS.EQUIP, async ({ inventoryIndex }) => {
@@ -393,7 +384,7 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
       }
 
       await persistPlayer(characterStore, player);
-      broadcastWorldStateToSocket(io, socket, world, playerManager);
+      broadcastAll(io, world, playerManager);
     });
 
     socket.on(EVENTS.UNEQUIP, async ({ slot }) => {
@@ -407,7 +398,7 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
       }
 
       await persistPlayer(characterStore, player);
-      broadcastWorldStateToSocket(io, socket, world, playerManager);
+      broadcastAll(io, world, playerManager);
     });
 
     socket.on(EVENTS.DESTROY_ITEM, async ({ inventoryIndex, slot }) => {
@@ -426,7 +417,7 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
       }
 
       await persistPlayer(characterStore, player);
-      broadcastWorldStateToSocket(io, socket, world, playerManager);
+      broadcastAll(io, world, playerManager);
     });
 
     socket.on(EVENTS.ALLOCATE_STAT, async ({ stat }) => {
@@ -440,7 +431,7 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
       }
 
       await persistPlayer(characterStore, player);
-      broadcastWorldStateToSocket(io, socket, world, playerManager);
+      broadcastAll(io, world, playerManager);
     });
 
     socket.on(EVENTS.MOVE, ({ direction }) => {
@@ -460,17 +451,19 @@ export function registerSocketHandlers(io, world, playerManager, characterStore)
         player.y = nextY;
         player.direction = direction;
         player.moving = true;
+        player.lastMoveAt = Date.now();
       } else {
         player.moving = false;
         player.direction = direction;
       }
 
-      broadcastWorldStateToSocket(io, socket, world, playerManager);
+      broadcastAll(io, world, playerManager);
     });
 
     socket.on('disconnect', async () => {
       const player = playerManager.remove(socket.id);
       await persistPlayer(characterStore, player);
+      if (player) broadcastAll(io, world, playerManager);
     });
   });
 

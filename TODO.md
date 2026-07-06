@@ -87,9 +87,9 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 ## Phase 4 — Multiplayer (MMO layer)
 
 ### Real-time sync
-- [ ] Enable `io.emit` broadcasts (other players visible on map)
-- [ ] Sync other players' position, animation state, HP
-- [ ] Nameplates and class icons above other players
+- [x] Enable `io.emit` broadcasts (other players visible on map)
+- [x] Sync other players' position, animation state, HP
+- [x] Nameplates and class icons above other players
 
 ### Social
 - [ ] Global and zone chat

@@ -45,7 +45,7 @@ export class Renderer {
     const revealed = fogOfWar?.revealed ?? null;
     const visibleMonsters = filterRevealedPositions(revealed, monsters, TILE_SIZE);
     const visibleLoot = filterRevealedPositions(revealed, loot, TILE_SIZE);
-    const visiblePlayers = filterRevealedPositions(revealed, players, TILE_SIZE);
+    const remotePlayers = players ?? [];
     const visibleCombatFx = revealed
       ? combatFx.filter((fx) => isPositionRevealed(revealed, fx.x, fx.y, TILE_SIZE))
       : combatFx;
@@ -74,9 +74,7 @@ export class Renderer {
       );
     }
 
-    const anyMoving = visiblePlayers.some((p) =>
-      p.id === displayPlayer.id ? displayPlayer.moving : p.moving
-    );
+    const anyMoving = displayPlayer.moving || remotePlayers.some((p) => p.moving);
     this.spriteManager.updateAnim(rafTimestamp, anyMoving);
 
     const anyMonsterMoving = visibleMonsters.some((m) => m.moving);
@@ -95,19 +93,10 @@ export class Renderer {
       this.drawMoveTarget(moveTarget);
     }
 
-    for (const player of visiblePlayers) {
-      const renderPlayer = player.id === displayPlayer.id
-        ? {
-            ...player,
-            x: displayPlayer.x,
-            y: displayPlayer.y,
-            moving: displayPlayer.moving,
-            facing: displayPlayer.facing ?? player.facing,
-            attacking: displayPlayer.attacking ?? player.attacking,
-          }
-        : player;
-      this.spriteManager.draw(this.ctx, renderPlayer, this.camera);
+    for (const player of remotePlayers) {
+      this.spriteManager.draw(this.ctx, player, this.camera);
     }
+    this.spriteManager.draw(this.ctx, displayPlayer, this.camera);
 
     this.townRecallRenderer.draw(this.ctx, displayPlayer, this.camera, rafTimestamp);
 

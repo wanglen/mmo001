@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.27.0] - 2026-07-06
+
+### Added
+
+- Real-time multiplayer sync: other players on the same map are visible with interpolated movement
+- Class-colored badge on player nameplates; remote HP and animation state broadcast at 20 Hz
+
+### Changed
+
+- World state broadcasts go to all connected clients on move, combat, and disconnect (not only the acting player)
+- Remote player payloads exclude inventory and quest data
+
 ## [1.26.0] - 2026-07-06
 
 ### Added

@@ -1,6 +1,7 @@
 import { isInCombat, tickMpRegen } from '../../shared/regen.js';
 import { MAP_ID } from '../../shared/worldMaps.js';
 import { isTownHubMap } from '../../shared/townHub.js';
+import { applyPlayerMoveIdle } from '../../shared/playerSync.js';
 import { tickPlayerTownSystems } from './townHub.js';
 
 const TICK_MS = 50;
@@ -48,6 +49,8 @@ export function startGameLoop({ world, playerManager, characterStore, broadcast 
         monsterManager.ensurePopulation(map);
       }
     }
+
+    applyPlayerMoveIdle(players, now);
 
     broadcast({ teleportedIds: teleportedIds.size > 0 ? teleportedIds : null });
   }, TICK_MS);

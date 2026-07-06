@@ -1,4 +1,4 @@
-import { PLAYER_SIZE } from '/shared/constants.js';
+import { PLAYER_SIZE, CHARACTER_CLASSES } from '/shared/constants.js';
 import { toCardinalDirection } from '/shared/movement.js';
 import { resolveSpriteFrame, getSourceRect } from '/shared/sprites.js';
 import { SpriteAtlas } from './SpriteAtlas.js';
@@ -56,9 +56,25 @@ export class CharacterRenderer {
 
     if (!dead) {
       drawHpBar(ctx, screen.x, screen.y, player.hp, player.maxHp, 28 * zoom, barYOffset);
-      this.drawNameplate(ctx, screen.x, screen.y + nameplateCenterOffset, player.name, zoom);
+      this.drawNameplate(
+        ctx,
+        screen.x,
+        screen.y + nameplateCenterOffset,
+        player.name,
+        zoom,
+        false,
+        player.characterClass
+      );
     } else {
-      this.drawNameplate(ctx, screen.x, screen.y - half - 6, player.name, zoom, true);
+      this.drawNameplate(
+        ctx,
+        screen.x,
+        screen.y - half - 6,
+        player.name,
+        zoom,
+        true,
+        player.characterClass
+      );
     }
   }
 
@@ -69,14 +85,18 @@ export class CharacterRenderer {
     ctx.fill();
   }
 
-  drawNameplate(ctx, x, y, name, zoom, dead = false) {
+  drawNameplate(ctx, x, y, name, zoom, dead = false, characterClass = null) {
     const fontSize = Math.max(10, 11 * zoom);
     ctx.font = `${fontSize}px system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
+    const classMeta = characterClass ? CHARACTER_CLASSES[characterClass] : null;
+    const badgeSize = 8 * zoom;
+    const badgeGap = classMeta ? 4 * zoom : 0;
     const text = dead ? `${name} (dead)` : name;
-    const width = ctx.measureText(text).width + 10 * zoom;
+    const textWidth = ctx.measureText(text).width;
+    const width = textWidth + 10 * zoom + badgeGap + (classMeta ? badgeSize : 0);
     const height = 14 * zoom;
     const left = x - width / 2;
     const top = y - height / 2;
@@ -86,7 +106,21 @@ export class CharacterRenderer {
     ctx.roundRect(left, top, width, height, 4 * zoom);
     ctx.fill();
 
+    let textX = x;
+    if (classMeta) {
+      const badgeX = left + 5 * zoom + badgeSize / 2;
+      const badgeY = y;
+      ctx.fillStyle = classMeta.color;
+      ctx.beginPath();
+      ctx.arc(badgeX, badgeY, badgeSize / 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+      ctx.lineWidth = Math.max(1, zoom);
+      ctx.stroke();
+      textX = left + 5 * zoom + badgeSize + badgeGap + textWidth / 2;
+    }
+
     ctx.fillStyle = dead ? '#f5b7b1' : '#f4f6f7';
-    ctx.fillText(text, x, y);
+    ctx.fillText(text, textX, y);
   }
 }

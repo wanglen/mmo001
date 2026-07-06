@@ -21,6 +21,7 @@ export class Player {
     this.aimY = y;
     this.moving = false;
     this.attacking = false;
+    this.lastMoveAt = 0;
     this.lastAttackAt = 0;
     this.lastSkillAt = 0;
     this.lastDamagedAt = 0;

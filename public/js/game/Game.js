@@ -15,6 +15,7 @@ import { CAMERA_ZOOM_STEP, TILE_SIZE } from '../config.js';
 import { filterRevealedPositions } from '/shared/fog.js';
 import { FxBuffer } from './FxBuffer.js';
 import { FogOfWar } from './FogOfWar.js';
+import { RemotePlayerDisplay } from './RemotePlayerDisplay.js';
 
 const LERP = 0.3;
 const MOVE_INTERVAL = 50;
@@ -49,6 +50,7 @@ export class Game {
     this.isDead = false;
     this.fxBuffer = new FxBuffer();
     this.fogOfWar = new FogOfWar();
+    this.remotePlayerDisplay = new RemotePlayerDisplay();
     this.deathOverlay = document.getElementById('death-overlay');
     this.mapLoadingOverlay = document.getElementById('map-loading-overlay');
     this.mapLoadingTimer = null;
@@ -87,6 +89,7 @@ export class Game {
       this.attackTargetId = null;
       this.lootTargetId = null;
       this.dialoguePanel?.hide();
+      this.remotePlayerDisplay.clear();
     } else if (prevMap && state.map && !state.map.tiles) {
       state = {
         ...state,
@@ -608,8 +611,11 @@ export class Game {
       this.camera.follow(this.displayPlayer.x, this.displayPlayer.y);
       this.fogOfWar.update(this.worldState.map, this.displayPlayer.x, this.displayPlayer.y);
 
+      const remotePlayers = this.remotePlayerDisplay.sync(this.worldState.players ?? []);
+
       const renderState = {
         ...this.worldState,
+        players: remotePlayers,
         combatFx: this.fxBuffer.getCombatFx(),
         skillFx: this.fxBuffer.getSkillFx(),
       };
