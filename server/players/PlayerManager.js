@@ -6,9 +6,9 @@ export class PlayerManager {
     this.players = new Map();
   }
 
-  create({ id, name, characterClass, spawn, map, saved = null, mapId = DEFAULT_MAP_ID }) {
+  create({ id, name, characterClass, spawn, map, saved = null, mapId = DEFAULT_MAP_ID, forceSpawn = false }) {
     const player = saved
-      ? createPlayerFromSave({ id, name, characterClass, spawn, map, saved, mapId })
+      ? createPlayerFromSave({ id, name, characterClass, spawn, map, saved, mapId, forceSpawn })
       : createPlayer({ id, name, characterClass, spawn, mapId });
     this.players.set(id, player);
     return player;

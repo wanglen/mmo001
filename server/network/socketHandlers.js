@@ -244,9 +244,8 @@ export function registerSocketHandlers(io, world, playerManager, characterStore,
       }
 
       const characterClass = saved.characterClass;
-      const mapId = saved.mapId ?? DEFAULT_MAP_ID;
-      const map = world.getMap(mapId) ?? world.getMap(DEFAULT_MAP_ID);
-      const resolvedMapId = map?.mapId ?? DEFAULT_MAP_ID;
+      const town = world.getMap(MAP_ID.TOWN) ?? world.getMap(DEFAULT_MAP_ID);
+      const townMapId = town?.mapId ?? MAP_ID.TOWN;
 
       await evictCharacterSessions({
         io,
@@ -262,15 +261,18 @@ export function registerSocketHandlers(io, world, playerManager, characterStore,
         id: socket.id,
         name: playerName,
         characterClass,
-        spawn: map.spawn,
-        map,
+        spawn: town.spawn,
+        map: town,
         saved,
-        mapId: resolvedMapId,
+        mapId: townMapId,
+        forceSpawn: true,
       });
 
       player.aimX = player.x + 1;
       player.aimY = player.y;
       syncDeathState(player);
+
+      await persistPlayer(characterStore, player);
 
       broadcastAll(io, world, playerManager, { fullMapSocketIds: new Set([socket.id]) });
       onPlayerJoinedSocial(io, playerManager, partyManager, socket.id);

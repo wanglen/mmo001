@@ -83,15 +83,32 @@ export function createPlayer({ id, name, characterClass, spawn, mapId = DEFAULT_
   return new Player({ id, name, characterClass, x, y, stats, mapId });
 }
 
-export function createPlayerFromSave({ id, name, characterClass, spawn, map, saved, mapId = DEFAULT_MAP_ID }) {
-  const resolvedMapId = saved.mapId ?? mapId;
+export function createPlayerFromSave({
+  id,
+  name,
+  characterClass,
+  spawn,
+  map,
+  saved,
+  mapId = DEFAULT_MAP_ID,
+  forceSpawn = false,
+}) {
+  const resolvedMapId = forceSpawn ? mapId : (saved.mapId ?? mapId);
   const spawnPos = tileToPixel(spawn.x, spawn.y);
-  let x = typeof saved.x === 'number' ? saved.x : spawnPos.x;
-  let y = typeof saved.y === 'number' ? saved.y : spawnPos.y;
+  let x;
+  let y;
 
-  if (!canMoveTo(map, x, y)) {
+  if (forceSpawn) {
     x = spawnPos.x;
     y = spawnPos.y;
+  } else {
+    x = typeof saved.x === 'number' ? saved.x : spawnPos.x;
+    y = typeof saved.y === 'number' ? saved.y : spawnPos.y;
+
+    if (!canMoveTo(map, x, y)) {
+      x = spawnPos.x;
+      y = spawnPos.y;
+    }
   }
 
   const stats = createPlayerStats(characterClass, saved.level ?? 1, {

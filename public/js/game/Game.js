@@ -602,6 +602,10 @@ export class Game {
       return;
     }
 
+    if (this.vendorPanel?.isVisible()) {
+      return;
+    }
+
     this.handleClick();
     this.handlePotionHotkeys();
     this.handleSkills();

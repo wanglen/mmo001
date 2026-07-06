@@ -42,12 +42,19 @@ export function getVendorCatalog(vendorId) {
     vendorId,
     name: vendor.name,
     greeting: vendor.greeting,
-    stock: stock.map((entry) => ({
-      templateKey: entry.templateKey,
-      kind: entry.kind,
-      price: entry.price,
-      name: findTemplate(entry.templateKey)?.name ?? entry.templateKey,
-    })),
+    stock: stock.map((entry) => {
+      const template = findTemplate(entry.templateKey);
+      const isPotion = !!POTION_TEMPLATES.find((row) => row.key === entry.templateKey);
+      return {
+        templateKey: entry.templateKey,
+        kind: entry.kind,
+        price: entry.price,
+        name: template?.name ?? entry.templateKey,
+        rarity: RARITY.COMMON,
+        type: isPotion ? 'consumable' : (template?.type ?? entry.kind),
+        slot: template?.slot ?? null,
+      };
+    }),
   };
 }
 
@@ -87,10 +94,12 @@ export function sellToVendor(player, inventoryIndex) {
   return { ok: true, goldGained: price };
 }
 
-export function validateVendorInteraction(player, npcs, npcId) {
+export function validateVendorInteraction(player, npcs, npcId, { requireRange = true } = {}) {
   const npc = npcs.find((entry) => entry.id === npcId);
   if (!npc || !isVendorNpc(npc)) return { ok: false, reason: 'not_vendor' };
-  if (!isNearNpc(player.x, player.y, npc)) return { ok: false, reason: 'out_of_range' };
+  if (requireRange && !isNearNpc(player.x, player.y, npc)) {
+    return { ok: false, reason: 'out_of_range' };
+  }
 
   const vendorId = getVendorIdForNpc(npc);
   const catalog = getVendorCatalog(vendorId);

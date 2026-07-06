@@ -51,6 +51,15 @@ describe('MapGenerator', () => {
     assert.equal(town.label, 'Town');
     assert.ok(town.safe);
     assert.equal(town.radius, TOWN_RADIUS_TILES);
+    assert.equal(town.center.x, map.spawn.x);
+    assert.equal(town.center.y, map.spawn.y);
+  });
+
+  it('places town spawn at map center', () => {
+    const map = generateMap(48, 36, { zoneLayout: 'town-only' });
+    assert.equal(map.spawn.x, Math.floor(map.width / 2));
+    assert.equal(map.spawn.y, Math.floor(map.height / 2));
+    assert.ok(isWalkable(map, map.spawn.x, map.spawn.y));
   });
 
   it('places spawn on a walkable tile', () => {

@@ -165,22 +165,31 @@ export function pickWildernessDungeonCenter(tiles, width, height, spawn, radius)
 function buildMap(width, height, zoneLayout) {
   const tiles = createGrassGrid(width, height);
   placeRockBorder(tiles, width, height);
-  placeObstacleClusters(tiles, width, height);
 
   const centerX = Math.floor(width / 2);
   const centerY = Math.floor(height / 2);
+
+  if (zoneLayout === 'town-only') {
+    placeObstacleClusters(tiles, width, height);
+    const hubRadius = Math.max(8, spawnSafeRadiusTiles(width) + 4);
+    clearArea(tiles, centerX, centerY, hubRadius);
+    clearArea(tiles, centerX, centerY, spawnSafeRadiusTiles(width));
+
+    const spawn = { x: centerX, y: centerY };
+    const connectedSize = floodFill(tiles, width, height, centerX, centerY).size;
+    const zones = [createTownZone(spawn, width)];
+
+    return { tiles, width, height, spawn, connectedSize, zones };
+  }
+
+  placeObstacleClusters(tiles, width, height);
   const spawnClear = Math.max(4, Math.floor(4 * mapDimScale(width)));
   clearArea(tiles, centerX, centerY, spawnClear);
 
   const { spawn, connectedSize } = findLargestWalkableRegion(tiles, width, height);
   clearArea(tiles, spawn.x, spawn.y, spawnSafeRadiusTiles(width));
 
-  let zones = [];
-  if (zoneLayout === 'town-only') {
-    zones = [createTownZone(spawn, width)];
-  }
-
-  return { tiles, width, height, spawn, connectedSize, zones };
+  return { tiles, width, height, spawn, connectedSize, zones: [] };
 }
 
 export function generateMap(width = MAP_WIDTH, height = MAP_HEIGHT, options = {}) {

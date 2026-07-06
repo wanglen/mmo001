@@ -1343,7 +1343,8 @@ html, body {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  z-index: 19;
+  z-index: 22;
+  pointer-events: auto;
   width: min(520px, 92vw);
   max-height: 80vh;
   overflow: auto;
@@ -1411,6 +1412,26 @@ html, body {
   gap: 0.35rem;
   align-items: center;
   font-size: 0.78rem;
+}
+
+.vendor-item-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.08rem;
+}
+
+.vendor-item-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.vendor-item-meta {
+  font-size: 0.65rem;
+  color: #8896a8;
+  letter-spacing: 0.02em;
 }
 
 .vendor-item-price {

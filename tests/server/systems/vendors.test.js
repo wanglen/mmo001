@@ -32,6 +32,20 @@ describe('vendors', () => {
     const check = validateVendorInteraction(player, [vendorNpc], vendorNpc.id);
     assert.equal(check.ok, true);
     assert.ok(check.catalog?.stock?.length);
+    const potion = check.catalog.stock.find((row) => row.templateKey === 'health_potion');
+    assert.equal(potion.rarity, 'common');
+    assert.equal(potion.type, 'consumable');
+    const sword = check.catalog.stock.find((row) => row.templateKey === 'rusty_sword');
+    assert.equal(sword.type, 'weapon');
+    assert.equal(sword.slot, 'weapon');
+  });
+
+  it('allows buy/sell validation without range when panel is open', () => {
+    const player = createPlayer({ x: 0, y: 0 });
+    const check = validateVendorInteraction(player, [vendorNpc], vendorNpc.id, {
+      requireRange: false,
+    });
+    assert.equal(check.ok, true);
   });
 
   it('buys potion and deducts gold', () => {

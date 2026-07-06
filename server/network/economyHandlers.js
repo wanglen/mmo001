@@ -45,7 +45,10 @@ export function registerEconomyHandlers(
   io.on('connection', (socket) => {
     socket.on(EVENTS.VENDOR_OPEN, ({ npcId }) => {
       const player = playerManager.get(socket.id);
-      if (!player || typeof npcId !== 'string') return;
+      if (!player || typeof npcId !== 'string') {
+        socket.emit(EVENTS.ERROR, { message: 'Cannot open vendor' });
+        return;
+      }
 
       const { map } = world.getContextForPlayer(player);
       const npcs = map.npcs ?? map.npcsJson ?? [];
@@ -55,16 +58,21 @@ export function registerEconomyHandlers(
         return;
       }
 
+      player.activeVendorNpcId = npcId;
       socket.emit(EVENTS.VENDOR_CATALOG, { catalog: check.catalog, npcId });
     });
 
     socket.on(EVENTS.VENDOR_BUY, async ({ npcId, templateKey }) => {
       const player = playerManager.get(socket.id);
-      if (!player || typeof npcId !== 'string' || typeof templateKey !== 'string') return;
+      const vendorNpcId = typeof npcId === 'string' ? npcId : player?.activeVendorNpcId;
+      if (!player || typeof vendorNpcId !== 'string' || typeof templateKey !== 'string') {
+        socket.emit(EVENTS.ERROR, { message: 'Cannot buy from vendor' });
+        return;
+      }
 
       const { map } = world.getContextForPlayer(player);
       const npcs = map.npcs ?? map.npcsJson ?? [];
-      const check = validateVendorInteraction(player, npcs, npcId);
+      const check = validateVendorInteraction(player, npcs, vendorNpcId, { requireRange: false });
       if (!check.ok) {
         socket.emit(EVENTS.ERROR, { message: 'Cannot buy from vendor' });
         return;
@@ -87,19 +95,37 @@ export function registerEconomyHandlers(
 
     socket.on(EVENTS.VENDOR_SELL, async ({ npcId, inventoryIndex }) => {
       const player = playerManager.get(socket.id);
-      if (!player || typeof npcId !== 'string' || !Number.isInteger(inventoryIndex)) return;
-
-      const { map } = world.getContextForPlayer(player);
-      const npcs = map.npcs ?? map.npcsJson ?? [];
-      const check = validateVendorInteraction(player, npcs, npcId);
-      if (!check.ok) {
+      const vendorNpcId = typeof npcId === 'string' ? npcId : player?.activeVendorNpcId;
+      const index = Number(inventoryIndex);
+      if (!player || typeof vendorNpcId !== 'string') {
         socket.emit(EVENTS.ERROR, { message: 'Cannot sell to vendor' });
         return;
       }
+      if (!Number.isInteger(index) || index < 0) {
+        socket.emit(EVENTS.ERROR, { message: 'Invalid item slot' });
+        return;
+      }
 
-      const result = sellToVendor(player, inventoryIndex);
+      const { map } = world.getContextForPlayer(player);
+      const npcs = map.npcs ?? map.npcsJson ?? [];
+      const check = validateVendorInteraction(player, npcs, vendorNpcId, { requireRange: false });
+      if (!check.ok) {
+        const messages = {
+          out_of_range: 'Stand near the vendor to sell',
+          not_vendor: 'Cannot sell to this NPC',
+        };
+        socket.emit(EVENTS.ERROR, { message: messages[check.reason] ?? 'Cannot sell to vendor' });
+        return;
+      }
+
+      const result = sellToVendor(player, index);
       if (!result.ok) {
-        socket.emit(EVENTS.ERROR, { message: 'Cannot sell item' });
+        const messages = {
+          empty_slot: 'Item no longer in bag',
+          unsellable: 'This item cannot be sold',
+          invalid_index: 'Invalid item slot',
+        };
+        socket.emit(EVENTS.ERROR, { message: messages[result.reason] ?? 'Cannot sell item' });
         return;
       }
 

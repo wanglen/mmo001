@@ -1,4 +1,5 @@
 import { RARITY, RARITY_MULTIPLIER, POTION_TEMPLATES, LOOT_TEMPLATES } from './items.js';
+import { inferTemplateKeyFromName } from './itemIcons.js';
 
 /** Fraction of vendor buy price when selling items back. */
 export const VENDOR_SELL_RATIO = 0.4;
@@ -33,11 +34,23 @@ export function getBuyPrice(templateKey, rarity = 'common') {
   return Math.max(1, Math.floor(base * mult));
 }
 
+export function resolveItemTemplateKey(item) {
+  if (!item) return null;
+  if (item.templateKey) return item.templateKey;
+  return inferTemplateKeyFromName(item.name);
+}
+
 export function getSellPrice(item) {
-  if (!item?.templateKey) return 0;
-  const buy = getBuyPrice(item.templateKey, item.rarity ?? 'common');
-  if (!buy) return 0;
-  return Math.max(1, Math.floor(buy * VENDOR_SELL_RATIO));
+  const templateKey = resolveItemTemplateKey(item);
+  if (!templateKey) return 0;
+  const buy = getBuyPrice(templateKey, item.rarity ?? 'common');
+  if (!buy || buy <= 1) return 0;
+
+  let sell = Math.floor(buy * VENDOR_SELL_RATIO);
+  if (sell < 1) sell = 1;
+  if (sell >= buy) sell = buy - 1;
+
+  return sell >= 1 ? sell : 0;
 }
 
 export function canAffordGold(player, amount) {

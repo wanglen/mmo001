@@ -8,6 +8,7 @@ import {
   spendGold,
   rollMonsterGold,
   VENDOR_SELL_RATIO,
+  BASE_BUY_PRICES,
 } from '../../shared/economy.js';
 import { createItem, RARITY } from '../../shared/items.js';
 
@@ -15,7 +16,9 @@ describe('economy', () => {
   it('computes buy and sell prices from template', () => {
     const buy = getBuyPrice('health_potion');
     assert.equal(buy, 15);
-    assert.equal(getSellPrice({ templateKey: 'health_potion', rarity: 'common' }), Math.floor(buy * VENDOR_SELL_RATIO));
+    const sell = getSellPrice({ templateKey: 'health_potion', rarity: 'common' });
+    assert.equal(sell, Math.floor(buy * VENDOR_SELL_RATIO));
+    assert.ok(sell < buy);
   });
 
   it('applies rarity multiplier to buy price', () => {
@@ -37,6 +40,23 @@ describe('economy', () => {
   it('rolls monster gold by type', () => {
     assert.equal(rollMonsterGold('goblin'), 2);
     assert.equal(rollMonsterGold('unknown'), 1);
+  });
+
+  it('infers sell price from item name when templateKey is missing', () => {
+    const buy = getBuyPrice('health_potion');
+    const price = getSellPrice({ name: 'Health Potion', rarity: 'common' });
+    assert.equal(price, Math.floor(buy * VENDOR_SELL_RATIO));
+    assert.ok(price < buy);
+  });
+
+  it('sell price is always strictly less than buy price', () => {
+    for (const templateKey of Object.keys(BASE_BUY_PRICES)) {
+      for (const rarity of ['common', 'magic', 'rare']) {
+        const buy = getBuyPrice(templateKey, rarity);
+        const sell = getSellPrice({ templateKey, rarity });
+        if (sell > 0) assert.ok(sell < buy, `${templateKey}/${rarity}: sell ${sell} >= buy ${buy}`);
+      }
+    }
   });
 });
 
