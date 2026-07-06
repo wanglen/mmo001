@@ -1,5 +1,6 @@
 import { MONSTER_SPRITE_SIZE, resolveMonsterWalkFrame } from '/shared/monsterSprites.js';
 import { MONSTER_TYPES } from '/shared/monsters.js';
+import { BOSS_TYPE } from '/shared/dungeon.js';
 
 const FRAME_SIZE = MONSTER_SPRITE_SIZE;
 
@@ -86,10 +87,38 @@ function drawBat(ctx, px, py, body, dark, walkFrame) {
   ctx.fillRect(px + 10, py + 10, 1, 2);
 }
 
+function drawDungeonLord(ctx, px, py, body, dark, walkFrame) {
+  ctx.fillStyle = '#f1c40f';
+  ctx.fillRect(px + 4, py, 2, 2);
+  ctx.fillRect(px + 10, py, 2, 2);
+  ctx.fillRect(px + 6, py + 1, 4, 2);
+
+  ctx.fillStyle = body;
+  ctx.fillRect(px + 3, py + 3, 10, 8);
+  ctx.fillStyle = dark;
+  ctx.fillRect(px + 5, py + 5, 2, 2);
+  ctx.fillRect(px + 9, py + 5, 2, 2);
+  ctx.fillRect(px + 7, py + 8, 2, 1);
+
+  ctx.fillStyle = '#7f8c8d';
+  ctx.fillRect(px + 11, py + 4, 2, 8);
+  ctx.fillRect(px + 12, py + 3, 2, 3);
+
+  ctx.fillStyle = dark;
+  if (walkFrame === 0) {
+    ctx.fillRect(px + 4, py + 11, 3, 4);
+    ctx.fillRect(px + 9, py + 12, 3, 3);
+  } else {
+    ctx.fillRect(px + 4, py + 12, 3, 3);
+    ctx.fillRect(px + 9, py + 11, 3, 4);
+  }
+}
+
 const DRAWERS = {
   goblin: drawGoblin,
   skeleton: drawSkeleton,
   bat: drawBat,
+  [BOSS_TYPE]: drawDungeonLord,
 };
 
 /** Cached 16×16 monster sprites per type and walk frame. */

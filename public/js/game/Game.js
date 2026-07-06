@@ -252,6 +252,7 @@ export class Game {
       this.portalTargetId = portal.id;
       this.attackTargetId = null;
       this.lootTargetId = null;
+      this.pathFollower.clear();
       return;
     }
 

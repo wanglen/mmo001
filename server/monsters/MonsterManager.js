@@ -1,10 +1,23 @@
 import { createMonster } from './Monster.js';
-import { MONSTER_TYPES, SPAWN_COUNT } from '../../shared/monsters.js';
+import { MONSTER_TYPES, SPAWN_COUNT, spawnCountForMap } from '../../shared/monsters.js';
 import { TILE_WALKABLE } from '../../shared/constants.js';
 import { tileToPixel, pixelToTile } from '../map/collision.js';
 import { canMoveTo } from '../map/collision.js';
 import { isInRange } from '../../shared/combat.js';
-import { ZONE_ID, isTileInAnySafeZone, isTileInZoneId, totalSpawnTarget, DUNGEON_EXTRA_SPAWN_RATIO } from '../../shared/zones.js';
+import {
+  ZONE_ID,
+  isTileInAnySafeZone,
+  isTileInZoneId,
+  totalSpawnTarget,
+  DUNGEON_EXTRA_SPAWN_RATIO,
+} from '../../shared/zones.js';
+import {
+  BOSS_TYPE,
+  BOSS_ROOM_ZONE_ID,
+  dungeonMobCount,
+  getBossRoomZone,
+  isInstancedDungeonMap,
+} from '../../shared/dungeon.js';
 import { resolveMonsterTarget, monsterAttackPlayer } from '../systems/monsterCombat.js';
 
 const DIRECTION_DELTA = {
@@ -15,6 +28,29 @@ const DIRECTION_DELTA = {
 };
 
 const MIN_SPAWN_TILES_FROM_PLAYER = 5;
+
+const REGULAR_MONSTER_TYPES = Object.keys(MONSTER_TYPES).filter((type) => !MONSTER_TYPES[type].isBoss);
+
+function resolveSpawnTarget(map, count = SPAWN_COUNT) {
+  if (isInstancedDungeonMap(map)) return dungeonMobCount(count);
+  const hasDungeon = (map.zones ?? []).some((zone) => zone.id === ZONE_ID.DUNGEON);
+  return hasDungeon ? totalSpawnTarget(count) : count;
+}
+
+function isBossRoomTile(map, tileX, tileY) {
+  return isTileInZoneId(map, BOSS_ROOM_ZONE_ID, tileX, tileY);
+}
+
+function defaultSpawnCount(map) {
+  if (map?.width && map?.height) return spawnCountForMap(map.width, map.height);
+  return SPAWN_COUNT;
+}
+
+function placementCount(map, count, exactCount = false) {
+  if (exactCount) return count;
+  if (isInstancedDungeonMap(map)) return dungeonMobCount(count);
+  return count;
+}
 
 function isOutsideSafeZones(map, tileX, tileY) {
   return !isTileInAnySafeZone(map, tileX, tileY);
@@ -114,12 +150,21 @@ export class MonsterManager {
     this.monsters = new Map();
   }
 
-  spawnOnMap(map, count = SPAWN_COUNT) {
-    const types = Object.keys(MONSTER_TYPES);
+  spawnOnMap(map, count = defaultSpawnCount(map), options = {}) {
+    const types = REGULAR_MONSTER_TYPES;
     const connected = getConnectedWalkableTiles(map);
     const candidates = filterSpawnCandidates(map, connected);
 
     if (candidates.length === 0) return 0;
+
+    const toPlace = placementCount(map, count, options.exactCount);
+
+    if (isInstancedDungeonMap(map)) {
+      const mobCandidates = candidates.filter((tile) => !isBossRoomTile(map, tile.x, tile.y));
+      const placed = placeMonstersOnTiles(this, mobCandidates, toPlace, types, 0);
+      this.spawnBossIfNeeded(map);
+      return placed;
+    }
 
     const wildernessCandidates = candidates.filter(
       (tile) => !isTileInZoneId(map, ZONE_ID.DUNGEON, tile.x, tile.y)
@@ -136,21 +181,40 @@ export class MonsterManager {
       types,
       basePlaced
     );
-
     return basePlaced + bonusPlaced;
   }
 
+  hasBoss() {
+    return this.getAllEntities().some((monster) => monster.isBoss);
+  }
+
+  spawnBossIfNeeded(map) {
+    const bossZone = getBossRoomZone(map);
+    if (!bossZone || this.hasBoss()) return false;
+
+    const { x, y } = tileToPixel(bossZone.center.x, bossZone.center.y);
+    const boss = createMonster(BOSS_TYPE, x, y);
+    this.monsters.set(boss.id, boss);
+    return true;
+  }
+
   /** Top up monsters on the player's reachable region when population is low. */
-  ensurePopulation(map, target = SPAWN_COUNT) {
-    const hasDungeon = (map.zones ?? []).some((zone) => zone.id === ZONE_ID.DUNGEON);
-    const goal = hasDungeon ? totalSpawnTarget(target) : target;
-    const current = this.getAll().length;
-    if (current >= goal) return 0;
+  ensurePopulation(map, target = defaultSpawnCount(map)) {
+    const goal = resolveSpawnTarget(map, target);
+    const current = this.getAllEntities().filter((monster) => !monster.isBoss).length;
+    if (current >= goal) {
+      this.spawnBossIfNeeded(map);
+      return 0;
+    }
     const missing = goal - current;
-    const baseMissing = hasDungeon
-      ? Math.max(1, Math.ceil(missing / (1 + DUNGEON_EXTRA_SPAWN_RATIO)))
-      : missing;
-    return this.spawnOnMap(map, baseMissing);
+    const hasWildernessDungeon = (map.zones ?? []).some((zone) => zone.id === ZONE_ID.DUNGEON);
+    const baseMissing =
+      hasWildernessDungeon && !isInstancedDungeonMap(map)
+        ? Math.max(1, Math.ceil(missing / (1 + DUNGEON_EXTRA_SPAWN_RATIO)))
+        : missing;
+    const added = this.spawnOnMap(map, baseMissing, { exactCount: true });
+    this.spawnBossIfNeeded(map);
+    return added;
   }
 
   get(id) {

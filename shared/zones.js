@@ -1,4 +1,5 @@
 import { TILE_SIZE } from './constants.js';
+import { BOSS_ROOM_META, BOSS_ROOM_ZONE_ID } from './dungeon.js';
 import { isTownHubMap } from './townHub.js';
 
 /** Zone identifiers — used by map data and future zone systems. */
@@ -61,13 +62,13 @@ export function createSpawnSafeZone(spawn, mapWidth) {
   return createTownZone(spawn, mapWidth);
 }
 
-export function createDungeonZone(center) {
+export function createDungeonZone(center, radius = DUNGEON_RADIUS_TILES) {
   return {
     id: ZONE_ID.DUNGEON,
     label: ZONE_META[ZONE_ID.DUNGEON].label,
     safe: false,
     center: { x: center.x, y: center.y },
-    radius: DUNGEON_RADIUS_TILES,
+    radius,
   };
 }
 
@@ -103,7 +104,9 @@ export function isInSafeZone(map, pixelX, pixelY) {
 export function getZoneAt(map, tileX, tileY) {
   for (const zone of map.zones ?? []) {
     if (isTileInZone(zone, tileX, tileY)) {
-      const meta = ZONE_META[zone.id] ?? { label: zone.id, color: '#ffffff' };
+      const meta =
+        ZONE_META[zone.id] ??
+        (zone.id === BOSS_ROOM_ZONE_ID ? BOSS_ROOM_META : { label: zone.id, color: '#ffffff' });
       return {
         id: zone.id,
         label: zone.label ?? meta.label,

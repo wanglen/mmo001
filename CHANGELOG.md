@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.20.0] - 2026-07-05
+
+### Added
+
+- Instanced dungeon map: procedural room-and-corridor layout with rock walls
+- Boss room at the far end of the dungeon with **Dungeon Lord** boss (large HP bar, always-visible nameplate)
+- Dungeon mob density doubled on the instanced dungeon map
+
+### Changed
+
+- Dungeon map no longer reuses the open wilderness generator; corridors are tighter with higher monster count
+
+### Fixed
+
+- Town wilderness portal could be placed on blocked tiles with no path from spawn; gate path is now carved and aligned to the south gate
+
 ## [1.19.1] - 2026-07-05
 
 ### Added

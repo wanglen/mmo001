@@ -69,7 +69,7 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 - [x] Multiple zones (town, wilderness, dungeon)
 - [x] Zone transitions (portals, doors, loading new map)
 - [x] Town hub: safe zone, full hp/mp recovery, no combat, NPCs, teleportation using "T" key after 6 seconds continuous press.
-- [ ] Dungeon maps: tighter layouts, higher mob density, boss room
+- [x] Dungeon maps: tighter layouts, higher mob density, boss room
 
 ### Map generation improvements
 - [ ] Room + corridor dungeon generator (Diablo-style)

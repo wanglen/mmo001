@@ -2,6 +2,9 @@ import { TILE_SIZE } from './constants.js';
 
 export const PORTAL_USE_RANGE = 52;
 
+/** Slightly larger hit area for clicking portals in the world. */
+export const PORTAL_CLICK_RANGE = 72;
+
 export function portalPixelFromTile(tileX, tileY) {
   return {
     x: tileX * TILE_SIZE + TILE_SIZE / 2,
@@ -33,7 +36,7 @@ export function isInPortalRange(playerX, playerY, portal, range = PORTAL_USE_RAN
   return distance(playerX, playerY, portal.x, portal.y) <= range;
 }
 
-export function findPortalAt(portals, worldX, worldY, range = PORTAL_USE_RANGE) {
+export function findPortalAt(portals, worldX, worldY, range = PORTAL_CLICK_RANGE) {
   if (!portals?.length) return null;
   let nearest = null;
   let nearestDist = range;

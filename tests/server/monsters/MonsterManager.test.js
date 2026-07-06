@@ -5,7 +5,7 @@ import {
   MonsterManager,
   getConnectedWalkableTiles,
 } from '../../../server/monsters/MonsterManager.js';
-import { SPAWN_COUNT } from '../../../shared/monsters.js';
+import { spawnCountForMap } from '../../../shared/monsters.js';
 import { createTownZone, createDungeonZone, isTileInAnySafeZone, totalSpawnTarget, dungeonSpawnBonus } from '../../../shared/zones.js';
 import { createOpenMap } from '../../helpers/fixtures.js';
 
@@ -51,15 +51,16 @@ describe('MonsterManager', () => {
     }
   });
 
-  it('spawnOnMap fills up to SPAWN_COUNT on open maps without dungeon', () => {
+  it('spawnOnMap fills up to map-scaled count on open maps without dungeon', () => {
     const map = {
       ...createOpenMap(20, 20),
       spawn: { x: 10, y: 10 },
     };
+    const target = spawnCountForMap(map.width, map.height);
     const manager = new MonsterManager();
     const placed = manager.spawnOnMap(map);
-    assert.equal(placed, SPAWN_COUNT);
-    assert.equal(manager.getAll().length, SPAWN_COUNT);
+    assert.equal(placed, target);
+    assert.equal(manager.getAll().length, target);
   });
 
   it('spawnOnMap adds extra monsters inside dungeon zones', () => {
@@ -101,7 +102,7 @@ describe('MonsterManager', () => {
     };
     const manager = new MonsterManager();
     manager.spawnOnMap(map, 2);
-    manager.ensurePopulation(map, SPAWN_COUNT);
-    assert.equal(manager.getAll().length, SPAWN_COUNT);
+    manager.ensurePopulation(map, spawnCountForMap(map.width, map.height));
+    assert.equal(manager.getAll().length, spawnCountForMap(map.width, map.height));
   });
 });

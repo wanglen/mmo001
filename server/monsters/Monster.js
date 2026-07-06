@@ -18,6 +18,7 @@ export class Monster {
     this.attackRange = def.attackRange;
     this.color = def.color;
     this.xpReward = def.xpReward ?? 10;
+    this.isBoss = !!def.isBoss;
     this.moving = false;
     this.targetPlayerId = null;
     this.provoked = false;
@@ -35,6 +36,7 @@ export class Monster {
       maxHp: this.maxHp,
       color: this.color,
       moving: this.moving,
+      isBoss: this.isBoss,
     };
   }
 }

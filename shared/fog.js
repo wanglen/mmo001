@@ -1,4 +1,5 @@
 import { isTileInZone } from './zones.js';
+import { isTownHubMap } from './townHub.js';
 
 /** How many tiles around the player are permanently revealed while exploring. */
 export const FOG_REVEAL_RADIUS_TILES = 10;
@@ -45,7 +46,7 @@ export function revealTilesInRadius(revealed, centerTileX, centerTileY, radius) 
   }
 }
 
-/** Pre-reveal safe town zones so spawn area is never black. */
+/** Pre-reveal safe town zones and portal exits so gates are never black. */
 export function revealTownZones(revealed, map) {
   for (const zone of map.zones ?? []) {
     if (!zone.safe) continue;
@@ -57,6 +58,13 @@ export function revealTownZones(revealed, map) {
           revealed.add(tileKey(tx, ty));
         }
       }
+    }
+  }
+
+  if (isTownHubMap(map)) {
+    for (const portal of map.portals ?? []) {
+      if (!portal.tile) continue;
+      revealTilesInRadius(revealed, portal.tile.x, portal.tile.y, 2);
     }
   }
 }

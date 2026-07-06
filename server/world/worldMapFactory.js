@@ -1,10 +1,11 @@
+import { generateDungeonLayout } from '../map/DungeonGenerator.js';
 import { generateMap, pickDungeonCenter } from '../map/MapGenerator.js';
 import { MAP_ID, WORLD_MAP_SIZES } from '../../shared/worldMaps.js';
 import { createPortal } from '../../shared/portals.js';
-import { TOWN_RADIUS_TILES } from '../../shared/zones.js';
 import { TILE_WALKABLE } from '../../shared/constants.js';
 import { buildTownNpcs } from './townNpcs.js';
 import { npcToJSON } from '../../shared/npcs.js';
+import { pickTownWildernessGate, ensurePortalReachable } from './portalPlacement.js';
 
 export function generateTownMap() {
   const { width, height } = WORLD_MAP_SIZES[MAP_ID.TOWN];
@@ -21,7 +22,7 @@ export function generateWildernessMap() {
 
 export function generateDungeonMap() {
   const { width, height } = WORLD_MAP_SIZES[MAP_ID.DUNGEON];
-  const map = generateMap(width, height, { zoneLayout: 'dungeon-only' });
+  const map = generateDungeonLayout(width, height);
   return { ...map, mapId: MAP_ID.DUNGEON, portals: [] };
 }
 
@@ -40,12 +41,13 @@ export function pickWildernessDungeonGate(map) {
 
 export function attachWorldPortals(town, wilderness, dungeon) {
   const dungeonGate = pickWildernessDungeonGate(wilderness);
+  const townGate = pickTownWildernessGate(town);
 
   town.portals = [
     createPortal({
       id: 'town-wilderness',
       label: 'Wilderness',
-      tile: { x: town.spawn.x, y: town.spawn.y + TOWN_RADIUS_TILES + 1 },
+      tile: townGate,
       targetMapId: MAP_ID.WILDERNESS,
       targetTile: { ...wilderness.spawn },
     }),
@@ -72,7 +74,10 @@ export function attachWorldPortals(town, wilderness, dungeon) {
     createPortal({
       id: 'dungeon-wilderness',
       label: 'Wilderness',
-      tile: { x: dungeon.spawn.x, y: dungeon.spawn.y + 1 },
+      tile: ensurePortalReachable(dungeon, {
+        x: dungeon.spawn.x,
+        y: Math.min(dungeon.spawn.y + 1, dungeon.height - 2),
+      }),
       targetMapId: MAP_ID.WILDERNESS,
       targetTile: dungeonGate,
     }),
