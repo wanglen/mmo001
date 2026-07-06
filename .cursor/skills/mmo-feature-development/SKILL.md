@@ -24,9 +24,9 @@ Copy and track progress:
 - [ ] 5. Add/update unit tests (`npm test` must pass)
 - [ ] 6. Smoke test (npm start, manual or script)
 - [ ] 7. Update TODO.md, CHANGELOG.md, README.md, package.json version
-- [ ] 8. When the user asks to **commit and push**: `./scripts/commit-and-push.sh "Imperative message"` (runs tests, stages all, commits, pushes current branch)
-- [ ] 9. **On user approval** — commit/push if needed, merge feature branch to `main` (see merge-on-approval below)
-- [ ] 10. Push `origin main` when the user asks after merge (`git push origin main` or `./scripts/commit-and-push.sh` on `main`)
+- [ ] 8. When the user asks to **commit and push**: `./scripts/commit-and-push.sh "Imperative message"` (tests, commit, merge to `main` if on a feature branch, push `main`)
+- [ ] 9. **On user approval** — use `./scripts/commit-and-push.sh` if there is uncommitted work; otherwise merge feature branch to `main` manually (see merge-on-approval below)
+- [ ] 10. Push is included in step 8 when the user asked to commit and push; otherwise `git push origin main` only when they ask
 - [ ] 11. Create next feature branch for following TODO item
 ```
 
@@ -38,9 +38,8 @@ Copy and track progress:
 | Repo | [github.com/wanglen/mmo001](https://github.com/wanglen/mmo001) |
 
 - `main` tracks `origin/main`
-- **Commit + push current branch:** `./scripts/commit-and-push.sh "Your message"` (from repo root; runs `npm test` unless `SKIP_TESTS=1`)
-- Feature branch to remote (if not using the script): `git push -u origin HEAD`
-- After merge, publish: `git push origin main` or `./scripts/commit-and-push.sh "..."` on `main` (user must ask)
+- **Commit + push:** `./scripts/commit-and-push.sh "Your message"` (from repo root; runs `npm test` unless `SKIP_TESTS=1`; merges into `main` when not on `main`, then pushes `main`)
+- Manual merge/push: `git checkout main && git merge feature/<name> && git push origin main`
 - PRs/issues: use `gh` when the user requests
 - Never force-push `main`
 
@@ -97,7 +96,7 @@ When the user requests a **commit and push** (local + remote), use the project s
 | `SKIP_TESTS=1` | Skip `npm test` (docs-only changes) |
 | `COMMIT_MSG="..."` | Message if omitted as first argument |
 
-The script stages **all** changes, commits on the **current branch**, and runs `git push -u origin HEAD`.
+The script stages **all** changes, commits on the current branch, merges into `main` when needed, and pushes `origin/main`.
 
 **Commit only (no push):** follow the user's git safety rules — manual `git add` + `git commit`; do **not** run `commit-and-push.sh` (it always pushes).
 
@@ -117,13 +116,13 @@ The script stages **all** changes, commits on the **current branch**, and runs `
 
 **Do immediately (no extra confirmation):**
 
-1. Commit and push any uncommitted work on the feature branch when the user asked to publish: `./scripts/commit-and-push.sh "..."` (or commit only if they did not ask to push)
-2. `git checkout main && git merge feature/<branch>`
+1. Commit, merge, and push when the user asked: `./scripts/commit-and-push.sh "..."` (handles feature branch → `main` → push)
+2. If already committed on the feature branch: `git checkout main && git merge feature/<branch>` then `git push origin main` when they ask to publish
 3. Confirm tests still pass and report result
 
 **Do not** merge without approval.
 
-**Push to GitHub** only when the user asks. After merge on `main`, use `git push origin main` or `./scripts/commit-and-push.sh "..."`.
+**Push to GitHub** only when the user asks. `./scripts/commit-and-push.sh` merges to `main` and pushes; otherwise use `git push origin main` after a manual merge.
 
 See also [.cursor/rules/mmo-workflow.mdc](../../rules/mmo-workflow.mdc) § Merge on user approval.
 

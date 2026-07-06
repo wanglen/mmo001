@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-# Stage changes, commit, and push the current branch to origin.
+# Stage changes, commit, merge to main when needed, and push origin/main.
+#
+# On main: test → commit → push main.
+# On another branch: test → commit → checkout main → merge branch → push main.
 #
 # Usage:
 #   ./scripts/commit-and-push.sh "Add feature X"
@@ -59,6 +62,17 @@ git add -A
 
 log "Creating commit on $BRANCH..."
 git commit -m "$MSG"
+
+if [[ "$BRANCH" != "main" ]]; then
+  FEATURE_BRANCH="$BRANCH"
+  log "Checking out main..."
+  git checkout main
+  log "Updating main from origin..."
+  git pull --ff-only origin main
+  log "Merging $FEATURE_BRANCH into main..."
+  git merge "$FEATURE_BRANCH"
+  BRANCH="main"
+fi
 
 log "Pushing to origin/$BRANCH..."
 git push -u origin HEAD

@@ -22,8 +22,7 @@ TODO item → plan → feature/<name> branch → implement → test → docs + v
 | Remote | `origin` → `https://github.com/wanglen/mmo001.git` |
 | Default branch | `main` (tracks `origin/main`) |
 
-- Create feature branches from `main`; when the user asks to **commit and push**, run `./scripts/commit-and-push.sh "message"` on the current branch
-- After merging to `main`, run `git push origin main` or `./scripts/commit-and-push.sh "..."` when the user asks to publish/sync
+- Create feature branches from `main`; when the user asks to **commit and push**, run `./scripts/commit-and-push.sh "message"` (merges into `main` and pushes when not already on `main`)
 - Use `gh` for pull requests and GitHub issues when requested
 - Never force-push `main`
 
@@ -44,7 +43,7 @@ npm install
 npm test       # run unit tests
 npm start      # http://localhost:3000
 npm run dev    # auto-reload
-./scripts/commit-and-push.sh "Your message"   # test, commit, push current branch
+./scripts/commit-and-push.sh "Your message"   # test, commit, merge to main if needed, push main
 ./scripts/update-server.sh                    # remote: pull, rebuild Docker, restart
 ```
 

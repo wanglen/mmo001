@@ -92,7 +92,7 @@ The script fast-forwards `main`, rebuilds the image, and restarts Compose. Chara
 
 ### Commit and push
 
-Stage all changes, run tests, commit, and push the current branch:
+Stage all changes, run tests, commit, and push to `origin/main`. On a feature branch, the script merges into `main` first:
 
 ```bash
 ./scripts/commit-and-push.sh "Add feature X"
