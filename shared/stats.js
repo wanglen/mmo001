@@ -8,7 +8,7 @@ export const STAT_NAMES = ['hp', 'mp', 'str', 'dex', 'int', 'vit'];
 export const ALLOCATABLE_STATS = ['str', 'dex', 'int', 'vit'];
 
 export const STAT_POINTS_PER_LEVEL = 5;
-/** Reserved for the future skills system; not granted on level-up yet. */
+/** Granted on each level-up (first point available at level 2). */
 export const SKILL_POINTS_PER_LEVEL = 1;
 
 /**
@@ -50,24 +50,14 @@ export function createPlayerStats(characterClass, level = 1, options = {}) {
   stats.hp = options.hp ?? stats.maxHp;
   stats.mp = options.mp ?? stats.maxMp;
 
-  normalizeSavedProgression(stats);
-
   return stats;
-}
-
-/** Merge legacy skillPoints into statPoints (old saves confused the two). */
-export function normalizeSavedProgression(stats) {
-  const legacy = stats.skillPoints ?? 0;
-  if (legacy > 0) {
-    stats.statPoints = (stats.statPoints ?? 0) + legacy;
-    stats.skillPoints = 0;
-  }
 }
 
 /** Apply one level-up: grant points and refill HP/MP (stats allocated manually). */
 export function applyLevelUp(stats, characterClass) {
   stats.level += 1;
   stats.statPoints = (stats.statPoints ?? 0) + STAT_POINTS_PER_LEVEL;
+  stats.skillPoints = (stats.skillPoints ?? 0) + SKILL_POINTS_PER_LEVEL;
   recalculateDerivedStats(stats, characterClass);
   stats.hp = stats.maxHp;
   stats.mp = stats.maxMp;

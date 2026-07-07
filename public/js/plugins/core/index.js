@@ -2,6 +2,7 @@ import { InventoryPanel } from '../../ui/InventoryPanel.js';
 import { StashPanel } from '../../ui/StashPanel.js';
 import { SkillBar } from '../../ui/SkillBar.js';
 import { LevelUpPanel } from '../../ui/LevelUpPanel.js';
+import { SkillTreePanel } from '../../ui/SkillTreePanel.js';
 import { Game } from '../../game/Game.js';
 import { CharacterSelect } from './CharacterSelect.js';
 import { DisconnectModal } from './DisconnectModal.js';
@@ -31,6 +32,13 @@ export function registerCoreClient(ctx) {
   levelUpPanel.onAllocate = (stat) => socketClient.sendAllocateStat(stat);
   levelUpPanel.onRequestCanvasFocus = () => canvas.focus();
 
+  const skillTreePanel = new SkillTreePanel(document.getElementById('skill-tree-panel'));
+  skillTreePanel.onLearn = (skillId) => socketClient.sendLearnSkill(skillId);
+  skillTreePanel.onSetSlot = (slotIndex, skillId) =>
+    socketClient.sendSetSkillSlot(slotIndex, skillId);
+  skillTreePanel.onRespec = () => socketClient.sendRespecSkills();
+  skillTreePanel.onRequestCanvasFocus = () => canvas.focus();
+
   const disconnectModal = new DisconnectModal(
     document.getElementById('disconnect-overlay'),
     document.getElementById('disconnect-message'),
@@ -46,6 +54,7 @@ export function registerCoreClient(ctx) {
   ctx.panels.stashPanel = stashPanel;
   ctx.panels.skillBar = skillBar;
   ctx.panels.levelUpPanel = levelUpPanel;
+  ctx.panels.skillTreePanel = skillTreePanel;
   ctx.setDisconnectModal(disconnectModal);
 }
 
@@ -60,6 +69,7 @@ export function finalizeCoreClient(ctx) {
     stashPanel,
     skillBar,
     levelUpPanel,
+    skillTreePanel,
     dialoguePanel,
     questTracker,
     chatPanel,
@@ -75,6 +85,7 @@ export function finalizeCoreClient(ctx) {
     stashPanel,
     levelUpPanel,
     skillBar,
+    skillTreePanel,
     dialoguePanel,
     questTracker,
     chatPanel,
@@ -84,6 +95,7 @@ export function finalizeCoreClient(ctx) {
     pluginHost
   );
   levelUpPanel.onPauseChange = (paused) => game.onGamePause(paused);
+  skillTreePanel.onPauseChange = (paused) => game.onGamePause(paused);
   ctx.setGame(game);
 
   const characterSelect = new CharacterSelect({

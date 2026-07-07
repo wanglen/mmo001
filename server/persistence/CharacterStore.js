@@ -7,6 +7,10 @@ import { createPlayerStats } from '../../shared/stats.js';
 import { createEmptyQuestState } from '../../shared/quests.js';
 import { tileToPixel } from '../map/collision.js';
 import { DEFAULT_MAP_ID } from '../../shared/worldMaps.js';
+import {
+  getDefaultSkillBarSlots,
+  getDefaultUnlockedSkills,
+} from '../../shared/plugins/combat/skillTree.js';
 
 export function slugifyCharacterName(name) {
   const slug = name.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
@@ -24,6 +28,8 @@ export function playerToSaveData(player) {
     xp: player.xp,
     statPoints: player.statPoints ?? 0,
     skillPoints: player.skillPoints ?? 0,
+    unlockedSkills: player.unlockedSkills ?? getDefaultUnlockedSkills(player.characterClass),
+    skillBarSlots: player.skillBarSlots ?? getDefaultSkillBarSlots(player.characterClass),
     str: player.str,
     dex: player.dex,
     int: player.int,
@@ -56,6 +62,8 @@ export function createNewCharacterData(name, characterClass, spawn) {
     xp: stats.xp,
     statPoints: stats.statPoints,
     skillPoints: stats.skillPoints,
+    unlockedSkills: getDefaultUnlockedSkills(characterClass),
+    skillBarSlots: getDefaultSkillBarSlots(characterClass),
     str: stats.str,
     dex: stats.dex,
     int: stats.int,

@@ -117,6 +117,18 @@ export class SocketClient {
     this.socket.emit(EVENTS.ALLOCATE_STAT, { stat });
   }
 
+  sendLearnSkill(skillId) {
+    this.socket.emit(EVENTS.LEARN_SKILL, { skillId });
+  }
+
+  sendSetSkillSlot(slotIndex, skillId) {
+    this.socket.emit(EVENTS.SET_SKILL_SLOT, { slotIndex, skillId });
+  }
+
+  sendRespecSkills() {
+    this.socket.emit(EVENTS.RESPEC_SKILLS, {});
+  }
+
   sendUseSkill({ skillId, targetX, targetY, targetId }) {
     this.socket.emit(EVENTS.USE_SKILL, { skillId, targetX, targetY, targetId });
   }

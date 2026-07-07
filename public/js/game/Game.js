@@ -4,7 +4,7 @@ import { PathFollower } from '../core/PathFollower.js';
 import { FogOfWar } from '../core/FogOfWar.js';
 import { GameLoop } from '../core/GameLoop.js';
 import { InputRouter } from '../core/InputRouter.js';
-import { onStatKeyDown } from '../plugins/core/CoreInput.js';
+import { onStatKeyDown, onSkillTreeKeyDown } from '../plugins/core/CoreInput.js';
 import { Renderer } from '../render/Renderer.js';
 import { CursorManager } from '../ui/CursorManager.js';
 import { NPC_ROLE } from '/shared/npcs.js';
@@ -21,6 +21,7 @@ export class Game {
     stashPanel = null,
     levelUpPanel = null,
     skillBar = null,
+    skillTreePanel = null,
     dialoguePanel = null,
     questTracker = null,
     chatPanel = null,
@@ -35,6 +36,7 @@ export class Game {
     this.stashPanel = stashPanel;
     this.levelUpPanel = levelUpPanel;
     this.skillBar = skillBar;
+    this.skillTreePanel = skillTreePanel;
     this.dialoguePanel = dialoguePanel;
     this.questTracker = questTracker;
     this.chatPanel = chatPanel;
@@ -194,6 +196,20 @@ export class Game {
     }
   }
 
+  toggleSkillTreePanel() {
+    if (!this.skillTreePanel) return;
+
+    if (this.skillTreePanel.isVisible()) {
+      this.skillTreePanel.hide();
+      return;
+    }
+
+    const player = this.worldState?.player ?? this.displayPlayer;
+    if (player) {
+      this.skillTreePanel.open(player, { townFeaturesEnabled: this.isInTown() });
+    }
+  }
+
   start() {
     this.cursorManager.setActive(true);
     this.input.setGameActive(true);
@@ -202,6 +218,10 @@ export class Game {
     if (!this._statKeyBound) {
       this._statKeyBound = (e) => onStatKeyDown(this, e);
       document.addEventListener('keydown', this._statKeyBound, true);
+    }
+    if (!this._skillTreeKeyBound) {
+      this._skillTreeKeyBound = (e) => onSkillTreeKeyDown(this, e);
+      document.addEventListener('keydown', this._skillTreeKeyBound, true);
     }
 
     this.gameLoop.start();
@@ -225,6 +245,9 @@ export class Game {
     this.gameLoop.fxBuffer = this.fxBuffer;
 
     this.setInventoryVisible(false);
+    this.setStashVisible(false);
+    this.skillTreePanel?.hide();
+    this.levelUpPanel?.hide();
     this.setStashVisible(false);
     this.levelUpPanel?.hide();
     this.dialoguePanel?.hide();

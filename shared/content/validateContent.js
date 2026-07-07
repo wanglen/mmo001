@@ -91,6 +91,53 @@ export function validateSkills(pack) {
     }
   }
 
+  const { skillTrees, builds } = pack;
+  if (skillTrees && typeof skillTrees === 'object') {
+    for (const [characterClass, tree] of Object.entries(skillTrees)) {
+      const prefix = `skills.skillTrees.${characterClass}`;
+      if (!tree || typeof tree !== 'object') {
+        errors.push(`${prefix}: expected object`);
+        continue;
+      }
+      for (const [skillId, node] of Object.entries(tree)) {
+        if (!skills[skillId]) {
+          errors.push(`${prefix}.${skillId}: unknown skill`);
+        }
+        if (!Number.isInteger(node?.tier) || node.tier < 1) {
+          errors.push(`${prefix}.${skillId}: tier required`);
+        }
+        if (!Number.isInteger(node?.cost) || node.cost < 1) {
+          errors.push(`${prefix}.${skillId}: cost required`);
+        }
+        for (const req of node?.requires ?? []) {
+          if (!tree[req]) {
+            errors.push(`${prefix}.${skillId}: missing prerequisite "${req}"`);
+          }
+        }
+      }
+    }
+  }
+
+  if (builds && typeof builds === 'object') {
+    for (const [characterClass, classBuilds] of Object.entries(builds)) {
+      const prefix = `skills.builds.${characterClass}`;
+      for (const [buildId, build] of Object.entries(classBuilds ?? {})) {
+        if (typeof build?.name !== 'string') {
+          errors.push(`${prefix}.${buildId}: name required`);
+        }
+        if (!Array.isArray(build?.skills) || build.skills.length === 0) {
+          errors.push(`${prefix}.${buildId}: skills required`);
+        } else {
+          for (const skillId of build.skills) {
+            if (!skills[skillId]) {
+              errors.push(`${prefix}.${buildId}: unknown skill "${skillId}"`);
+            }
+          }
+        }
+      }
+    }
+  }
+
   return errors;
 }
 

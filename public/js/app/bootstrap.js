@@ -21,10 +21,14 @@ export function bootstrap() {
   finalizeCoreClient(ctx);
 
   const chatPanel = ctx.panels.chatPanel;
+  const skillTreePanel = ctx.panels.skillTreePanel;
   const characterSelect = pluginHost.characterSelect;
 
   socketClient.onError((err) => {
     console.error('Server error:', err.message);
+    if (skillTreePanel?.isVisible()) {
+      skillTreePanel.setStatus(err.message);
+    }
     if (pluginHost.isInGame()) {
       chatPanel?.appendMessage({
         channel: CHAT_CHANNEL.SYSTEM,

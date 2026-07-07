@@ -120,9 +120,9 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 - [x] Stash / shared storage in town
 
 ### Character build
-- [ ] Skill tree per class
-- [ ] Respec option (gold cost or rare item)
-- [ ] Multiple viable builds per class
+- [x] Skill tree per class
+- [x] Respec option (gold cost or rare item)
+- [x] Multiple viable builds per class
 
 ---
 

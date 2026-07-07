@@ -1,12 +1,22 @@
 import { getSkillBar, getSkillCooldownRemaining } from '../../../shared/skills.js';
+import {
+  getEffectiveSkillBar,
+  getClassBuilds,
+  respecGoldCost,
+  SKILL_TREES,
+} from '../../../shared/plugins/combat/skillTree.js';
 import { collectActiveSkillFx } from './skills.js';
 import { collectCombatFx } from './combatFx.js';
 import { playerMapId } from '../../app/handlerUtils.js';
 
 /** @param {import('../players/Player.js').Player} player @param {number} now */
 export function serializeCombatPlayer(player, now) {
+  const skillBar = getEffectiveSkillBar(player);
+  const characterClass = player.characterClass;
+  const tree = SKILL_TREES[characterClass] ?? {};
+
   return {
-    skillBar: getSkillBar(player.characterClass).map((skill) =>
+    skillBar: skillBar.map((skill) =>
       skill
         ? {
             id: skill.id,
@@ -18,6 +28,21 @@ export function serializeCombatPlayer(player, now) {
         : null
     ),
     skillCooldowns: getSkillCooldownRemaining(player, now),
+    unlockedSkills: [...(player.unlockedSkills ?? [])],
+    skillBarSlots: [...(player.skillBarSlots ?? [])],
+    skillTree: Object.fromEntries(
+      Object.entries(tree).map(([skillId, node]) => [
+        skillId,
+        { tier: node.tier, cost: node.cost, requires: node.requires ?? [] },
+      ])
+    ),
+    skillBuilds: Object.fromEntries(
+      Object.entries(getClassBuilds(characterClass)).map(([id, build]) => [
+        id,
+        { name: build.name, description: build.description, skills: build.skills },
+      ])
+    ),
+    respecGoldCost: respecGoldCost(player.level),
   };
 }
 

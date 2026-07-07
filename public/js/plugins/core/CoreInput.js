@@ -15,7 +15,7 @@ export function handleChatFocus(game) {
 export function handleTownRecallCast(game) {
   if (game.gamePaused || game.isDead || game.isRecalling()) return;
   if (isTownHubMap(game.worldState?.map)) return;
-  if (game.dialoguePanel?.isVisible() || game.levelUpPanel?.isVisible()) return;
+  if (game.dialoguePanel?.isVisible() || game.levelUpPanel?.isVisible() || game.skillTreePanel?.isVisible()) return;
   if (!game.input.consumeKeyPress('t')) return;
 
   game.pathFollower.clear();
@@ -86,6 +86,19 @@ export function handlePathFollowerMove(game, timestamp) {
     game.socketClient.sendMove(direction);
     game.lastMoveTime = timestamp;
   }
+}
+
+/** @param {import('../../game/Game.js').Game} game @param {KeyboardEvent} e */
+export function onSkillTreeKeyDown(game, e) {
+  if (!game.input.gameActive || e.repeat) return;
+  if (game.chatPanel?.isFocused()) return;
+  if (e.key.toLowerCase() !== 'k' && e.code !== 'KeyK') return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (!game.worldState?.player) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+  game.toggleSkillTreePanel();
 }
 
 /** @param {import('../../game/Game.js').Game} game @param {KeyboardEvent} e */

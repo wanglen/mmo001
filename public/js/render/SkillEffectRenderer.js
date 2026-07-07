@@ -46,6 +46,26 @@ export class SkillEffectRenderer {
         continue;
       }
 
+      if (fx.skillId === 'chain_spark') {
+        this.drawChainSpark(ctx, fx, camera, now, duration);
+        continue;
+      }
+
+      if (fx.skillId === 'meteor') {
+        this.drawMeteor(ctx, fx, camera, now, duration);
+        continue;
+      }
+
+      if (fx.skillId === 'multishot') {
+        this.drawMultishot(ctx, fx, camera, now, duration);
+        continue;
+      }
+
+      if (fx.skillId === 'frost_nova') {
+        this.drawFrostNova(ctx, fx, camera, now, duration);
+        continue;
+      }
+
       const progress = Math.min(1, age / duration);
       const alpha = 1 - progress;
 
@@ -286,8 +306,10 @@ export class SkillEffectRenderer {
 
   drawGroundAoE(ctx, fx, skill, camera, alpha, progress) {
     const z = zoomScale(camera);
-    const cx = skill.range ? fx.targetX : fx.x;
-    const cy = skill.range ? fx.targetY : fx.y;
+    const cx = skill.range ? (fx.targetX ?? fx.impactX ?? fx.x) : fx.x;
+    const cy = skill.range ? (fx.targetY ?? fx.impactY ?? fx.y) : fx.y;
+    if (!Number.isFinite(cx) || !Number.isFinite(cy)) return;
+
     const center = camera.worldToScreen(cx, cy);
     const radius = (skill.radius ?? 40) * z * (0.5 + progress * 0.5);
 
@@ -301,6 +323,210 @@ export class SkillEffectRenderer {
 
     if (fx.missed) {
       this.drawMissPuff(ctx, center.x, center.y, alpha * 0.7, 'ice', z);
+    }
+  }
+
+  drawChainSpark(ctx, fx, camera, now, duration) {
+    const z = zoomScale(camera);
+    const age = Math.max(0, now - fx.at);
+    const start = camera.worldToScreen(fx.x, fx.y);
+    const end = camera.worldToScreen(fx.impactX ?? fx.targetX, fx.impactY ?? fx.targetY);
+    const travelEnd = duration * 0.55;
+    const travelProgress = Math.min(1, age / travelEnd);
+
+    this.drawLightningBolt(ctx, start, end, travelProgress, z, fx.at);
+
+    if (travelProgress >= 1) {
+      const impactAge = age - travelEnd;
+      const impactT = Math.min(1, impactAge / (duration - travelEnd + 100));
+      const impactAlpha = 1 - impactT;
+      this.drawElectricBurst(ctx, end.x, end.y, impactAlpha, impactT, z);
+    }
+  }
+
+  drawLightningBolt(ctx, start, end, travelProgress, z, seed = 0) {
+    const segments = 6;
+    const points = [{ x: start.x, y: start.y }];
+
+    for (let i = 1; i < segments; i++) {
+      const t = (i / segments) * travelProgress;
+      if (t <= 0) continue;
+      const baseX = start.x + (end.x - start.x) * t;
+      const baseY = start.y + (end.y - start.y) * t;
+      const jitter = (1 - t) * 14 * z;
+      const phase = seed * 0.01 + i * 1.7;
+      points.push({
+        x: baseX + Math.sin(phase) * jitter,
+        y: baseY + Math.cos(phase * 1.3) * jitter,
+      });
+    }
+
+    if (travelProgress >= 1) {
+      points.push({ x: end.x, y: end.y });
+    } else if (points.length > 1) {
+      const tipT = travelProgress;
+      points.push({
+        x: start.x + (end.x - start.x) * tipT,
+        y: start.y + (end.y - start.y) * tipT,
+      });
+    }
+
+    if (points.length < 2) return;
+
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.shadowColor = 'rgba(120, 200, 255, 0.9)';
+    ctx.shadowBlur = 8 * z;
+
+    ctx.strokeStyle = 'rgba(180, 230, 255, 0.35)';
+    ctx.lineWidth = 7 * z;
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(240, 250, 255, 0.95)';
+    ctx.lineWidth = 2.5 * z;
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  drawElectricBurst(ctx, x, y, alpha, t, z = 1) {
+    const radius = (10 + t * 28) * z;
+    const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+    gradient.addColorStop(0, `rgba(220, 245, 255, ${alpha * 0.95})`);
+    gradient.addColorStop(0.35, `rgba(100, 180, 255, ${alpha * 0.65})`);
+    gradient.addColorStop(1, 'rgba(60, 120, 255, 0)');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    for (let i = 0; i < 5; i++) {
+      const a = (Math.PI * 2 * i) / 5 + t * 2;
+      const len = radius * (0.7 + Math.sin(t * 10 + i) * 0.15);
+      ctx.strokeStyle = `rgba(200, 230, 255, ${alpha * 0.8})`;
+      ctx.lineWidth = 1.5 * z;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + Math.cos(a) * len, y + Math.sin(a) * len);
+      ctx.stroke();
+    }
+  }
+
+  drawMeteor(ctx, fx, camera, now, duration) {
+    const z = zoomScale(camera);
+    const age = Math.max(0, now - fx.at);
+    const end = camera.worldToScreen(fx.impactX ?? fx.targetX, fx.impactY ?? fx.targetY);
+    const fallEnd = duration * 0.62;
+    const fallProgress = Math.min(1, age / fallEnd);
+    const startYOffset = 90 * z;
+    const x = end.x + (1 - fallProgress) * 12 * z;
+    const y = end.y - startYOffset * (1 - fallProgress);
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(Math.PI / 4);
+    const size = (8 + fallProgress * 6) * z;
+    const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 1.4);
+    gradient.addColorStop(0, 'rgba(255, 240, 180, 0.95)');
+    gradient.addColorStop(0.5, 'rgba(255, 120, 40, 0.9)');
+    gradient.addColorStop(1, 'rgba(120, 30, 0, 0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(-size * 0.5, -size * 0.5, size, size);
+    ctx.restore();
+
+    if (fallProgress > 0.15) {
+      ctx.strokeStyle = `rgba(255, 160, 60, ${0.45 * fallProgress})`;
+      ctx.lineWidth = 3 * z;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(end.x, end.y - 8 * z);
+      ctx.stroke();
+    }
+
+    if (fallProgress >= 1) {
+      const impactAge = age - fallEnd;
+      const impactT = Math.min(1, impactAge / (duration - fallEnd + 120));
+      this.drawFireExplosion(ctx, end.x, end.y, 1 - impactT, impactT, z);
+    }
+  }
+
+  drawMultishot(ctx, fx, camera, now, duration) {
+    const z = zoomScale(camera);
+    const age = Math.max(0, now - fx.at);
+    const progress = Math.min(1, age / duration);
+    const alpha = 1 - progress;
+    const start = camera.worldToScreen(fx.x, fx.y);
+    const end = camera.worldToScreen(fx.impactX ?? fx.targetX, fx.impactY ?? fx.targetY);
+    const spread = 0.22;
+
+    for (let i = -2; i <= 2; i++) {
+      const offset = i * spread;
+      const ex = end.x + (end.x - start.x) * offset;
+      const ey = end.y + (end.y - start.y) * offset;
+      const x = start.x + (ex - start.x) * progress;
+      const y = start.y + (ey - start.y) * progress;
+      const angle = Math.atan2(ey - start.y, ex - start.x);
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.fillStyle = `rgba(220, 235, 255, ${alpha})`;
+      ctx.beginPath();
+      ctx.moveTo(10 * z, 0);
+      ctx.lineTo(-5 * z, -3 * z);
+      ctx.lineTo(-3 * z, 0);
+      ctx.lineTo(-5 * z, 3 * z);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    if (progress >= 0.85) {
+      const center = camera.worldToScreen(fx.impactX ?? fx.targetX, fx.impactY ?? fx.targetY);
+      const burstAlpha = (1 - (progress - 0.85) / 0.15) * alpha;
+      ctx.fillStyle = `rgba(180, 210, 255, ${burstAlpha * 0.35})`;
+      ctx.beginPath();
+      ctx.arc(center.x, center.y, 22 * z, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  drawFrostNova(ctx, fx, camera, now, duration) {
+    const z = zoomScale(camera);
+    const age = Math.max(0, now - fx.at);
+    const progress = Math.min(1, age / duration);
+    const alpha = 1 - progress;
+    const center = camera.worldToScreen(fx.x, fx.y);
+    const radius = (20 + progress * 56) * z;
+
+    const gradient = ctx.createRadialGradient(center.x, center.y, 0, center.x, center.y, radius);
+    gradient.addColorStop(0, `rgba(220, 245, 255, ${alpha * 0.55})`);
+    gradient.addColorStop(0.6, `rgba(120, 190, 255, ${alpha * 0.35})`);
+    gradient.addColorStop(1, 'rgba(80, 140, 220, 0)');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = `rgba(200, 235, 255, ${alpha * 0.9})`;
+    ctx.lineWidth = 2 * z;
+    ctx.beginPath();
+    ctx.arc(center.x, center.y, radius * 0.75, 0, Math.PI * 2);
+    ctx.stroke();
+
+    for (let i = 0; i < 8; i++) {
+      const a = (Math.PI * 2 * i) / 8;
+      const len = radius * 0.55;
+      ctx.beginPath();
+      ctx.moveTo(center.x + Math.cos(a) * 8 * z, center.y + Math.sin(a) * 8 * z);
+      ctx.lineTo(center.x + Math.cos(a) * len, center.y + Math.sin(a) * len);
+      ctx.stroke();
     }
   }
 }

@@ -18,7 +18,7 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 - Login spawn: characters always enter at **town spawn** when you connect (inventory, quests, and progress are restored from save)
 - **Economy:** gold from quests and monster kills; vendor NPC Brok in town (buy/sell); player trade via online list (⇄)
 - **Loot rules:** party-shared pickup lock for 30s after a kill, then free-for-all
-- Skills: class skill bar (keys 1–7), HP/MP potion hotkeys (8/9) with stack counts, cooldowns, server-authoritative damage
+- Skills: skill tree per class (**K**), hotbar keys 1–7 (player-assigned), HP/MP potions 8/9, cooldowns, server-authoritative damage
 - Death at 0 HP: blocked actions, respawn button restores HP/MP at spawn
 - Map fog of war: translucent grey veil on unexplored terrain only; monsters and loot hidden until explored; explored areas stay clear; top-right minimap shows revealed terrain, portals, and player position
 - World zones: town safe hub, wilderness (default), instanced dungeon (scattered rooms + branching corridors + boss room, with wall/door/chest landmarks), and wilderness dungeon pocket; zone name shown in HUD
@@ -123,7 +123,8 @@ Tests use Node.js built-in test runner. Coverage includes pathfinding, collision
 - **Scroll wheel** — zoom in/out
 
 - **C** — open character stats / spend stat points (when available)
-- **1**–**7** — class skills (MP cost, cooldowns)
+- **K** — skill tree (learn skills, assign hotbar, respec in town)
+- **1**–**7** — skills on your hotbar (MP cost, cooldowns)
 - **8** / **9** — use health / mana potion from bag (dimmed when none or resource full)
 - **WASD** / **Arrow keys** — move including diagonals (e.g. W+D); cancels click path
 - **I** / **Esc** — toggle character inventory (modal sheet, dimmed world)

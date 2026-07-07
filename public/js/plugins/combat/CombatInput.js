@@ -1,6 +1,12 @@
 import { facingFromTarget } from '/shared/aim.js';
 import { findMonsterAt, isInRange, ATTACK_COOLDOWN_MS } from '/shared/combat.js';
-import { getSkill, getSkillFxDuration, resolveProjectileImpact, canUseSkill } from '/shared/skills.js';
+import {
+  getSkill,
+  getSkillFxDuration,
+  resolveProjectileImpact,
+  canUseSkill,
+  clampToSkillRange,
+} from '/shared/skills.js';
 import { CONSUMABLE_KIND, canQuickUsePotion } from '/shared/consumables.js';
 import { CAMERA_ZOOM_STEP } from '../../config.js';
 import { MOVE_INTERVAL } from '../core/CoreInput.js';
@@ -103,31 +109,15 @@ export function handleSkills(game) {
   const skillDef = getSkill(skill.id);
   if (!skillDef) return;
 
-  let shot;
-  if (skillDef.type === 'projectile') {
-    shot = resolveProjectileImpact(
-      game.worldState.monsters ?? [],
-      px,
-      py,
-      aim.x,
-      aim.y,
-      skillDef.range ?? 200,
-      skillDef.radius ?? 24
-    );
-  } else {
-    const target = findMonsterAt(game.worldState.monsters ?? [], aim.x, aim.y);
-    shot = {
-      impactX: aim.x,
-      impactY: aim.y,
-      missed: !target,
-      monster: target,
-    };
-  }
+  const monsters = game.worldState.monsters ?? [];
+  const shot = buildSkillShot(skillDef, px, py, aim, monsters);
 
   game.fxBuffer.addSkillFx({
     skillId: skill.id,
     x: px,
     y: py,
+    targetX: shot.targetX ?? shot.impactX,
+    targetY: shot.targetY ?? shot.impactY,
     impactX: shot.impactX,
     impactY: shot.impactY,
     missed: shot.missed,
@@ -140,4 +130,57 @@ export function handleSkills(game) {
     targetY: aim.y,
     targetId: shot.monster?.id,
   });
+}
+
+/**
+ * Client-side skill impact point for VFX preview (mirrors server aim clamping).
+ * @param {import('/shared/plugins/combat/skills.js').SkillDef} skillDef
+ */
+function buildSkillShot(skillDef, px, py, aim, monsters) {
+  if (skillDef.type === 'projectile') {
+    return resolveProjectileImpact(
+      monsters,
+      px,
+      py,
+      aim.x,
+      aim.y,
+      skillDef.range ?? 200,
+      skillDef.radius ?? 24
+    );
+  }
+
+  if (skillDef.type === 'ground_aoe') {
+    const clamped = clampToSkillRange(px, py, aim.x, aim.y, skillDef.range ?? 200);
+    return {
+      impactX: clamped.x,
+      impactY: clamped.y,
+      targetX: clamped.x,
+      targetY: clamped.y,
+      missed: false,
+    };
+  }
+
+  if (skillDef.type === 'melee_aoe' || skillDef.type === 'dash') {
+    const maxR = skillDef.range ?? skillDef.dashDistance ?? 96;
+    const clamped = clampToSkillRange(px, py, aim.x, aim.y, maxR);
+    return {
+      impactX: clamped.x,
+      impactY: clamped.y,
+      targetX: clamped.x,
+      targetY: clamped.y,
+      missed: false,
+    };
+  }
+
+  const target = findMonsterAt(monsters, aim.x, aim.y);
+  const impactX = target?.x ?? aim.x;
+  const impactY = target?.y ?? aim.y;
+  return {
+    impactX,
+    impactY,
+    targetX: impactX,
+    targetY: impactY,
+    missed: !target,
+    monster: target,
+  };
 }

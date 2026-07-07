@@ -6,6 +6,11 @@ import { restoreItems } from '../persistence/CharacterStore.js';
 import { DEFAULT_MAP_ID } from '../../shared/worldMaps.js';
 import { normalizeQuestState } from '../../shared/quests.js';
 import { createEmptyStash } from '../../shared/stash.js';
+import {
+  getDefaultSkillBarSlots,
+  getDefaultUnlockedSkills,
+  migratePlayerSkillState,
+} from '../../shared/plugins/combat/skillTree.js';
 import { composePlayer } from '../app/composePlayer.js';
 
 export class Player {
@@ -30,6 +35,8 @@ export class Player {
     this.townRecallCasting = false;
     this.townRecallCastMs = 0;
     this.skillCooldowns = {};
+    this.unlockedSkills = getDefaultUnlockedSkills(characterClass);
+    this.skillBarSlots = getDefaultSkillBarSlots(characterClass);
     this.statusEffects = [];
     this.resistances = createEmptyResistances();
     this.inventory = inventory ?? createEmptyInventory();
@@ -49,7 +56,10 @@ export class Player {
 export function createPlayer({ id, name, characterClass, spawn, mapId = DEFAULT_MAP_ID }) {
   const { x, y } = tileToPixel(spawn.x, spawn.y);
   const stats = createPlayerStats(characterClass);
-  return new Player({ id, name, characterClass, x, y, stats, mapId });
+  const player = new Player({ id, name, characterClass, x, y, stats, mapId });
+  player.unlockedSkills = getDefaultUnlockedSkills(characterClass);
+  player.skillBarSlots = getDefaultSkillBarSlots(characterClass);
+  return player;
 }
 
 export function createPlayerFromSave({
@@ -110,5 +120,10 @@ export function createPlayerFromSave({
   });
 
   refreshPlayerDerivedStats(player, player.equipment);
+  migratePlayerSkillState(player, {
+    unlockedSkills: saved.unlockedSkills,
+    skillBarSlots: saved.skillBarSlots,
+    skillPoints: saved.skillPoints,
+  });
   return player;
 }

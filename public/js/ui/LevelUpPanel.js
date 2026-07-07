@@ -131,11 +131,13 @@ export class LevelUpPanel {
     const maxMp = player.maxMp ?? 0;
 
     this.summaryEl.textContent = `Level ${level} · HP ${hp}/${maxHp} · MP ${mp}/${maxMp}`;
-    this.pointsEl.textContent = `Stat points to spend: ${points}`;
+    this.pointsEl.textContent = `Stat points: ${points} · Skill points: ${player.skillPoints ?? 0}`;
     this.hintEl.textContent =
       points > 0
-        ? 'Spend points with the buttons below, or press Continue and reopen anytime with C.'
-        : '';
+        ? 'Spend stat points below, or press Continue. Press K for the skill tree.'
+        : (player.skillPoints ?? 0) > 0
+          ? 'You have skill points to spend — press K to open the skill tree.'
+          : '';
 
     this.currentStatsEl.innerHTML = ALLOCATABLE_STATS.map(
       (stat) => `

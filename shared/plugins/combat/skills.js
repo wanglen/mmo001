@@ -87,6 +87,11 @@ export function canUseSkill(player, skillId, now = Date.now()) {
     return { ok: false, reason: 'wrong_class' };
   }
 
+  const unlocked = player.unlockedSkills;
+  if (Array.isArray(unlocked) && !unlocked.includes(skillId)) {
+    return { ok: false, reason: 'not_unlocked' };
+  }
+
   if (getAvailableMp(player) < skill.mpCost) return { ok: false, reason: 'no_mp' };
 
   const lastCast = player.skillCooldowns?.[skillId] ?? 0;
@@ -103,7 +108,10 @@ export function canUseSkill(player, skillId, now = Date.now()) {
  * @returns {Record<string, number>}
  */
 export function getSkillCooldownRemaining(player, now = Date.now()) {
-  const bar = CLASS_SKILL_BARS[player.characterClass] ?? [];
+  const bar =
+    Array.isArray(player.skillBarSlots) && player.skillBarSlots.length > 0
+      ? player.skillBarSlots
+      : CLASS_SKILL_BARS[player.characterClass] ?? [];
   const remaining = {};
 
   for (const skillId of bar) {
@@ -313,6 +321,15 @@ export function getSkillFxDuration(skill, fromX, fromY, toX, toY) {
     return 500;
   }
 
+  if (skill.type === 'ground_aoe' && skill.range) {
+    if (skill.id === 'meteor') return 750;
+    if (skill.id === 'multishot') return 480;
+    if (skill.id === 'chain_spark') return Math.min(620, Math.max(280, dist * 2.4));
+    return Math.min(580, Math.max(300, dist * 1.8));
+  }
+
+  if (skill.id === 'frost_nova') return 450;
+  if (skill.id === 'whirlwind') return 500;
   if (skill.type === 'melee_aoe') return 320;
   if (skill.type === 'dash') return 380;
 

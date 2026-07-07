@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-07-07
+
+### Added
+
+- **Character build:** per-class skill trees with tiered prerequisites; earn 1 skill point per level-up
+- Skill tree UI (**K** key) — learn skills, assign hotbar slots (1–7), view build presets (Berserker, Pyromancer, etc.)
+- Town respec — reset skills to starters for gold (`100 + level × 50`); refunds earned skill points
+- 8 new skills across warrior, mage, and ranger (Whirlwind, Shield Bash, Meteor, Frost Nova, Poison Arrow, and more)
+
+### Changed
+
+- Skill hotbar is player-owned (persisted) instead of fixed per class; only unlocked skills can be cast
+
+### Fixed
+
+- Skill tree Learn button ignored clicks due to 50ms world-state re-renders wiping the DOM
+- Chain Spark and other ranged ground-AoE skills missing VFX (`targetX`/`targetY` not sent to renderer)
+
 ## [2.4.1] - 2026-07-07
 
 ### Added

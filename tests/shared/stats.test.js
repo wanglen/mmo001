@@ -5,8 +5,8 @@ import {
   xpToNextLevel,
   grantXp,
   allocateStatPoint,
-  normalizeSavedProgression,
   STAT_POINTS_PER_LEVEL,
+  SKILL_POINTS_PER_LEVEL,
   BASE_STATS,
 } from '../../shared/stats.js';
 
@@ -48,18 +48,15 @@ describe('stats', () => {
     assert.equal(stats.xp, 0);
     assert.equal(result.levelsGained, 1);
     assert.equal(stats.statPoints, STAT_POINTS_PER_LEVEL);
-    assert.equal(stats.skillPoints, 0);
+    assert.equal(stats.skillPoints, 1);
     assert.equal(stats.str, BASE_STATS.warrior.str);
     assert.equal(stats.hp, stats.maxHp);
   });
 
-  it('normalizeSavedProgression merges legacy skill points into stat points', () => {
-    const stats = createPlayerStats('warrior', 2, {
-      statPoints: 3,
-      skillPoints: 2,
-    });
-    assert.equal(stats.statPoints, 5);
-    assert.equal(stats.skillPoints, 0);
+  it('grantXp grants skill points on level up', () => {
+    const stats = createPlayerStats('warrior');
+    grantXp(stats, 100, 'warrior');
+    assert.equal(stats.skillPoints, SKILL_POINTS_PER_LEVEL);
   });
 
   it('allocateStatPoint spends a point and increases stat', () => {
