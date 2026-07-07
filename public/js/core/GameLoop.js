@@ -2,6 +2,12 @@ import { isTownHubMap } from '/shared/townHub.js';
 import { findMonsterAt } from '/shared/combat.js';
 import { filterRevealedPositions } from '/shared/fog.js';
 import { TILE_SIZE } from '../config.js';
+import { applyWorldStateDelta } from '/shared/plugins/world/delta.js';
+import {
+  createEmptyTileGrid,
+  mergeMapTileChunks,
+} from '/shared/plugins/world/chunks.js';
+import { configureClientEventLog } from '../debug/clientEventLog.js';
 
 const LERP = 0.3;
 
@@ -29,8 +35,9 @@ export class GameLoop {
     this.mapLoadingTimer = null;
   }
 
-  setWorldState(state) {
+  setWorldState(incoming) {
     const game = this.game;
+    let state = applyWorldStateDelta(game.worldState, incoming);
     const prevMap = game.worldState?.map;
     const mapIdChanged =
       prevMap?.mapId && state.map?.mapId && prevMap.mapId !== state.map.mapId;
@@ -43,6 +50,34 @@ export class GameLoop {
       game.dialoguePanel?.hide();
       game.vendorPanel?.hide();
       this.remotePlayerDisplay.clear();
+
+      if (state.map?.tileChunks) {
+        const tiles = createEmptyTileGrid(state.map.width, state.map.height);
+        mergeMapTileChunks(tiles, state.map.tileChunks);
+        state = {
+          ...state,
+          map: {
+            ...state.map,
+            tiles,
+          },
+        };
+        delete state.map.tileChunks;
+      }
+    } else if (state.map?.tileChunks) {
+      const width = state.map.width;
+      const height = state.map.height;
+      const tiles = createEmptyTileGrid(width, height, prevMap?.tiles ?? null);
+      mergeMapTileChunks(tiles, state.map.tileChunks);
+      state = {
+        ...state,
+        map: {
+          ...state.map,
+          tiles,
+          zones: state.map.zones?.length ? state.map.zones : prevMap?.zones,
+          portals: state.map.portals?.length ? state.map.portals : prevMap?.portals,
+        },
+      };
+      delete state.map.tileChunks;
     } else if (prevMap && state.map && !state.map.tiles) {
       state = {
         ...state,
@@ -56,6 +91,13 @@ export class GameLoop {
     }
 
     game.worldState = state;
+    if (state.debug && !game.clientDebugLogEnabled) {
+      game.clientDebugLogEnabled = true;
+      configureClientEventLog({
+        active: true,
+        send: (payload) => game.socketClient.sendDebugLog(payload),
+      });
+    }
     if (state.map) {
       this.camera.setMapBounds(state.map.width, state.map.height, TILE_SIZE);
       if (state.map.tiles) {

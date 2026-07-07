@@ -8,6 +8,7 @@ import {
 import { collectActiveSkillFx } from './skills.js';
 import { collectCombatFx } from './combatFx.js';
 import { playerMapId } from '../../app/handlerUtils.js';
+import { filterEntitiesForViewer } from '../../app/interest.js';
 
 /** @param {import('../players/Player.js').Player} player @param {number} now */
 export function serializeCombatPlayer(player, now) {
@@ -51,10 +52,15 @@ export function serializeCombatWorld(ctx) {
   const { world, playerManager, viewerId, now } = ctx;
   const player = playerManager.get(viewerId);
   const mapId = playerMapId(player);
-  const { monsterManager } = world.getContext(mapId);
+  const { map, monsterManager } = world.getContext(mapId);
+
+  let monsters = monsterManager.getAll();
+  if (player) {
+    monsters = filterEntitiesForViewer(player.x, player.y, monsters, map.width, map.height);
+  }
 
   return {
-    monsters: monsterManager.getAll(),
+    monsters,
     skillFx: collectActiveSkillFx(playerManager, now),
     combatFx: collectCombatFx(now),
   };

@@ -7,6 +7,10 @@ services:
     environment:
       PORT: 3000
       NODE_ENV: production
+      DEBUG_EVENTS: ${DEBUG_EVENTS:-1}
+      DEBUG_LOG_FILE: ${DEBUG_LOG_FILE:-/app/data/debug-events.log}
+      DEBUG_LOG_MAX_BYTES: ${DEBUG_LOG_MAX_BYTES:-5242880}
+      DEBUG_LOG_MAX_FILES: ${DEBUG_LOG_MAX_FILES:-5}
     volumes:
       - ./data:/app/data
     restart: unless-stopped

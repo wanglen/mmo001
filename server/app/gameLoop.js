@@ -5,14 +5,20 @@ import { applyPlayerMoveIdle } from '../../shared/playerSync.js';
 import { tickStatusEffects } from '../../shared/combat.js';
 import { applyPlayerDamage } from '../../shared/playerLife.js';
 import { tickPlayerTownSystems } from '../plugins/core/townHub.js';
+import { GAME_TICK_MS } from '../../shared/plugins/world/gameTick.js';
+import { setServerTick } from './gameTickClock.js';
 
-const TICK_MS = 50;
 const RESPAWN_CHECK_MS = 15000;
 
+/**
+ * Fixed-rate server simulation loop (20 Hz) with per-tick world broadcast.
+ */
 export function startGameLoop({ world, playerManager, characterStore, broadcast, eventBus = null }) {
   let lastRespawnCheck = 0;
+  let tick = 0;
 
   setInterval(async () => {
+    tick += 1;
     const players = playerManager.getAllEntities();
     if (players.length === 0) return;
 
@@ -29,14 +35,14 @@ export function startGameLoop({ world, playerManager, characterStore, broadcast,
       if (player.dead) continue;
 
       const { map } = world.getContextForPlayer(player);
-      const result = tickPlayerTownSystems(player, map, world, TICK_MS, eventBus);
+      const result = tickPlayerTownSystems(player, map, world, GAME_TICK_MS, eventBus);
       if (result.teleported) {
         teleportedIds.add(player.id);
         if (characterStore) await characterStore.save(player);
       }
 
       if (!isTownHubMap(map) && !player.townRecallCasting) {
-        const deltaSec = TICK_MS / 1000;
+        const deltaSec = GAME_TICK_MS / 1000;
         tickMpRegen(player, player.characterClass, deltaSec, {
           inCombat: isInCombat(player, now),
         });
@@ -59,6 +65,12 @@ export function startGameLoop({ world, playerManager, characterStore, broadcast,
 
     applyPlayerMoveIdle(players, now);
 
-    broadcast({ teleportedIds: teleportedIds.size > 0 ? teleportedIds : null });
-  }, TICK_MS);
+    setServerTick(tick);
+    broadcast({
+      teleportedIds: teleportedIds.size > 0 ? teleportedIds : null,
+      tick,
+    });
+  }, GAME_TICK_MS);
 }
+
+export { GAME_TICK_MS };

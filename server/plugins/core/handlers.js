@@ -3,6 +3,7 @@ import { CHARACTER_CLASSES } from '../../../shared/constants.js';
 import { isValidDirection } from '../../../shared/movement.js';
 import { isStunned } from '../../../shared/combat.js';
 import { validatePlayerMove } from '../../../shared/plugins/core/anticheat.js';
+import { logGameEvent, isDebugEventsEnabled } from '../../debug/eventLog.js';
 import { canMoveTo } from '../../map/collision.js';
 import { respawnPlayer, syncDeathState } from './playerDeath.js';
 import { createNewCharacterData } from '../../persistence/CharacterStore.js';
@@ -28,7 +29,11 @@ export const CORE_EVENTS = [
   EVENTS.CAST_TOWN_RECALL,
   EVENTS.AIM,
   EVENTS.MOVE,
+  EVENTS.DEBUG_LOG,
 ];
+
+/** @type {Map<string, { windowStart: number, count: number }>} */
+const clientDebugRate = new Map();
 
 /** @param {import('socket.io').Socket} socket @param {import('../../../shared/plugins/types.js').ServerContext} ctx */
 export function registerCoreHandlers(socket, ctx) {
@@ -139,6 +144,7 @@ export function registerCoreHandlers(socket, ctx) {
     });
 
     player.accountId = accountId;
+    logGameEvent('player_join', { playerId: socket.id, name: playerName, mapId: townMapId });
 
     player.aimX = player.x + 1;
     player.aimY = player.y;
@@ -207,7 +213,18 @@ export function registerCoreHandlers(socket, ctx) {
 
     const now = Date.now();
     const moveCheck = validatePlayerMove(player, direction, now);
-    if (!moveCheck.ok) return;
+    if (!moveCheck.ok) {
+      logGameEvent('move_rejected', {
+        playerId: socket.id,
+        name: player.name,
+        reason: moveCheck.reason,
+        direction,
+        x: player.x,
+        y: player.y,
+        lastMoveAt: player.lastMoveAt ?? 0,
+      });
+      return;
+    }
 
     interruptTownRecall(player);
 
@@ -226,15 +243,60 @@ export function registerCoreHandlers(socket, ctx) {
     } else {
       player.moving = false;
       player.direction = direction;
+      logGameEvent(
+        'move_blocked',
+        {
+          playerId: socket.id,
+          name: player.name,
+          direction,
+          x: player.x,
+          y: player.y,
+          nextX,
+          nextY,
+          mapId: player.mapId ?? null,
+        },
+        { throttleMs: 1000, throttleKey: `move_blocked:${socket.id}` }
+      );
     }
 
     broadcastAll();
+  });
+
+  socket.on(EVENTS.DEBUG_LOG, (payload) => {
+    if (!isDebugEventsEnabled()) return;
+    if (!payload || typeof payload !== 'object') return;
+    const { type, ...rest } = payload;
+    if (typeof type !== 'string' || type.length === 0 || type.length > 64) return;
+
+    const now = Date.now();
+    const bucket = clientDebugRate.get(socket.id) ?? { windowStart: now, count: 0 };
+    if (now - bucket.windowStart > 1000) {
+      bucket.windowStart = now;
+      bucket.count = 0;
+    }
+    bucket.count += 1;
+    clientDebugRate.set(socket.id, bucket);
+    if (bucket.count > 30) return;
+
+    logGameEvent(
+      type,
+      {
+        playerId: socket.id,
+        name: playerManager.get(socket.id)?.name ?? null,
+        ...rest,
+      },
+      { source: 'client' }
+    );
   });
 }
 
 /** @param {string} playerId @param {import('../../../shared/plugins/types.js').ServerContext} ctx */
 export async function onCoreDisconnect(playerId, ctx) {
   const player = ctx.playerManager.remove(playerId);
+  logGameEvent('player_disconnect', {
+    playerId,
+    name: player?.name ?? null,
+  });
   await persistPlayer(ctx.characterStore, player);
   if (player) ctx.broadcastAll();
 }

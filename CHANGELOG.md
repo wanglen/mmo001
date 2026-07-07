@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Debug log rotation — `DEBUG_LOG_MAX_BYTES` and `DEBUG_LOG_MAX_FILES` (defaults: 5 MiB, 5 archives)
+
+### Fixed
+
+- Debug event log noise — removed per-tick `world_sync_delta` spam; added client `path_failed` / `attack_target_lost` and throttled `move_blocked`
+- Click-to-chase monsters failing after walking away from spawn — map chunks now stream every sync; unreceived tiles are no longer treated as walkable grass
+- Movement and entities freezing after extended play — delta sync no longer drops nearby monsters; game tick is preserved when handlers broadcast world state
+
+## [3.1.0] - 2026-07-07
+
+### Added
+
+- **Interest management** — monsters, loot, and remote players sync only within ~720px of the viewer (plus visible map chunks)
+- **Delta world sync** — entity upsert/remove patches between full snapshots (~3s); client merges deltas locally
+- **Chunk map streaming** — on zone travel, server sends visible 16×16 tile chunks instead of the full map grid
+
+### Changed
+
+- Server simulation uses a shared **20 Hz** tick constant (`GAME_TICK_MS`); broadcasts include tick/seq metadata
+
 ## [3.0.0] - 2026-07-07
 
 ### Added

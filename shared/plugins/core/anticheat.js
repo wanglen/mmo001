@@ -1,8 +1,8 @@
 import { DIRECTION_DELTA } from '../../movement.js';
 import { MOVE_SPEED } from '../../constants.js';
 
-/** Minimum ms between accepted move packets (client sends ~50ms). */
-export const MIN_MOVE_INTERVAL_MS = 35;
+/** Minimum ms between accepted move packets (client sends every 50ms). */
+export const MIN_MOVE_INTERVAL_MS = 40;
 
 /** Allow small clock skew and burst tolerance. */
 export const MAX_MOVE_SPEED_MULTIPLIER = 1.15;

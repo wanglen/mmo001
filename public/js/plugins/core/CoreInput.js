@@ -76,7 +76,8 @@ export function handlePathFollowerMove(game, timestamp) {
     return;
   }
 
-  const direction = game.pathFollower.getDirection(game.displayPlayer.x, game.displayPlayer.y);
+  const origin = game.worldState?.player ?? game.displayPlayer;
+  const direction = game.pathFollower.getDirection(origin.x, origin.y);
   if (!direction) {
     if (game.displayPlayer) game.displayPlayer.moving = false;
     return;

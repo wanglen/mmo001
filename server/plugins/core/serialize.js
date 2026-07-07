@@ -1,9 +1,12 @@
 import { statsToJSON } from '../../../shared/stats.js';
 import { getEffectiveCombatStats } from '../../../shared/inventory.js';
+import { TILE_SIZE } from '../../../shared/constants.js';
 import { APP_VERSION } from '../../version.js';
 import { npcToJSON } from '../../../shared/npcs.js';
 import { serializeRemotePlayers } from '../../../shared/playerSync.js';
+import { extractVisibleMapChunks } from '../../../shared/plugins/world/chunks.js';
 import { playerMapId } from '../../app/handlerUtils.js';
+import { filterEntitiesForViewer } from '../../app/interest.js';
 
 function serializePortals(portals = []) {
   return portals.map(({ id, label, x, y, targetMapId }) => ({
@@ -61,18 +64,40 @@ export function serializeCoreWorld(ctx) {
     portals: serializePortals(map.portals),
   };
   if (includeMapTiles) {
-    mapPayload.tiles = map.tiles;
+    if (player) {
+      mapPayload.tileChunks = extractVisibleMapChunks(
+        map.tiles,
+        map.width,
+        map.height,
+        player.x,
+        player.y,
+        TILE_SIZE
+      );
+    } else {
+      mapPayload.tiles = map.tiles;
+    }
   }
 
   const sameMapPlayers = playerManager
     .getAllEntities()
     .filter((entry) => playerMapId(entry) === mapId);
 
+  let remotePlayers = serializeRemotePlayers(sameMapPlayers, viewerId, now);
+  if (player) {
+    remotePlayers = filterEntitiesForViewer(
+      player.x,
+      player.y,
+      remotePlayers,
+      map.width,
+      map.height
+    );
+  }
+
   return {
     version: APP_VERSION,
     map: mapPayload,
     player: player ? composePlayer(player) : null,
-    players: serializeRemotePlayers(sameMapPlayers, viewerId, now),
+    players: remotePlayers,
     npcs: (map.npcs ?? map.npcsJson ?? []).map((entry) =>
       entry.dialogue ? entry : npcToJSON(entry)
     ),

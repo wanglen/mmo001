@@ -27,7 +27,7 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 - Town hub: full HP/MP recovery in town, NPC dialogue and quests (Mira & Eldon), press **T** for interruptible 6s recall to town
 - Multiplayer sync: other players on the same map are visible in real time (position, walk/attack animation, HP) with class-colored nameplate badges
 - Social: global/zone chat, whispers (`/w Name msg`), party chat (`/p msg`), online player list, party invites, and shared XP within party range
-- Socket.IO broadcasts world state to all clients at 20 Hz
+- Socket.IO broadcasts world state at **20 Hz** with interest-filtered entities and delta patches between full snapshots
 
 ## Tech stack
 
@@ -66,6 +66,22 @@ Open [http://localhost:3000](http://localhost:3000) in your browser. Create an a
 | `SESSION_SECRET` | Signing key for login tokens (required in production; random per restart if unset) |
 | `LEGACY_ACCOUNT_USERNAME` / `LEGACY_ACCOUNT_PASSWORD` | Credentials for imported JSON saves (default `legacy` / `legacy`) |
 | `PORT` | HTTP port (default `3000`) |
+| `DEBUG_EVENTS=1` | Gameplay debug log at `data/debug-events.log` (movement, pathfinding, session events) |
+| `DEBUG_LOG_FILE` | Custom path for the debug event log |
+| `DEBUG_LOG_MAX_BYTES` | Rotate when the active log exceeds this size (default `5242880`, 5 MiB) |
+| `DEBUG_LOG_MAX_FILES` | Archived logs to keep: `log.1` … `log.N` (default `5`) |
+
+With `DEBUG_EVENTS=1`, the server also enables client-side debug reporting in the browser console and merges client events into the same log file.
+
+**Logged events (high signal only)**
+
+| Event | Source | When |
+|-------|--------|------|
+| `player_join` / `player_disconnect` | server | Session lifecycle |
+| `move_rejected` | server | Anti-cheat or rate limit blocked a move |
+| `move_blocked` | server | Move hit collision (throttled 1/s) |
+| `path_failed` | client | A* could not reach target (`no_path`, `no_walkable_target`) |
+| `attack_target_lost` | client | Chase target missing or dead |
 
 Character data is stored in `data/game.db`. On first run, existing `data/characters/*.json` files are imported into the legacy account.
 
@@ -77,6 +93,8 @@ Build and run with Docker Compose (database and saves persist in the local `data
 mkdir -p data/characters
 docker compose up --build
 ```
+
+Debug logging is **on by default** in Docker (`DEBUG_EVENTS=1`). Disable with `DEBUG_EVENTS=0 docker compose up`.
 
 Open [http://localhost:3000](http://localhost:3000). Stop with `Ctrl+C`, or run detached:
 

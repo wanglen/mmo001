@@ -24,6 +24,7 @@ export const EVENTS = {
   QUEST_ACCEPT: 'questAccept',
   QUEST_TURN_IN: 'questTurnIn',
   WORLD_STATE: 'worldState',
+  DEBUG_LOG: 'debugLog',
   ERROR: 'error',
   CHAT_SEND: 'chatSend',
   CHAT_MESSAGE: 'chatMessage',

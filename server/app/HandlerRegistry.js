@@ -3,6 +3,7 @@ import { createBroadcastAll } from './worldState.js';
 import { createEventBus } from './EventBus.js';
 import { DOMAIN_EVENTS } from '../../shared/plugins/domainEvents.js';
 import { onCoreDisconnect } from '../plugins/core/handlers.js';
+import { WorldStateSyncManager } from './WorldStateSync.js';
 
 /**
  * Register all server plugins on a single Socket.IO connection handler.
@@ -18,7 +19,8 @@ import { onCoreDisconnect } from '../plugins/core/handlers.js';
 export function registerHandlerRegistry(io, deps) {
   const { world, playerManager, characterStore, partyManager, tradeManager } = deps;
   const eventBus = createEventBus();
-  const broadcastAll = createBroadcastAll(io, world, playerManager);
+  const worldStateSync = new WorldStateSyncManager();
+  const broadcastAll = createBroadcastAll(io, world, playerManager, worldStateSync);
   const plugins = loadPlugins();
   const pluginsById = Object.fromEntries(plugins.map((plugin) => [plugin.id, plugin]));
 
@@ -35,6 +37,7 @@ export function registerHandlerRegistry(io, deps) {
     plugins,
     pluginsById,
     disconnectPlayer: async (playerId) => {
+      worldStateSync.clear(playerId);
       eventBus.emit(DOMAIN_EVENTS.PLAYER_DISCONNECT, { playerId, ctx });
       await onCoreDisconnect(playerId, ctx);
     },

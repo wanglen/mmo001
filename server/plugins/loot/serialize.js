@@ -1,5 +1,6 @@
 import { itemToJSON } from '../../../shared/items.js';
 import { playerMapId } from '../../app/handlerUtils.js';
+import { filterEntitiesForViewer } from '../../app/interest.js';
 
 /** @param {import('../players/Player.js').Player} player */
 export function serializeLootPlayer(player) {
@@ -17,9 +18,12 @@ export function serializeLootWorld(ctx) {
   const { world, playerManager, viewerId, now } = ctx;
   const player = playerManager.get(viewerId);
   const mapId = playerMapId(player);
-  const { lootManager } = world.getContext(mapId);
+  const { map, lootManager } = world.getContext(mapId);
 
-  return {
-    loot: lootManager.getAllForViewer(viewerId, now),
-  };
+  let loot = lootManager.getAllForViewer(viewerId, now);
+  if (player) {
+    loot = filterEntitiesForViewer(player.x, player.y, loot, map.width, map.height);
+  }
+
+  return { loot };
 }

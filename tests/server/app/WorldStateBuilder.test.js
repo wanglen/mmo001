@@ -88,8 +88,9 @@ describe('WorldStateBuilder', () => {
       includeMapTiles: false,
     });
 
-    assert.ok(withTiles.map.tiles);
+    assert.ok(withTiles.map.tileChunks?.chunks?.length);
     assert.equal(withoutTiles.map.tiles, undefined);
+    assert.equal(withoutTiles.map.tileChunks, undefined);
   });
 
   it('returns null player when viewer is not in game', () => {

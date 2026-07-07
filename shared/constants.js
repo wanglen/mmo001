@@ -6,6 +6,8 @@ export const TILE = {
   WALL: 4,
   DOOR: 5,
   CHEST: 6,
+  /** Client-only: tile not yet received from the server. Must not be treated as walkable. */
+  UNKNOWN: -1,
 };
 
 export const TILE_WALKABLE = {

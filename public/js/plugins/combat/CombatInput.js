@@ -10,6 +10,7 @@ import {
 import { CONSUMABLE_KIND, canQuickUsePotion } from '/shared/consumables.js';
 import { CAMERA_ZOOM_STEP } from '../../config.js';
 import { MOVE_INTERVAL } from '../core/CoreInput.js';
+import { trySetPath, logClientGameEvent } from '../../debug/clientEventLog.js';
 
 export const AIM_INTERVAL = 50;
 
@@ -51,12 +52,21 @@ export function handleAttackChase(game, timestamp) {
 
   const target = (game.worldState.monsters ?? []).find((m) => m.id === game.attackTargetId);
   if (!target || target.hp <= 0) {
+    if (game.attackTargetId) {
+      logClientGameEvent('attack_target_lost', {
+        targetId: game.attackTargetId,
+        reason: target ? 'dead' : 'missing',
+      });
+    }
     game.attackTargetId = null;
     return;
   }
 
-  const px = game.displayPlayer.x;
-  const py = game.displayPlayer.y;
+  const origin = game.worldState.player ?? game.displayPlayer;
+  if (!origin) return;
+
+  const px = origin.x;
+  const py = origin.y;
 
   if (isInRange(px, py, target.x, target.y)) {
     game.pathFollower.clear();
@@ -68,7 +78,7 @@ export function handleAttackChase(game, timestamp) {
   }
 
   if (timestamp - game.lastChasePathTime >= MOVE_INTERVAL) {
-    game.pathFollower.setPath(game.worldState.map, px, py, target.x, target.y);
+    trySetPath(game, game.worldState.map, px, py, target.x, target.y, 'attack_chase');
     game.lastChasePathTime = timestamp;
   }
 }

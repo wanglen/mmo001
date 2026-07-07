@@ -1,8 +1,9 @@
-import { findMonsterAt } from '/shared/combat.js';
+import { findMonsterAt, isInRange } from '/shared/combat.js';
 import { findLootAt, isInPickupRange } from '/shared/inventory.js';
 import { findPortalAt, isInPortalRange } from '/shared/portals.js';
 import { findNpcAt, isNearNpc } from '/shared/npcs.js';
 import { MOVE_INTERVAL } from '../core/CoreInput.js';
+import { trySetPath, logClientGameEvent } from '../../debug/clientEventLog.js';
 
 /** @param {import('../../game/Game.js').Game} game */
 export function handleClick(game) {
@@ -16,15 +17,16 @@ export function handleClick(game) {
   if (npc) {
     game.attackTargetId = null;
     game.lootTargetId = null;
-    const px = game.displayPlayer.x;
-    const py = game.displayPlayer.y;
+    const origin = game.worldState.player ?? game.displayPlayer;
+    const px = origin.x;
+    const py = origin.y;
     if (isNearNpc(px, py, npc)) {
       game.npcTargetId = null;
       game.pathFollower.clear();
       game.beginNpcInteraction(npc);
     } else {
       game.npcTargetId = npc.id;
-      game.pathFollower.setPath(game.worldState.map, px, py, npc.x, npc.y);
+      trySetPath(game, game.worldState.map, px, py, npc.x, npc.y, 'npc_click');
     }
     return;
   }
@@ -35,13 +37,14 @@ export function handleClick(game) {
   if (portal) {
     game.attackTargetId = null;
     game.lootTargetId = null;
-    const px = game.displayPlayer.x;
-    const py = game.displayPlayer.y;
+    const origin = game.worldState.player ?? game.displayPlayer;
+    const px = origin.x;
+    const py = origin.y;
     if (isInPortalRange(px, py, portal)) {
       game.pathFollower.clear();
       game.socketClient.sendUsePortal(portal.id);
     } else {
-      game.pathFollower.setPath(game.worldState.map, px, py, portal.x, portal.y);
+      trySetPath(game, game.worldState.map, px, py, portal.x, portal.y, 'portal_click');
     }
     return;
   }
@@ -60,18 +63,19 @@ export function handleClick(game) {
   if (target) {
     game.attackTargetId = target.id;
     game.lootTargetId = null;
+    const origin = game.worldState.player ?? game.displayPlayer;
+    if (origin && !isInRange(origin.x, origin.y, target.x, target.y)) {
+      trySetPath(game, game.worldState.map, origin.x, origin.y, target.x, target.y, 'monster_click');
+    }
     return;
   }
 
+  const origin = game.worldState.player ?? game.displayPlayer;
+  if (!origin) return;
+
   game.attackTargetId = null;
   game.lootTargetId = null;
-  game.pathFollower.setPath(
-    game.worldState.map,
-    game.displayPlayer.x,
-    game.displayPlayer.y,
-    world.x,
-    world.y
-  );
+  trySetPath(game, game.worldState.map, origin.x, origin.y, world.x, world.y, 'ground_click');
 }
 
 /** @param {import('../../game/Game.js').Game} game @param {number} timestamp */
@@ -84,8 +88,11 @@ export function handleNpcChase(game, timestamp) {
     return;
   }
 
-  const px = game.displayPlayer.x;
-  const py = game.displayPlayer.y;
+  const origin = game.worldState.player ?? game.displayPlayer;
+  if (!origin) return;
+
+  const px = origin.x;
+  const py = origin.y;
 
   if (isNearNpc(px, py, npc)) {
     game.pathFollower.clear();
@@ -95,7 +102,7 @@ export function handleNpcChase(game, timestamp) {
   }
 
   if (timestamp - game.lastChasePathTime >= MOVE_INTERVAL) {
-    game.pathFollower.setPath(game.worldState.map, px, py, npc.x, npc.y);
+    trySetPath(game, game.worldState.map, px, py, npc.x, npc.y, 'npc_chase');
     game.lastChasePathTime = timestamp;
   }
 }
@@ -110,8 +117,11 @@ export function handleLootChase(game, timestamp) {
     return;
   }
 
-  const px = game.displayPlayer.x;
-  const py = game.displayPlayer.y;
+  const origin = game.worldState.player ?? game.displayPlayer;
+  if (!origin) return;
+
+  const px = origin.x;
+  const py = origin.y;
 
   if (isInPickupRange(px, py, drop.x, drop.y)) {
     game.pathFollower.clear();
@@ -121,7 +131,7 @@ export function handleLootChase(game, timestamp) {
   }
 
   if (timestamp - game.lastChasePathTime >= MOVE_INTERVAL) {
-    game.pathFollower.setPath(game.worldState.map, px, py, drop.x, drop.y);
+    trySetPath(game, game.worldState.map, px, py, drop.x, drop.y, 'loot_chase');
     game.lastChasePathTime = timestamp;
   }
 }

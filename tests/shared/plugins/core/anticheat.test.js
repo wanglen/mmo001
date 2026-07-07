@@ -5,7 +5,7 @@ import { validatePlayerMove, isLootPickupInRange } from '../../../../shared/plug
 describe('anticheat', () => {
   it('validatePlayerMove rejects moves that are too fast', () => {
     const player = { lastMoveAt: 1000 };
-    const ok = validatePlayerMove(player, 'right', 1020);
+    const ok = validatePlayerMove(player, 'right', 1030);
     assert.equal(ok.ok, false);
     assert.equal(ok.reason, 'rate_limit');
   });

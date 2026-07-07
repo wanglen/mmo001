@@ -69,6 +69,7 @@ export class Game {
     this.stashVisible = false;
     this.gamePaused = false;
     this.isDead = false;
+    this.clientDebugLogEnabled = false;
 
     if (this.chatPanel) {
       this.chatPanel.onFocus = () => this.input.clearKeys();

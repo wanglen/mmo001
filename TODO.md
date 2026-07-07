@@ -135,10 +135,10 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 - [x] Server-side anti-cheat (validate move speed, damage, loot claims)
 
 ### Performance
-- [ ] Interest management (only send nearby entities to each client)
-- [ ] Game tick loop on server (fixed 20–30 Hz simulation)
-- [ ] Delta updates instead of full `worldState` every frame
-- [ ] Chunk-based maps for large worlds
+- [x] Interest management (only send nearby entities to each client)
+- [x] Game tick loop on server (fixed 20–30 Hz simulation)
+- [x] Delta updates instead of full `worldState` every frame
+- [x] Chunk-based maps for large worlds
 
 ### Polish
 - [ ] Sound effects and background music

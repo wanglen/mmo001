@@ -31,7 +31,7 @@ export class PathFollower {
 
     if (!nearest) {
       this.clear();
-      return false;
+      return { ok: false, reason: 'no_walkable_target' };
     }
 
     endTile = nearest;
@@ -39,12 +39,12 @@ export class PathFollower {
 
     if (tilePath.length === 0) {
       this.clear();
-      return false;
+      return { ok: false, reason: 'no_path' };
     }
 
     this.waypoints = tilePath.map(({ x, y }) => tileToWorldCenter(x, y, TILE_SIZE));
     this.target = tileToWorldCenter(endTile.x, endTile.y, TILE_SIZE);
-    return true;
+    return { ok: true, waypoints: this.waypoints.length };
   }
 
   getDirection(playerX, playerY) {

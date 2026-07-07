@@ -95,6 +95,10 @@ export class SocketClient {
     this.socket.emit(EVENTS.MOVE, { direction });
   }
 
+  sendDebugLog(payload) {
+    this.socket.emit(EVENTS.DEBUG_LOG, payload);
+  }
+
   sendAim({ x, y }) {
     this.socket.emit(EVENTS.AIM, { x, y });
   }
