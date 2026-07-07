@@ -1,6 +1,7 @@
 import { EVENTS } from '../../../shared/events.js';
 import { CHARACTER_CLASSES } from '../../../shared/constants.js';
 import { DIRECTION_DELTA, isValidDirection } from '../../../shared/movement.js';
+import { isStunned } from '../../../shared/combat.js';
 import { canMoveTo } from '../../map/collision.js';
 import { respawnPlayer, syncDeathState } from './playerDeath.js';
 import { createNewCharacterData } from '../../persistence/CharacterStore.js';
@@ -173,6 +174,8 @@ export function registerCoreHandlers(socket, ctx) {
   socket.on(EVENTS.MOVE, ({ direction }) => {
     const player = getLivingPlayer(playerManager, socket.id);
     if (!player || !isValidDirection(direction)) return;
+
+    if (isStunned(player)) return;
 
     interruptTownRecall(player);
 

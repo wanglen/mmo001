@@ -17,10 +17,21 @@ alwaysApply: false
 
 ```
 tests/
-├── helpers/fixtures.js    # shared test maps and mocks
-├── shared/                # mirrors shared/
-└── server/                # mirrors server/
+├── helpers/fixtures.js       # shared test maps and mocks
+├── shared/                   # mirrors shared/ (+ shared/plugins/)
+└── server/                   # mirrors server/ (+ app/, entities/, plugins/)
 ```
+
+Mirror source paths:
+
+| Source | Tests |
+|--------|-------|
+| `shared/plugins/combat/foo.js` | `tests/shared/plugins/combat/foo.test.js` |
+| `server/plugins/combat/bar.js` | `tests/server/plugins/combat/bar.test.js` |
+| `server/entities/Player.js` | `tests/server/entities/Player.test.js` |
+| `server/app/gameLoop.js` | `tests/server/app/gameLoop.test.js` |
+
+Legacy `tests/server/systems/` may still exist for modules re-exported from `server/plugins/` — prefer `tests/server/plugins/` for new tests.
 
 ## When tests are required
 
@@ -37,7 +48,7 @@ tests/
 - Use fixtures from `tests/helpers/` — avoid random data in assertions
 - Test names describe behavior: `'findPath routes around obstacles'`
 - No network or browser in unit tests; test pure logic and managers
-- Mirror source paths: `server/map/collision.js` → `tests/server/map/collision.test.js`
+- Mirror source paths: `server/plugins/combat/combat.js` → `tests/server/plugins/combat/combat.test.js`
 
 ## Example
 

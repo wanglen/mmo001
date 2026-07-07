@@ -10,6 +10,7 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 - Animated sprite sheets per class (idle, walk, attack) with class silhouettes, overhead HP bar, and nameplate
 - Per-template item icons on ground loot and inventory (sword, staff, bow, armor, potions, etc.)
 - Combat: click enemies to attack, 3 mob types with distinct pixel sprites, HP bars, monster chase AI, retaliate on hit, XP on kill
+- Advanced combat: crits (DEX), dodge (DEX), elemental resistances, status effects (stun/slow/poison/bleed), elite modifiers (~12% spawn), boss phases with scaled damage and guaranteed loot
 - Loot: per-item pixel icons on ground (rarity glow) and in inventory; click to pick up; potions usable from bag
 - Inventory: 10×4 grid, 7 equip slots, stat bonuses from gear (server-side); hover to compare vs equipped, right-click for actions, destroy unwanted items
 - Leveling: XP curve, +5 stat points per level-up, allocation UI (reopen with C), JSON character save; quest rewards grant XP, gold, and items
@@ -187,7 +188,8 @@ Contributors and AI agents should follow [AGENTS.md](AGENTS.md).
 | Resource | Purpose |
 |----------|---------|
 | [AGENTS.md](AGENTS.md) | Agent workflow and project conventions |
-| [.cursor/rules/](.cursor/rules/) | Cursor rules (workflow, code quality, Node/client standards) |
+| [.cursor/rules/architecture.mdc](.cursor/rules/architecture.mdc) | Plugin layout — where to add server/client/shared code |
+| [.cursor/rules/](.cursor/rules/) | Workflow, code quality, Node/client standards |
 | [.cursor/rules/unit-tests.mdc](.cursor/rules/unit-tests.mdc) | Unit testing standards |
 | [.cursor/skills/mmo-feature-development/](.cursor/skills/mmo-feature-development/) | Feature implementation skill |
 

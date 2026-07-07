@@ -14,32 +14,55 @@ alwaysApply: false
 
 ## Structure
 
+See [architecture.mdc](architecture.mdc). Canonical layout:
+
 ```
 server/
-├── index.js          # bootstrap only
-├── config.js         # env + constants
-├── map/              # generation, collision
-├── players/          # entity + manager
-├── network/          # socket handlers
-└── systems/          # future: combat, loot, quests
+├── index.js              # → app/createServer.js
+├── app/                  # HandlerRegistry, EventBus, gameLoop, composePlayer
+├── entities/             # Player, Monster, LootManager, Npc
+├── plugins/<feature>/    # registerServer, registerBus, serialize* slices
+├── map/, world/, persistence/, social/
 ```
+
+Import entities from `server/entities/` — not deprecated `server/players/` or `server/monsters/` stubs.
+
+## Plugin pattern
+
+Each feature exports a `ServerPlugin` from `server/plugins/<feature>/index.js`:
+
+```javascript
+export const combatPlugin = {
+  id: 'combat',
+  dependsOn: ['core'],
+  events: COMBAT_EVENTS,
+  registerServer: registerCombatHandlers,
+  registerBus: registerCombatBusHandlers,
+  serializePlayer: serializeCombatPlayer,
+  serializeWorld: serializeCombatWorld,
+};
+```
+
+Register new plugins in `server/app/loadPlugins.js`. Use `dependsOn` for load order.
 
 ## Socket handlers
 
-- Event names from [shared/events.js](../../shared/events.js)
+- Event names from [shared/events.js](../../shared/events.js) (canonical: `shared/kernel/events.js`)
 - **Server is authoritative** for movement, combat, loot, and stats
-- Keep handlers thin; delegate to system modules
-- Multiplayer: broadcast via `io.emit`, not only `socket.emit`
+- Handlers live in `server/plugins/<feature>/` — keep thin; delegate to pure functions in `shared/`
+- Cross-plugin side effects → `registerBus` + `DOMAIN_EVENTS` — not direct imports between plugins
+- Multiplayer: broadcast via `ctx.broadcastAll`, not only `socket.emit`
 
 ## Node best practices
 
 - Use `process.env.PORT` with fallback; never hardcode secrets
 - Async errors: catch and respond; do not crash the process on bad client input
-- Stateless handlers; game state lives in managers attached to the server instance
+- Stateless handlers; game state lives in managers on `ServerContext`
 - Import shared constants from `shared/` — do not duplicate magic numbers
+- Content JSON loaded once at startup via `loadGameContent()` in `createServer.js`
 
 ## Testing
 
-- Unit tests live in `tests/server/` mirroring `server/` layout
+- Unit tests in `tests/server/` mirroring layout (`tests/server/plugins/combat/`, `tests/server/entities/`)
 - Test pure logic and managers; mock maps via `tests/helpers/fixtures.js`
 - Add regression tests for every bug fix in server modules

@@ -14,20 +14,39 @@ alwaysApply: false
 
 ## Structure
 
+See [architecture.mdc](architecture.mdc). Canonical layout:
+
 ```
 public/js/
-├── main.js           # bootstrap, screen flow
-├── game/             # loop, input, camera, pathfinding
-├── render/           # canvas drawing
-├── network/          # socket wrapper
-└── ui/               # overlays, HUD, inventory (future)
+├── main.js               # re-exports app/bootstrap.js
+├── app/                  # PluginHost, UIManager, bootstrap
+├── core/                 # GameLoop, InputRouter, Camera, PathFollower, FogOfWar
+├── game/Game.js          # composition root — keep small
+├── plugins/<feature>/    # registerClient, panels, input plugins
+├── render/               # renderers + layer registry (createDefaultLayers.js)
+├── render/layers/        # HudLayer, MinimapLayer, …
+├── components/           # Panel, ItemRow
+├── network/              # SocketClient
+└── ui/                   # HUD widgets consumed by layers
 ```
+
+## Plugin pattern
+
+- Register client plugins in `public/js/app/loadClientPlugins.js`
+- `PluginHost` wires socket events, panels, and game lifecycle
+- Feature UI belongs in `public/js/plugins/<feature>/` — not loose files in `ui/` unless shared widgets
+
+## Render layers
+
+- `Renderer.js` owns an ordered layer list from `createDefaultLayers.js`
+- New draw passes → new file in `render/layers/` + register with `order`
+- Do not add ad-hoc draw calls in `Game.js` — extend the layer registry
 
 ## Client responsibilities
 
 - **Render** world state; **predict/interpolate** local player for smoothness
 - **Never trust** client for gameplay outcomes — send intent, server decides
-- Input → socket events; world updates → render pipeline
+- Input → `InputRouter` / input plugins → socket events; world updates → render pipeline
 - Screen ↔ world coords via `Camera.screenToWorld` / `worldToScreen`
 
 ## Performance

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-07-07
+
+### Added
+
+- **Combat depth:** critical hits (DEX-based), dodge (DEX-based), elemental resistances on monsters and players
+- Status effects — stun (blocks move/attack/skills), slow, poison DoT, bleed DoT; elites apply on-hit debuffs
+- Elite/champion mobs (~12% spawn) with modifiers: Extra Fast, Fire Enchanted, Champion
+- Boss phase scaling — damage and attack speed increase at 66% and 33% HP; bosses guarantee loot with higher rare/unique odds
+
 ### Changed
 
 - **Architecture (Phase D):** client bootstrap shell (`public/js/app/bootstrap.js`, `PluginHost.js`, `UIManager.js`); feature panels moved under `public/js/plugins/` with `registerClient` wiring; reusable `Panel` and `ItemRow` components; `main.js` re-exports bootstrap
@@ -14,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Architecture (Phase F):** aligned server folders — entities under `server/entities/`, game logic under `server/plugins/*`, `gameLoop` in `app/`; shared kernel split (`shared/kernel/events.js`, `shared/plugins/combat/`); re-export stubs at old paths
 - **Architecture (Phase G):** render layer registry in `Renderer.js` with ordered `{ id, order, draw }` layers; HUD and minimap decoupled into `render/layers/`
 - **Architecture (Phase H):** quest, skill, and vendor data moved to `shared/content/*.json`; validated at server startup via `loadGameContent()`; helpers remain in JS modules
+- Cursor rules and agent docs updated for plugin-based layout (`.cursor/rules/architecture.mdc`); removed `REFACTOR.md`
 
 ## [2.2.0] - 2026-07-06
 

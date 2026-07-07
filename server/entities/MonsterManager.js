@@ -1,5 +1,11 @@
 import { createMonster } from './Monster.js';
 import { MONSTER_TYPES, SPAWN_COUNT, spawnCountForMap } from '../../shared/monsters.js';
+import { rollEliteModifier, applyEliteModifier } from '../../shared/plugins/combat/eliteModifiers.js';
+import {
+  getMovementSpeedMultiplier,
+  isStunned,
+  tickStatusEffects,
+} from '../../shared/plugins/combat/statusEffects.js';
 import { TILE_WALKABLE } from '../../shared/constants.js';
 import { tileToPixel, pixelToTile } from '../map/collision.js';
 import { canMoveTo } from '../map/collision.js';
@@ -138,6 +144,10 @@ function placeMonstersOnTiles(manager, tiles, count, types, startIndex = 0) {
     const type = types[(startIndex + placed) % types.length];
     const { x, y } = tileToPixel(tile.x, tile.y);
     const monster = createMonster(type, x, y);
+    if (!MONSTER_TYPES[type]?.isBoss) {
+      const eliteId = rollEliteModifier();
+      if (eliteId) applyEliteModifier(monster, eliteId);
+    }
     manager.monsters.set(monster.id, monster);
     placed++;
   }
@@ -239,6 +249,20 @@ export class MonsterManager {
     for (const monster of this.monsters.values()) {
       if (monster.hp <= 0) continue;
 
+      const dotDamage = tickStatusEffects(monster, now);
+      if (dotDamage > 0) {
+        monster.hp = Math.max(0, monster.hp - dotDamage);
+        if (monster.hp <= 0) continue;
+      }
+
+      if (isStunned(monster, now)) {
+        monster.moving = false;
+        continue;
+      }
+
+      const speedMult = getMovementSpeedMultiplier(monster, now);
+      const effectiveSpeed = monster.baseSpeed * speedMult;
+
       const target = resolveMonsterTarget(monster, players, map);
 
       if (!target) {
@@ -259,8 +283,8 @@ export class MonsterManager {
       if (!direction) continue;
 
       const delta = DIRECTION_DELTA[direction];
-      const nextX = monster.x + delta.x * monster.speed;
-      const nextY = monster.y + delta.y * monster.speed;
+      const nextX = monster.x + delta.x * effectiveSpeed;
+      const nextY = monster.y + delta.y * effectiveSpeed;
 
       if (canMoveTo(map, nextX, nextY)) {
         const { x: tileX, y: tileY } = pixelToTile(nextX, nextY);

@@ -94,9 +94,13 @@ describe('monsterCombat', () => {
 
     const result = monsterAttackPlayer(monster, player, null, 5000);
     assert.equal(result.ok, true);
-    assert.ok(result.damage >= 1);
-    assert.ok(player.hp < hpBefore);
-    assert.equal(result.killed, false);
+    if (result.dodged) {
+      assert.equal(result.damage, 0);
+      assert.equal(player.hp, hpBefore);
+    } else {
+      assert.ok(result.damage >= 1);
+      assert.ok(player.hp < hpBefore);
+    }
   });
 
   it('monsterAttackPlayer kills player at zero hp', () => {

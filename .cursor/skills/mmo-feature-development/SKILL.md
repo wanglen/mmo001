@@ -79,9 +79,12 @@ Move items from `[Unreleased]` into the new version section on each release.
 ## Implementation principles
 
 1. **Server authoritative** — client sends intent; server validates and broadcasts
-2. **Modular** — new systems under `server/systems/`, new renderers under `public/js/render/`
-3. **Shared contracts** — add socket events to `shared/events.js` first
-4. **No scope creep** — one TODO item per branch
+2. **Plugin-first** — new features under `server/plugins/<name>/` and `public/js/plugins/<name>/`; register in `loadPlugins.js` / `loadClientPlugins.js`
+3. **Shared contracts** — socket events in `shared/kernel/events.js`; domain bus events in `shared/plugins/domainEvents.js`
+4. **Pure logic in shared** — combat, loot, pathfinding in `shared/` or `shared/plugins/<domain>/`
+5. **No scope creep** — one TODO item per branch
+
+See [.cursor/rules/architecture.mdc](../../rules/architecture.mdc) for full layout.
 
 ## Commit and push
 

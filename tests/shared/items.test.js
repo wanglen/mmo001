@@ -74,6 +74,21 @@ describe('items', () => {
     assert.equal(rare.restoreAmount, 100);
   });
 
+  it('rollLoot always drops for bosses with boosted rarity chance', () => {
+    resetItemIdCounter();
+    let call = 0;
+    const random = () => {
+      call += 1;
+      if (call === 1) return 0;
+      if (call === 2) return 0.99;
+      if (call === 3) return 0;
+      if (call === 4) return 0.1;
+      return 0.5;
+    };
+    const item = rollLoot('goblin', random, { isBoss: true });
+    assert.ok(item);
+  });
+
   it('getRarityColor returns color per tier', () => {
     assert.ok(getRarityColor('magic').startsWith('#'));
   });

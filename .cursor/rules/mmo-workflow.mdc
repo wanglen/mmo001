@@ -79,7 +79,12 @@ Runs `npm test` by default; use `SKIP_TESTS=1` for docs-only. On a feature branc
 
 ## Module layout
 
-- `server/` — backend logic only
-- `public/js/` — client rendering, input, UI
-- `shared/` — constants, events, algorithms used by both sides
-- New systems go in focused modules; avoid monolithic files
+Follow [.cursor/rules/architecture.mdc](architecture.mdc). Summary:
+
+- `server/app/` — bootstrap, plugin registry, event bus, game loop
+- `server/entities/` — players, monsters, loot, NPCs
+- `server/plugins/<feature>/` — socket handlers, bus subscribers, serialization slices
+- `public/js/app/` + `public/js/plugins/` — client plugin host and feature UI
+- `public/js/core/` — loop, input router, camera (not feature-specific)
+- `shared/plugins/` + `shared/content/` — pure domain logic and JSON data packs
+- Legacy paths (`server/systems/`, `server/players/`) are re-export stubs only — import canonical paths

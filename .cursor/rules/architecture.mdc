@@ -1,0 +1,111 @@
+---
+description: Plugin-based project layout after architecture refactor (Phases A–H)
+alwaysApply: true
+---
+
+# Architecture
+
+MMO001 uses a **plugin registry** on server and client. Game logic lives in feature plugins; entities and shared pure functions stay in focused modules. Prefer extending plugins over adding monolithic handlers.
+
+## Server
+
+```
+server/
+├── index.js              # thin entry → createServerApp()
+├── app/                  # bootstrap, wiring, game loop
+│   ├── createServer.js   # Express + Socket.IO + plugins + loop
+│   ├── HandlerRegistry.js
+│   ├── EventBus.js       # in-process domain events
+│   ├── gameLoop.js
+│   ├── WorldStateBuilder.js
+│   ├── composePlayer.js  # plugin-driven player JSON slices
+│   ├── loadPlugins.js
+│   └── loadContent.js    # validates shared/content/*.json at startup
+├── entities/             # Player, Monster, LootManager, Npc (+ managers)
+├── plugins/              # feature modules (preferred home for game logic)
+│   ├── core/             # move, aim, respawn, portals, town hub
+│   ├── combat/           # attack, skills, monster AI helpers, combat FX
+│   ├── loot/
+│   ├── quests/
+│   ├── social/
+│   └── economy/
+├── map/                  # generation, collision
+├── world/                # multi-map World context
+├── persistence/          # CharacterStore
+└── social/               # PartyManager, TradeManager
+```
+
+**Deprecated re-export stubs** (`server/players/`, `server/monsters/`, `server/systems/`) point at `entities/` and `plugins/`. **New code imports canonical paths** — do not add logic to stub files.
+
+### Adding server features
+
+| Task | Where |
+|------|--------|
+| New socket event | `server/plugins/<feature>/handlers.js` or `index.js` → `registerServer`; add event to `shared/events.js` |
+| Cross-feature reaction (kill → loot) | `server/plugins/<feature>/bus.js` → `registerBus` on `DOMAIN_EVENTS` in `shared/plugins/domainEvents.js` |
+| Pure combat/loot math | `shared/plugins/<domain>/` |
+| Entity field / manager | `server/entities/` |
+| Per-tick simulation | `server/app/gameLoop.js` or plugin module called from loop |
+| World-state slice | `serializePlayer` / `serializeWorld` on the plugin in `server/plugins/<feature>/index.js` |
+
+Plugin contract: `shared/plugins/types.js` (`ServerPlugin`: `id`, `dependsOn`, `registerServer`, `registerBus`, `serializePlayer`, `serializeWorld`).
+
+## Client
+
+```
+public/js/
+├── main.js               # re-exports bootstrap
+├── app/                  # PluginHost, UIManager, bootstrap, loadClientPlugins
+├── core/                 # GameLoop, InputRouter, Camera, PathFollower, FogOfWar
+├── game/                 # Game.js composition root
+├── plugins/              # feature UI + input wiring
+│   ├── core/             # Game shell, CoreInput, CombatInput, InteractionInput
+│   ├── quests/
+│   ├── social/
+│   └── economy/
+├── render/               # canvas renderers + layer registry
+│   ├── layers/           # HudLayer, MinimapLayer, …
+│   └── createDefaultLayers.js
+├── components/           # reusable Panel, ItemRow
+├── network/              # SocketClient
+└── ui/                   # HUD widgets used by layers
+```
+
+### Adding client features
+
+| Task | Where |
+|------|--------|
+| New panel / screen | `public/js/plugins/<feature>/` + register in `loadClientPlugins.js` |
+| Input binding | input plugin under `public/js/plugins/core/` or extend `InputRouter` |
+| New draw pass | `public/js/render/layers/<Name>Layer.js` + register in `createDefaultLayers.js` |
+| Shared UI component | `public/js/components/` |
+
+Client plugin contract: `ClientPlugin` in `shared/plugins/types.js` (`registerClient`, optional `panels`).
+
+## Shared
+
+```
+shared/
+├── kernel/events.js      # canonical EVENTS (re-exported by shared/events.js)
+├── plugins/              # domain logic + plugin types
+│   ├── combat/
+│   ├── domainEvents.js
+│   └── types.js
+├── content/              # quests.json, skills.json, vendors.json
+│   └── validateContent.js
+├── events.js             # re-export stub → kernel/events.js
+└── combat.js             # re-export stub → plugins/combat/
+```
+
+- **Constants and pure functions** used by both sides → `shared/` (browser-safe: no `fs`, no DOM)
+- **Static game data** → `shared/content/*.json`; validate via `validateContent.js` / `loadGameContent()`
+- **Algorithms** (pathfinding, damage, loot rolls) → dedicated modules under `shared/` or `shared/plugins/<domain>/`
+- Add socket event names once in `shared/kernel/events.js` (or `shared/events.js` re-export)
+
+## Cross-cutting rules
+
+1. **Server authoritative** — client sends intent; server validates and broadcasts
+2. **Plugins communicate via event bus** for side effects (loot on kill, quest progress) — avoid combat → loot direct imports
+3. **One feature per plugin folder** — keep handlers thin; delegate to pure functions
+4. **Tests mirror source** — `tests/server/plugins/…`, `tests/shared/plugins/…`
+5. **No new monoliths** — do not grow `Game.js`, `handlers.js` blobs, or a single `systems/` file

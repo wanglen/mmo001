@@ -127,18 +127,33 @@ export function rollRarity(random = Math.random) {
 }
 
 /** Roll a loot item for a defeated monster, or null if no drop. */
-export function rollLoot(monsterType, random = Math.random) {
-  if (random() > (DROP_CHANCE[monsterType] ?? 0.3)) return null;
+export function rollLoot(monsterType, random = Math.random, options = {}) {
+  const { isBoss = false, isElite = false } = options;
+  let dropChance = DROP_CHANCE[monsterType] ?? 0.3;
+  if (isBoss) dropChance = 1;
+  else if (isElite) dropChance = Math.min(1, dropChance * 1.5);
+
+  if (random() > dropChance) return null;
 
   if (random() < POTION_LOOT_WEIGHT) {
     const template = POTION_TEMPLATES[Math.floor(random() * POTION_TEMPLATES.length)];
-    return createPotion(template, rollRarity(random));
+    return createPotion(template, rollRarityForLoot(random, { isBoss, isElite }));
   }
 
   const templateIndex = Math.floor(random() * LOOT_TEMPLATES.length);
   const template = LOOT_TEMPLATES[templateIndex];
-  const rarity = rollRarity(random);
+  const rarity = rollRarityForLoot(random, { isBoss, isElite });
   return createItem(template, rarity);
+}
+
+function rollRarityForLoot(random, { isBoss = false, isElite = false } = {}) {
+  if (isBoss && random() < 0.4) {
+    return random() < 0.15 ? RARITY.UNIQUE : RARITY.RARE;
+  }
+  if (isElite && random() < 0.25) {
+    return RARITY.MAGIC;
+  }
+  return rollRarity(random);
 }
 
 export function itemToJSON(item) {

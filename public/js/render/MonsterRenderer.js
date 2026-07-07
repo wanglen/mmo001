@@ -36,7 +36,8 @@ export class MonsterRenderer {
       this.prevPositions.set(monster.id, { x: monster.x, y: monster.y });
 
       const isBoss = !!monster.isBoss;
-      const scale = isBoss ? BOSS_RENDER_SCALE : RENDER_SCALE;
+      const isElite = !!monster.isElite;
+      const scale = isBoss ? BOSS_RENDER_SCALE : isElite ? RENDER_SCALE * 1.15 : RENDER_SCALE;
       const screen = camera.worldToScreen(monster.x, monster.y);
       const size = PLAYER_SIZE * scale * zoom;
       const half = size / 2;
@@ -71,6 +72,14 @@ export class MonsterRenderer {
         ctx.restore();
       }
 
+      if (isElite && !flashing) {
+        ctx.save();
+        ctx.globalAlpha = 0.35;
+        ctx.fillStyle = '#ffd54a';
+        ctx.fillRect(screen.x - half, screen.y - half, size, size);
+        ctx.restore();
+      }
+
       drawHpBar(
         ctx,
         screen.x,
@@ -81,14 +90,15 @@ export class MonsterRenderer {
         barYOffset
       );
 
-      if (isBoss || monster.id === hoveredMonsterId) {
+      if (isBoss || isElite || monster.id === hoveredMonsterId) {
         this.drawNameplate(
           ctx,
           screen.x,
           screen.y + nameplateCenterOffset,
           monster.label,
           zoom,
-          isBoss
+          isBoss,
+          isElite
         );
       }
     }
@@ -105,9 +115,9 @@ export class MonsterRenderer {
     ctx.fill();
   }
 
-  drawNameplate(ctx, x, y, name, zoom, isBoss = false) {
-    const fontSize = Math.max(10, (isBoss ? 12 : 11) * zoom);
-    ctx.font = `${isBoss ? 700 : 400} ${fontSize}px system-ui, sans-serif`;
+  drawNameplate(ctx, x, y, name, zoom, isBoss = false, isElite = false) {
+    const fontSize = Math.max(10, (isBoss ? 12 : isElite ? 11.5 : 11) * zoom);
+    ctx.font = `${isBoss || isElite ? 700 : 400} ${fontSize}px system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
@@ -116,12 +126,16 @@ export class MonsterRenderer {
     const left = x - width / 2;
     const top = y - height / 2;
 
-    ctx.fillStyle = isBoss ? 'rgba(80, 12, 12, 0.85)' : 'rgba(40, 10, 10, 0.72)';
+    ctx.fillStyle = isBoss
+      ? 'rgba(80, 12, 12, 0.85)'
+      : isElite
+        ? 'rgba(72, 48, 8, 0.82)'
+        : 'rgba(40, 10, 10, 0.72)';
     ctx.beginPath();
     ctx.roundRect(left, top, width, height, 4 * zoom);
     ctx.fill();
 
-    ctx.fillStyle = isBoss ? '#ffd4a8' : '#f5d0c5';
+    ctx.fillStyle = isBoss ? '#ffd4a8' : isElite ? '#ffe08a' : '#f5d0c5';
     ctx.fillText(name, x, y);
   }
 }

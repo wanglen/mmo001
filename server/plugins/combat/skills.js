@@ -1,6 +1,6 @@
 import { canMoveTo } from '../../map/collision.js';
 import { facingFromTarget } from '../../../shared/aim.js';
-import { distance, isInRange, SKILL_AIM_RADIUS } from '../../../shared/combat.js';
+import { distance, isInRange, SKILL_AIM_RADIUS, isStunned } from '../../../shared/combat.js';
 import { getEffectiveCombatStats } from '../../../shared/inventory.js';
 import {
   canUseSkill,
@@ -169,6 +169,10 @@ export function processSkill({
 }) {
   const check = canUseSkill(player, skillId, now);
   if (!check.ok) return { ok: false, reason: check.reason };
+
+  if (isStunned(player, now)) {
+    return { ok: false, reason: 'stunned' };
+  }
 
   if (isInSafeZone(map, player.x, player.y)) {
     return { ok: false, reason: 'safe_zone' };

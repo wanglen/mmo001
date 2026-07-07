@@ -1,3 +1,5 @@
+import { resolvePlayerMeleeDamage, resolveMonsterHitOnPlayer } from './advancedCombat.js';
+
 export const ATTACK_RANGE = 52;
 export const ATTACK_COOLDOWN_MS = 600;
 export const ATTACK_ANIM_MS = 250;
@@ -16,10 +18,28 @@ export function distance(x1, y1, x2, y2) {
   return Math.hypot(x2 - x1, y2 - y1);
 }
 
-export function calculateDamage(attackerStr, defenderVit = 0) {
-  const base = Math.max(1, attackerStr * 2 - Math.floor(defenderVit * 0.5));
-  const variance = Math.floor(Math.random() * 3);
-  return base + variance;
+export function calculateDamage(attackerStr, defenderVit = 0, options = {}) {
+  const { damage } = resolvePlayerMeleeDamage({
+    str: attackerStr,
+    dex: options.dex ?? 0,
+    defenderVit,
+    damageType: options.damageType ?? 'physical',
+    defenderResistances: options.defenderResistances ?? {},
+    random: options.random,
+  });
+  return damage;
+}
+
+export function calculateMonsterDamage(baseDamage, defenderVit = 0, options = {}) {
+  const { damage } = resolveMonsterHitOnPlayer({
+    baseDamage,
+    damageType: options.damageType ?? 'physical',
+    defenderDex: options.defenderDex ?? 0,
+    defenderVit,
+    defenderResistances: options.defenderResistances ?? {},
+    random: options.random,
+  });
+  return damage;
 }
 
 export function isInRange(x1, y1, x2, y2, range = ATTACK_RANGE) {
@@ -35,12 +55,11 @@ export function canAttackNow(lastAttackAt, now = Date.now(), cooldownMs = ATTACK
   return now - lastAttackAt >= cooldownMs;
 }
 
-/** Monster melee damage scaled by attacker power and defender vit. */
-export function calculateMonsterDamage(baseDamage, defenderVit = 0) {
-  const base = Math.max(1, baseDamage - Math.floor(defenderVit * 0.25));
-  const variance = Math.floor(Math.random() * 2);
-  return base + variance;
-}
+export { resolvePlayerMeleeDamage, resolveMonsterHitOnPlayer } from './advancedCombat.js';
+export { DAMAGE_TYPE, createEmptyResistances } from './damageTypes.js';
+export { STATUS, isStunned, getMovementSpeedMultiplier, tickStatusEffects, applyStatusEffect, createStatusEffect, clearStatusEffects } from './statusEffects.js';
+export { ELITE_MODIFIERS, rollEliteModifier, applyEliteModifier } from './eliteModifiers.js';
+export { getBossPhase, getBossDamageMultiplier, getBossAttackCooldown } from './bossPhases.js';
 
 export function findMonsterAt(monsters, x, y, radius = MONSTER_HIT_RADIUS) {
   let best = null;

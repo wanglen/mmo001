@@ -1,6 +1,7 @@
 import { tileToPixel, canMoveTo } from '../map/collision.js';
 import { createPlayerStats } from '../../shared/stats.js';
 import { createEmptyInventory, createEmptyEquipment, refreshPlayerDerivedStats } from '../../shared/inventory.js';
+import { createEmptyResistances } from '../../shared/plugins/combat/damageTypes.js';
 import { restoreItems } from '../persistence/CharacterStore.js';
 import { DEFAULT_MAP_ID } from '../../shared/worldMaps.js';
 import { normalizeQuestState } from '../../shared/quests.js';
@@ -28,6 +29,8 @@ export class Player {
     this.townRecallCasting = false;
     this.townRecallCastMs = 0;
     this.skillCooldowns = {};
+    this.statusEffects = [];
+    this.resistances = createEmptyResistances();
     this.inventory = inventory ?? createEmptyInventory();
     this.equipment = equipment ?? createEmptyEquipment();
     this.gold = stats.gold ?? 0;

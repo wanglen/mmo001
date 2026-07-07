@@ -3,8 +3,8 @@ import { COMBAT_FX_MAX_AGE_MS } from '../../../shared/combatFx.js';
 /** @type {object[]} */
 let events = [];
 
-export function pushDamageFx({ x, y, damage, now = Date.now() }) {
-  events.push({ type: 'damage', x, y, value: damage, at: now });
+export function pushDamageFx({ x, y, damage, now = Date.now(), crit = false }) {
+  events.push({ type: 'damage', x, y, value: damage, at: now, crit: !!crit });
 }
 
 export function pushHitFlash({ monsterId, now = Date.now() }) {

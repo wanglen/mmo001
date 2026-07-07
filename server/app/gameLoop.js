@@ -2,6 +2,8 @@ import { isInCombat, tickMpRegen } from '../../shared/regen.js';
 import { MAP_ID } from '../../shared/worldMaps.js';
 import { isTownHubMap } from '../../shared/townHub.js';
 import { applyPlayerMoveIdle } from '../../shared/playerSync.js';
+import { tickStatusEffects } from '../../shared/combat.js';
+import { applyPlayerDamage } from '../../shared/playerLife.js';
 import { tickPlayerTownSystems } from '../plugins/core/townHub.js';
 
 const TICK_MS = 50;
@@ -38,6 +40,11 @@ export function startGameLoop({ world, playerManager, characterStore, broadcast,
         tickMpRegen(player, player.characterClass, deltaSec, {
           inCombat: isInCombat(player, now),
         });
+
+        const dotDamage = tickStatusEffects(player, now);
+        if (dotDamage > 0) {
+          applyPlayerDamage(player, dotDamage, now);
+        }
       }
     }
 

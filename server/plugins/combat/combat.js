@@ -2,9 +2,10 @@ import { isInSafeZone } from '../../../shared/zones.js';
 import {
   ATTACK_ANIM_MS,
   ATTACK_RANGE_LEEWAY,
-  calculateDamage,
+  resolvePlayerMeleeDamage,
   canAttackNow,
   isInAttackRange,
+  isStunned,
 } from '../../../shared/combat.js';
 import { facingFromTarget } from '../../../shared/aim.js';
 import { grantXp } from '../../../shared/stats.js';
@@ -24,6 +25,7 @@ export function applyMonsterDamage({
   playerManager = null,
   eventBus = null,
   now = Date.now(),
+  crit = false,
 }) {
   monster.hp = Math.max(0, monster.hp - damage);
   const killed = monster.hp <= 0;
@@ -33,7 +35,7 @@ export function applyMonsterDamage({
 
   provokeMonster(monster, player);
 
-  pushDamageFx({ x: monster.x, y: monster.y, damage, now });
+  pushDamageFx({ x: monster.x, y: monster.y, damage, now, crit });
   pushHitFlash({ monsterId: monster.id, now });
 
   if (killed) {
@@ -78,6 +80,10 @@ export function processAttack({
     return { ok: false, reason: 'cooldown' };
   }
 
+  if (isStunned(player, now)) {
+    return { ok: false, reason: 'stunned' };
+  }
+
   if (map && isInSafeZone(map, player.x, player.y)) {
     return { ok: false, reason: 'safe_zone' };
   }
@@ -91,7 +97,14 @@ export function processAttack({
     return { ok: false, reason: 'out_of_range' };
   }
 
-  const damage = calculateDamage(getEffectiveCombatStats(player, player.equipment).str);
+  const stats = getEffectiveCombatStats(player, player.equipment);
+  const { damage, crit } = resolvePlayerMeleeDamage({
+    str: stats.str,
+    dex: stats.dex,
+    defenderVit: 0,
+    defenderResistances: monster.resistances ?? {},
+    damageType: 'physical',
+  });
   player.lastAttackAt = now;
   player.attacking = true;
   player.moving = false;
@@ -109,6 +122,7 @@ export function processAttack({
     playerManager,
     eventBus,
     now,
+    crit,
   });
 
   return { ok: true, ...result };

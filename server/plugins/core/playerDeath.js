@@ -1,6 +1,7 @@
 import { tileToPixel } from '../../map/collision.js';
 import { refreshPlayerDerivedStats } from '../../../shared/inventory.js';
 import { isPlayerAlive } from '../../../shared/playerLife.js';
+import { clearStatusEffects } from '../../../shared/combat.js';
 import { DEFAULT_MAP_ID } from '../../../shared/worldMaps.js';
 
 /**
@@ -36,6 +37,7 @@ export function respawnPlayer(player, map) {
   player.lastSkillAt = 0;
   player.lastDamagedAt = 0;
   player.skillCooldowns = {};
+  clearStatusEffects(player);
 
   refreshPlayerDerivedStats(player, player.equipment);
   player.hp = player.maxHp;

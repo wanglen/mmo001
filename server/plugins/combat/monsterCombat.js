@@ -2,13 +2,16 @@ import { isInSafeZone } from '../../../shared/zones.js';
 import {
   MONSTER_ATTACK_COOLDOWN_MS,
   MONSTER_PROVOKE_CHASE_RANGE,
-  calculateMonsterDamage,
+  resolveMonsterHitOnPlayer,
+  getBossAttackCooldown,
+  getBossDamageMultiplier,
   canAttackNow,
   distance,
   isInRange,
 } from '../../../shared/combat.js';
 import { isPlayerAlive, applyPlayerDamage } from '../../../shared/playerLife.js';
 import { getEffectiveCombatStats } from '../../../shared/inventory.js';
+import { applyStatusEffect, createStatusEffect } from '../../../shared/plugins/combat/statusEffects.js';
 import { pushDamageFx } from './combatFx.js';
 import { interruptTownRecall } from '../core/townHub.js';
 
@@ -67,7 +70,7 @@ export function monsterAttackPlayer(monster, player, map = null, now = Date.now(
     return { ok: false, reason: 'safe_zone' };
   }
 
-  if (!canAttackNow(monster.lastAttackAt ?? 0, now, MONSTER_ATTACK_COOLDOWN_MS)) {
+  if (!canAttackNow(monster.lastAttackAt ?? 0, now, getBossAttackCooldown(MONSTER_ATTACK_COOLDOWN_MS, monster))) {
     return { ok: false, reason: 'cooldown' };
   }
 
@@ -75,12 +78,35 @@ export function monsterAttackPlayer(monster, player, map = null, now = Date.now(
     return { ok: false, reason: 'out_of_range' };
   }
 
-  const vit = getEffectiveCombatStats(player, player.equipment).vit;
-  const damage = calculateMonsterDamage(monster.damage, vit);
-  const result = applyPlayerDamage(player, damage, now);
-  if (result.damage > 0) interruptTownRecall(player);
-  monster.lastAttackAt = now;
-  pushDamageFx({ x: player.x, y: player.y, damage: result.damage, now });
+  const stats = getEffectiveCombatStats(player, player.equipment);
+  const scaledDamage = Math.floor(monster.damage * getBossDamageMultiplier(monster));
+  const hit = resolveMonsterHitOnPlayer({
+    baseDamage: scaledDamage,
+    damageType: monster.damageType ?? 'physical',
+    defenderDex: stats.dex,
+    defenderVit: stats.vit,
+    defenderResistances: player.resistances ?? {},
+  });
 
-  return { ok: true, damage: result.damage, killed: result.killed };
+  if (hit.dodged) {
+    monster.lastAttackAt = now;
+    return { ok: true, damage: 0, dodged: true, killed: false };
+  }
+
+  const result = applyPlayerDamage(player, hit.damage, now);
+  if (result.damage > 0) {
+    interruptTownRecall(player);
+    if (monster.onHitStatus) {
+      applyStatusEffect(
+        player,
+        createStatusEffect(monster.onHitStatus, { sourceId: monster.id, now })
+      );
+    }
+  }
+  monster.lastAttackAt = now;
+  if (result.damage > 0) {
+    pushDamageFx({ x: player.x, y: player.y, damage: result.damage, now });
+  }
+
+  return { ok: true, damage: result.damage, killed: result.killed, dodged: false };
 }

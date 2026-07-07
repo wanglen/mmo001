@@ -9,8 +9,9 @@ alwaysApply: true
 
 - Minimize scope: smallest correct diff; no drive-by refactors
 - Match existing naming, ESM imports, and file layout
-- One module = one responsibility (map, players, network, render, etc.)
-- Prefer pure functions for game logic (pathfinding, collision, damage)
+- One module = one responsibility (entity, plugin, renderer, shared algorithm)
+- Prefer pure functions for game logic (pathfinding, collision, damage) in `shared/` or `shared/plugins/`
+- New game systems → server/client plugin folders — not monolithic `systems/` or `Game.js`
 
 ## Testing
 

@@ -108,10 +108,10 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 ## Phase 5 — Diablo-like Depth
 
 ### Combat systems
-- [ ] Critical hits, dodge, resistances (fire/cold/lightning/poison)
-- [ ] Status effects: stun, slow, poison DoT, bleed
-- [ ] Elite/champion mobs with modifiers (extra fast, fire enchanted, etc.)
-- [ ] Boss fights: phases, special attacks, unique loot tables
+- [x] Critical hits, dodge, resistances (fire/cold/lightning/poison)
+- [x] Status effects: stun, slow, poison DoT, bleed
+- [x] Elite/champion mobs with modifiers (extra fast, fire enchanted, etc.)
+- [x] Boss fights: phases, special attacks, unique loot tables
 
 ### Items (advanced)
 - [ ] Random affixes on Magic/Rare items (`+STR`, `+life`, `% damage`)
