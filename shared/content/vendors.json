@@ -1,0 +1,17 @@
+{
+  "vendors": {
+    "merchant-brok": {
+      "id": "merchant-brok",
+      "name": "Brok",
+      "greeting": "Need supplies? I buy and sell adventurer gear."
+    }
+  },
+  "stock": [
+    { "templateKey": "health_potion", "kind": "potion", "price": 15 },
+    { "templateKey": "mana_potion", "kind": "potion", "price": 18 },
+    { "templateKey": "rusty_sword", "kind": "gear", "price": 40 },
+    { "templateKey": "wooden_staff", "kind": "gear", "price": 40 },
+    { "templateKey": "short_bow", "kind": "gear", "price": 40 },
+    { "templateKey": "leather_cap", "kind": "gear", "price": 25 }
+  ]
+}

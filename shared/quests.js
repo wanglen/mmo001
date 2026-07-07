@@ -1,3 +1,5 @@
+import questsData from './content/quests.json' with { type: 'json' };
+
 export const QUEST_OBJECTIVE = {
   KILL: 'kill',
   FETCH: 'fetch',
@@ -7,63 +9,7 @@ export const QUEST_OBJECTIVE = {
 /** @typedef {{ type: string, monsterType?: string, count?: number, itemKey?: string, npcId?: string }} QuestObjective */
 /** @typedef {{ xp?: number, gold?: number, items?: { templateKey: string, rarity?: string }[] }} QuestRewards */
 
-export const QUESTS = {
-  'goblin-menace': {
-    id: 'goblin-menace',
-    title: 'Goblin Menace',
-    giverNpcId: 'guide-eldon',
-    turnInNpcId: 'guide-eldon',
-    prerequisites: [],
-    objectives: [{ type: QUEST_OBJECTIVE.KILL, monsterType: 'goblin', count: 3 }],
-    rewards: { xp: 40, gold: 25 },
-    dialogue: {
-      offer: [
-        'Goblins lurk beyond the southern gate.',
-        'Slay three of them, then return to me.',
-      ],
-      progress: ['The wilderness still has goblins to cull.'],
-      ready: ['You have thinned the goblin pack. Claim your reward.'],
-      complete: ['Haven is safer thanks to you.'],
-    },
-  },
-  'healing-supplies': {
-    id: 'healing-supplies',
-    title: 'Healing Supplies',
-    giverNpcId: 'innkeeper-mira',
-    turnInNpcId: 'innkeeper-mira',
-    prerequisites: ['goblin-menace'],
-    objectives: [{ type: QUEST_OBJECTIVE.FETCH, itemKey: 'health_potion', count: 1 }],
-    rewards: { xp: 30, gold: 40, items: [{ templateKey: 'mana_potion', rarity: 'common' }] },
-    dialogue: {
-      offer: [
-        'Travelers keep arriving wounded.',
-        'Bring me a health potion for the stockroom.',
-      ],
-      progress: ['I still need a health potion. Check loot from monsters or your bag.'],
-      ready: ['Perfect — that potion will help. Take your payment.'],
-      complete: ['Stay rested while you are in town.'],
-    },
-  },
-  'report-to-eldon': {
-    id: 'report-to-eldon',
-    title: 'Report to Eldon',
-    giverNpcId: 'innkeeper-mira',
-    turnInNpcId: 'guide-eldon',
-    prerequisites: ['healing-supplies'],
-    objectives: [{ type: QUEST_OBJECTIVE.TALK, npcId: 'guide-eldon' }],
-    rewards: { xp: 20, gold: 15 },
-    dialogue: {
-      offer: [
-        'Eldon should hear that our supplies are replenished.',
-        'Speak with him at the square.',
-      ],
-      progress: ['Find Eldon in town and let him know.'],
-      atTarget: ['Ah, Mira sent word about the supplies?', 'Tell me what happened.'],
-      ready: ['Eldon knows the news. Here is a little something for the errand.'],
-      complete: ['The town council appreciates reliable couriers.'],
-    },
-  },
-};
+export const QUESTS = questsData;
 
 export function createEmptyQuestState() {
   return { active: {}, completed: [] };

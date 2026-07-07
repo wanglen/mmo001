@@ -12,6 +12,7 @@ import { registerHandlerRegistry } from './HandlerRegistry.js';
 import { startGameLoop } from './gameLoop.js';
 import { createWorld } from '../world/World.js';
 import { APP_VERSION } from '../version.js';
+import { loadGameContent } from './loadContent.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.join(__dirname, '..', '..');
@@ -23,6 +24,8 @@ const rootDir = path.join(__dirname, '..', '..');
  * @param {string} [options.dataDir] — character save directory
  */
 export function createServerApp(options = {}) {
+  loadGameContent();
+
   const dataDir = options.dataDir ?? path.join(rootDir, 'data', 'characters');
 
   const app = express();

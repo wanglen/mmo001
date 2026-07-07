@@ -1,17 +1,12 @@
 import { NPC_INTERACT_RANGE } from './npcs.js';
+import vendorsData from './content/vendors.json' with { type: 'json' };
 
 export const VENDOR_ID = {
   TOWN_MERCHANT: 'merchant-brok',
 };
 
 /** Vendor catalog keyed by vendor id. */
-export const VENDORS = {
-  [VENDOR_ID.TOWN_MERCHANT]: {
-    id: VENDOR_ID.TOWN_MERCHANT,
-    name: 'Brok',
-    greeting: 'Need supplies? I buy and sell adventurer gear.',
-  },
-};
+export const VENDORS = vendorsData.vendors;
 
 export function getVendor(vendorId) {
   return VENDORS[vendorId] ?? null;

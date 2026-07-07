@@ -1,5 +1,6 @@
-import { RARITY, RARITY_MULTIPLIER, POTION_TEMPLATES, LOOT_TEMPLATES } from './items.js';
+import { RARITY, RARITY_MULTIPLIER } from './items.js';
 import { inferTemplateKeyFromName } from './itemIcons.js';
+import vendorsData from './content/vendors.json' with { type: 'json' };
 
 /** Fraction of vendor buy price when selling items back. */
 export const VENDOR_SELL_RATIO = 0.4;
@@ -75,16 +76,5 @@ export function rollMonsterGold(monsterType) {
 
 /** Stock entries sold by town vendors (common tier). */
 export function getDefaultVendorStock() {
-  return [
-    ...POTION_TEMPLATES.map((template) => ({
-      templateKey: template.key,
-      kind: 'potion',
-      price: BASE_BUY_PRICES[template.key] ?? 15,
-    })),
-    ...LOOT_TEMPLATES.slice(0, 4).map((template) => ({
-      templateKey: template.key,
-      kind: 'gear',
-      price: BASE_BUY_PRICES[template.key] ?? 30,
-    })),
-  ];
+  return vendorsData.stock.map((entry) => ({ ...entry }));
 }

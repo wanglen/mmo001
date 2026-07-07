@@ -286,11 +286,11 @@ Each feature plugin should export:
 **Branch:** `refactor/content-json`  
 **Risk:** Medium — data migration
 
-- [ ] `shared/content/quests.json` from `shared/quests.js` defs
-- [ ] `shared/content/skills.json` from `shared/skills.js` defs
-- [ ] `shared/content/vendors.json` from vendor stock
-- [ ] Load at server startup; validate with schema tests
-- [ ] Keep computed helpers in JS; JSON is data only
+- [x] `shared/content/quests.json` from `shared/quests.js` defs
+- [x] `shared/content/skills.json` from `shared/skills.js` defs
+- [x] `shared/content/vendors.json` from vendor stock
+- [x] Load at server startup; validate with schema tests
+- [x] Keep computed helpers in JS; JSON is data only
 
 ---
 

@@ -1,0 +1,87 @@
+{
+  "skillSlotCount": 8,
+  "skills": {
+    "cleave": {
+      "id": "cleave",
+      "name": "Cleave",
+      "icon": "⚔",
+      "classes": ["warrior"],
+      "mpCost": 8,
+      "cooldownMs": 2000,
+      "type": "melee_aoe",
+      "range": 52,
+      "radius": 40,
+      "damageStat": "str",
+      "damageMult": 1.2
+    },
+    "charge": {
+      "id": "charge",
+      "name": "Charge",
+      "icon": "💨",
+      "classes": ["warrior"],
+      "mpCost": 12,
+      "cooldownMs": 4000,
+      "type": "dash",
+      "dashDistance": 96,
+      "radius": 32,
+      "damageStat": "str",
+      "damageMult": 1.4
+    },
+    "fireball": {
+      "id": "fireball",
+      "name": "Fireball",
+      "icon": "🔥",
+      "classes": ["mage"],
+      "mpCost": 10,
+      "cooldownMs": 1500,
+      "type": "projectile",
+      "range": 200,
+      "radius": 28,
+      "damageStat": "int",
+      "damageMult": 1.15
+    },
+    "icebolt": {
+      "id": "icebolt",
+      "name": "Icebolt",
+      "icon": "❄",
+      "classes": ["mage"],
+      "mpCost": 8,
+      "cooldownMs": 1200,
+      "type": "projectile",
+      "range": 200,
+      "radius": 24,
+      "damageStat": "int",
+      "damageMult": 1.1
+    },
+    "arrow_shot": {
+      "id": "arrow_shot",
+      "name": "Arrow Shot",
+      "icon": "🏹",
+      "classes": ["ranger"],
+      "mpCost": 6,
+      "cooldownMs": 1000,
+      "type": "single_target",
+      "range": 160,
+      "damageStat": "dex",
+      "damageMult": 1.25
+    },
+    "multishot": {
+      "id": "multishot",
+      "name": "Multishot",
+      "icon": "✦",
+      "classes": ["ranger"],
+      "mpCost": 14,
+      "cooldownMs": 3000,
+      "type": "ground_aoe",
+      "range": 160,
+      "radius": 40,
+      "damageStat": "dex",
+      "damageMult": 1.0
+    }
+  },
+  "classSkillBars": {
+    "warrior": ["cleave", "charge", null, null, null, null, null, null],
+    "mage": ["fireball", "icebolt", null, null, null, null, null, null],
+    "ranger": ["arrow_shot", "multishot", null, null, null, null, null, null]
+  }
+}

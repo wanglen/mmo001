@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Architecture (Phase E):** split `Game.js` into `GameLoop`, `InputRouter`, and input plugins (`CombatInput`, `InteractionInput`, `CoreInput`); moved `Camera`, `PathFollower`, `FogOfWar` to `public/js/core/`
 - **Architecture (Phase F):** aligned server folders — entities under `server/entities/`, game logic under `server/plugins/*`, `gameLoop` in `app/`; shared kernel split (`shared/kernel/events.js`, `shared/plugins/combat/`); re-export stubs at old paths
 - **Architecture (Phase G):** render layer registry in `Renderer.js` with ordered `{ id, order, draw }` layers; HUD and minimap decoupled into `render/layers/`
+- **Architecture (Phase H):** quest, skill, and vendor data moved to `shared/content/*.json`; validated at server startup via `loadGameContent()`; helpers remain in JS modules
 
 ## [2.2.0] - 2026-07-06
 
