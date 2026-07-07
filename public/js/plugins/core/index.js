@@ -1,4 +1,5 @@
 import { InventoryPanel } from '../../ui/InventoryPanel.js';
+import { StashPanel } from '../../ui/StashPanel.js';
 import { SkillBar } from '../../ui/SkillBar.js';
 import { LevelUpPanel } from '../../ui/LevelUpPanel.js';
 import { Game } from '../../game/Game.js';
@@ -15,6 +16,11 @@ export function registerCoreClient(ctx) {
   inventoryPanel.onUseConsumable = (index) => socketClient.sendUseConsumable(index);
   inventoryPanel.onDestroy = ({ inventoryIndex, slot }) =>
     socketClient.sendDestroyItem({ inventoryIndex, slot });
+  inventoryPanel.onStoreInStash = (inventoryIndex) => socketClient.sendStashStore(inventoryIndex);
+  inventoryPanel.onSocketGem = (payload) => socketClient.sendSocketGem(payload);
+
+  const stashPanel = new StashPanel(document.getElementById('stash-panel'));
+  stashPanel.onTake = (stashIndex) => socketClient.sendStashTake(stashIndex);
 
   const skillBar = new SkillBar(document.getElementById('skill-bar'));
 
@@ -37,6 +43,7 @@ export function registerCoreClient(ctx) {
   };
 
   ctx.panels.inventoryPanel = inventoryPanel;
+  ctx.panels.stashPanel = stashPanel;
   ctx.panels.skillBar = skillBar;
   ctx.panels.levelUpPanel = levelUpPanel;
   ctx.setDisconnectModal(disconnectModal);
@@ -50,6 +57,7 @@ export function finalizeCoreClient(ctx) {
   const { socketClient, canvas, pluginHost } = ctx;
   const {
     inventoryPanel,
+    stashPanel,
     skillBar,
     levelUpPanel,
     dialoguePanel,
@@ -64,6 +72,7 @@ export function finalizeCoreClient(ctx) {
     canvas,
     socketClient,
     inventoryPanel,
+    stashPanel,
     levelUpPanel,
     skillBar,
     dialoguePanel,

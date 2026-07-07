@@ -1,3 +1,4 @@
+import { isTownHubMap } from '/shared/townHub.js';
 import { findMonsterAt } from '/shared/combat.js';
 import { filterRevealedPositions } from '/shared/fog.js';
 import { TILE_SIZE } from '../config.js';
@@ -91,7 +92,10 @@ export class GameLoop {
           game.aimTarget = { x: state.player.aimX, y: state.player.aimY };
         }
       }
-      game.inventoryPanel?.update(state.player);
+      const inTown = isTownHubMap(state.map);
+      game.inventoryPanel?.update(state.player, { townFeaturesEnabled: inTown });
+      game.stashPanel?.update(state.player);
+      if (!inTown && game.stashVisible) game.setStashVisible(false);
       game.levelUpPanel?.update(state.player);
       game.skillBar?.update(state.player);
       game.questTracker?.update(state.player);

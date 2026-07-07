@@ -25,6 +25,7 @@ export function calculateDamage(attackerStr, defenderVit = 0, options = {}) {
     defenderVit,
     damageType: options.damageType ?? 'physical',
     defenderResistances: options.defenderResistances ?? {},
+    damagePercent: options.damagePercent ?? 0,
     random: options.random,
   });
   return damage;

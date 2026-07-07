@@ -1,5 +1,7 @@
 import { BASE_STATS } from './stats.js';
 import { EQUIP_SLOTS } from './items.js';
+import { getSocketStatBonuses } from './plugins/items/sockets.js';
+import { getSetBonuses } from './plugins/items/sets.js';
 
 export const INVENTORY_COLS = 10;
 export const INVENTORY_ROWS = 4;
@@ -41,14 +43,34 @@ export function findLootAt(lootDrops, x, y, radius = LOOT_HIT_RADIUS) {
   return best;
 }
 
+export function getItemStatBonuses(item) {
+  const bonuses = { str: 0, dex: 0, int: 0, vit: 0, hp: 0, mp: 0, damagePercent: 0 };
+  if (!item) return bonuses;
+
+  for (const [stat, value] of Object.entries(item.stats ?? {})) {
+    if (bonuses[stat] !== undefined) bonuses[stat] += value;
+  }
+
+  for (const [stat, value] of Object.entries(getSocketStatBonuses(item.sockets))) {
+    if (bonuses[stat] !== undefined) bonuses[stat] += value;
+  }
+
+  return bonuses;
+}
+
 export function getEquipmentBonuses(equipment) {
-  const bonuses = { str: 0, dex: 0, int: 0, vit: 0, hp: 0, mp: 0 };
+  const bonuses = { str: 0, dex: 0, int: 0, vit: 0, hp: 0, mp: 0, damagePercent: 0 };
 
   for (const item of Object.values(equipment)) {
-    if (!item?.stats) continue;
-    for (const [stat, value] of Object.entries(item.stats)) {
+    if (!item) continue;
+    const itemBonuses = getItemStatBonuses(item);
+    for (const [stat, value] of Object.entries(itemBonuses)) {
       if (bonuses[stat] !== undefined) bonuses[stat] += value;
     }
+  }
+
+  for (const [stat, value] of Object.entries(getSetBonuses(equipment))) {
+    if (bonuses[stat] !== undefined) bonuses[stat] += value;
   }
 
   return bonuses;
@@ -66,7 +88,7 @@ export function getEffectiveCombatStats(player, equipment) {
   const maxHp = base.hp + vit * 5 + bonuses.hp;
   const maxMp = base.mp + int * 3 + bonuses.mp;
 
-  return { str, dex, int, vit, maxHp, maxMp };
+  return { str, dex, int, vit, maxHp, maxMp, damagePercent: bonuses.damagePercent };
 }
 
 /** Recompute max HP/MP after equip change while preserving ratios. */

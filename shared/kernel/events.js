@@ -42,6 +42,9 @@ export const EVENTS = {
   TRADE_UPDATE: 'tradeUpdate',
   TRADE_READY: 'tradeReady',
   TRADE_STATE: 'tradeState',
+  STASH_STORE: 'stashStore',
+  STASH_TAKE: 'stashTake',
+  SOCKET_GEM: 'socketGem',
 };
 
 export const CURSOR_MODE = {

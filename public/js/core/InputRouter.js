@@ -29,7 +29,8 @@ export class InputRouter {
     }
 
     coreInput.handleInventoryToggle(game);
-    if (game.inventoryVisible) {
+    coreInput.handleStashToggle(game);
+    if (game.inventoryVisible || game.stashVisible) {
       combatInput.handlePotionHotkeys(game);
       combatInput.handleSkills(game);
       return;

@@ -5,6 +5,7 @@ import { playerMapId } from '../../app/handlerUtils.js';
 export function serializeLootPlayer(player) {
   return {
     inventory: player.inventory.map(itemToJSON),
+    stash: (player.stash ?? []).map(itemToJSON),
     equipment: Object.fromEntries(
       Object.entries(player.equipment).map(([slot, item]) => [slot, itemToJSON(item)])
     ),

@@ -114,10 +114,10 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 - [x] Boss fights: phases, special attacks, unique loot tables
 
 ### Items (advanced)
-- [ ] Random affixes on Magic/Rare items (`+STR`, `+life`, `% damage`)
-- [ ] Socketed items + gems/runes
-- [ ] Set items (bonuses for wearing multiple pieces)
-- [ ] Stash / shared storage in town
+- [x] Random affixes on Magic/Rare items (`+STR`, `+life`, `% damage`)
+- [x] Socketed items + gems/runes
+- [x] Set items (bonuses for wearing multiple pieces)
+- [x] Stash / shared storage in town
 
 ### Character build
 - [ ] Skill tree per class

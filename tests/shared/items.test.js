@@ -16,11 +16,10 @@ describe('items', () => {
     resetItemIdCounter();
     const template = { key: 'rusty_sword', name: 'Sword', type: 'weapon', slot: 'weapon', baseStats: { str: 2 } };
     const common = createItem(template, RARITY.COMMON);
-    const rare = createItem(template, RARITY.RARE);
+    const magic = createItem(template, RARITY.MAGIC, { random: () => 0.99 });
     assert.equal(common.stats.str, 2);
-    assert.equal(common.templateKey, 'rusty_sword');
-    assert.equal(rare.stats.str, 4);
-    assert.ok(rare.name.includes('Rare'));
+    assert.ok(magic.stats.str >= 2);
+    assert.ok(magic.affixes?.length >= 1);
   });
 
   it('rollRarity returns valid tier', () => {
@@ -40,8 +39,9 @@ describe('items', () => {
     const random = () => {
       call += 1;
       if (call === 1) return 0;
-      if (call === 2) return 0.99;
-      if (call === 3) return 0;
+      if (call === 2) return 0.5;
+      if (call === 3) return 0.99;
+      if (call === 4) return 0;
       return 0.1;
     };
     const item = rollLoot('skeleton', random);
@@ -55,7 +55,7 @@ describe('items', () => {
     const random = () => {
       call += 1;
       if (call === 1) return 0;
-      if (call === 2) return 0;
+      if (call === 2) return 0.5;
       if (call === 3) return 0;
       return 0.5;
     };

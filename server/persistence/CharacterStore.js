@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { itemToJSON } from '../../shared/items.js';
 import { createEmptyInventory, createEmptyEquipment } from '../../shared/inventory.js';
+import { createEmptyStash } from '../../shared/stash.js';
 import { createPlayerStats } from '../../shared/stats.js';
 import { createEmptyQuestState } from '../../shared/quests.js';
 import { tileToPixel } from '../map/collision.js';
@@ -30,6 +31,7 @@ export function playerToSaveData(player) {
     hp: player.hp,
     mp: player.mp,
     inventory: player.inventory.map(itemToJSON),
+    stash: (player.stash ?? createEmptyStash()).map(itemToJSON),
     equipment: Object.fromEntries(
       Object.entries(player.equipment).map(([slot, item]) => [slot, itemToJSON(item)])
     ),
@@ -61,6 +63,7 @@ export function createNewCharacterData(name, characterClass, spawn) {
     hp: stats.hp,
     mp: stats.mp,
     inventory: createEmptyInventory(),
+    stash: createEmptyStash(),
     equipment: createEmptyEquipment(),
     gold: 0,
     quests: createEmptyQuestState(),
@@ -190,22 +193,42 @@ export class CharacterStore {
   }
 }
 
+/** Restore a single item graph from saved JSON. */
+function restoreItem(item) {
+  if (!item) return null;
+  return {
+    ...item,
+    stats: item.stats ? { ...item.stats } : undefined,
+    affixes: item.affixes?.map((affix) => ({ ...affix })),
+    sockets: item.sockets?.map((socket) => ({
+      gem: socket.gem ? restoreItem(socket.gem) : null,
+    })),
+  };
+}
+
 /** Restore inventory/equipment item references from saved JSON. */
 export function restoreItems(saved) {
   const inventory = createEmptyInventory();
   const equipment = createEmptyEquipment();
+  const stash = createEmptyStash();
 
   if (Array.isArray(saved.inventory)) {
     saved.inventory.forEach((item, index) => {
-      if (item && index < inventory.length) inventory[index] = { ...item, stats: { ...item.stats } };
+      if (item && index < inventory.length) inventory[index] = restoreItem(item);
+    });
+  }
+
+  if (Array.isArray(saved.stash)) {
+    saved.stash.forEach((item, index) => {
+      if (item && index < stash.length) stash[index] = restoreItem(item);
     });
   }
 
   if (saved.equipment && typeof saved.equipment === 'object') {
     for (const [slot, item] of Object.entries(saved.equipment)) {
-      if (item) equipment[slot] = { ...item, stats: { ...item.stats } };
+      if (item) equipment[slot] = restoreItem(item);
     }
   }
 
-  return { inventory, equipment };
+  return { inventory, equipment, stash };
 }

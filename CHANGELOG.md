@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-07-07
+
+### Added
+
+- **Advanced items:** random affixes on Magic/Rare gear (`+STR`, `+life`, `% damage`); socketed items with gems/runes; set bonuses (Nomad's Trail, Bulwark); shared stash in town (`B` key)
+
+### Fixed
+
+- Client bootstrap crash when `stashPanel` was not passed from plugin context to `Game`
+
 ## [2.3.1] - 2026-07-07
 
 ### Added

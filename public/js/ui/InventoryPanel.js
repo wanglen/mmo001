@@ -1,5 +1,7 @@
 import { INVENTORY_COLS, INVENTORY_ROWS } from '/shared/inventory.js';
 import { isConsumable } from '/shared/consumables.js';
+import { isGem } from '/shared/plugins/items/gems.js';
+import { listSocketTargets } from '/shared/plugins/items/socketUi.js';
 import { EQUIP_SLOTS } from '/shared/items.js';
 import { buildSlotIconHtml, buildItemIconSvg, getInventoryIconColor } from './itemIcons.js';
 import { resolveItemIconKey } from '/shared/itemIcons.js';
@@ -18,6 +20,9 @@ export class InventoryPanel {
     this.onUnequip = null;
     this.onUseConsumable = null;
     this.onDestroy = null;
+    this.onStoreInStash = null;
+    this.onSocketGem = null;
+    this.townFeaturesEnabled = false;
     this.player = null;
     this.inspectKey = '';
     this.activeSlotEl = null;
@@ -91,10 +96,11 @@ export class InventoryPanel {
     this.root.setAttribute('aria-hidden', visible ? 'false' : 'true');
   }
 
-  update(player) {
+  update(player, options = {}) {
     if (!player) return;
 
     this.player = player;
+    this.townFeaturesEnabled = !!options.townFeaturesEnabled;
 
     const equipSlots = this.equipmentEl.querySelectorAll('.equip-slot');
     for (const el of equipSlots) {
@@ -165,10 +171,27 @@ export class InventoryPanel {
       ];
     }
 
-    return [
+    if (isGem(item)) {
+      const actions = [{ id: 'destroy', label: 'Destroy' }];
+      const targets = listSocketTargets(this.player ?? {});
+      for (const target of targets) {
+        actions.push({
+          id: 'socket',
+          label: `Socket into ${target.label}`,
+          target,
+        });
+      }
+      return actions;
+    }
+
+    const actions = [
       { id: 'primary', label: 'Equip' },
       { id: 'destroy', label: 'Destroy' },
     ];
+    if (this.townFeaturesEnabled && this.onStoreInStash) {
+      actions.splice(1, 0, { id: 'stash', label: 'Store in stash' });
+    }
+    return actions;
   }
 
   showContextMenu(event, slotEl) {
@@ -195,6 +218,15 @@ export class InventoryPanel {
         e.stopPropagation();
         if (action.id === 'primary') {
           this.handlePrimaryAction(slotEl);
+        } else if (action.id === 'stash') {
+          this.onStoreInStash?.(Number(slotEl.dataset.index));
+        } else if (action.id === 'socket' && action.target) {
+          const gemIndex = Number(slotEl.dataset.index);
+          const payload =
+            action.target.kind === 'inventory'
+              ? { gemInventoryIndex: gemIndex, targetInventoryIndex: action.target.index }
+              : { gemInventoryIndex: gemIndex, targetSlot: action.target.slot };
+          this.onSocketGem?.(payload);
         } else {
           this.handleDestroy(slotEl);
         }

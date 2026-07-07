@@ -25,6 +25,18 @@ export function handleTownRecallCast(game) {
 }
 
 /** @param {import('../../game/Game.js').Game} game */
+export function handleStashToggle(game) {
+  if (game.gamePaused) return;
+  if (!isTownHubMap(game.worldState?.map)) return;
+  if (game.input.consumeKeyPress('escape') && game.stashVisible) {
+    game.setStashVisible(false);
+    return;
+  }
+  if (!game.input.consumeKeyPress('b')) return;
+  game.setStashVisible(!game.stashVisible);
+}
+
+/** @param {import('../../game/Game.js').Game} game */
 export function handleInventoryToggle(game) {
   if (game.gamePaused) return;
   if (game.input.consumeKeyPress('escape') && game.inventoryVisible) {

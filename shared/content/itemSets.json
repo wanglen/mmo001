@@ -1,0 +1,20 @@
+{
+  "sets": {
+    "nomad_trail": {
+      "name": "Nomad's Trail",
+      "pieces": ["leather_boots", "leather_gloves", "leather_cap"],
+      "bonuses": {
+        "2": { "dex": 4 },
+        "3": { "damagePercent": 8 }
+      }
+    },
+    "bulwark": {
+      "name": "Bulwark",
+      "pieces": ["leather_cap", "leather_vest", "leather_gloves"],
+      "bonuses": {
+        "2": { "vit": 4 },
+        "3": { "hp": 30 }
+      }
+    }
+  }
+}

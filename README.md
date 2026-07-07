@@ -11,6 +11,7 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 - Per-template item icons on ground loot and inventory (sword, staff, bow, armor, potions, etc.)
 - Combat: click enemies to attack, 3 mob types with distinct pixel sprites, HP bars, monster chase AI, retaliate on hit, XP on kill
 - Advanced combat: crits (DEX), dodge (DEX), elemental resistances, status effects (stun/slow/poison/bleed), elite modifiers (~12% spawn), boss phases with scaled damage and guaranteed loot
+- **Items:** Magic/Rare affixes, sockets + gems, item sets with worn bonuses, town stash (`B`)
 - Loot: per-item pixel icons on ground (rarity glow) and in inventory; click to pick up; potions usable from bag
 - Inventory: 10×4 grid, 7 equip slots, stat bonuses from gear (server-side); hover to compare vs equipped, right-click for actions, destroy unwanted items
 - Leveling: XP curve, +5 stat points per level-up, allocation UI (reopen with C), JSON character save; quest rewards grant XP, gold, and items
@@ -126,6 +127,7 @@ Tests use Node.js built-in test runner. Coverage includes pathfinding, collision
 - **8** / **9** — use health / mana potion from bag (dimmed when none or resource full)
 - **WASD** / **Arrow keys** — move including diagonals (e.g. W+D); cancels click path
 - **I** / **Esc** — toggle character inventory (modal sheet, dimmed world)
+- **B** (town only) — shared stash; right-click bag items to store, stash items to take
 - **Inventory** — left-click equip; right-click equip/use/unequip/destroy; hover bag gear to compare vs equipped
 - **T** (outside town) — start 6s recall cast to town; interrupted by movement, combat, or damage
 - **Enter** — focus chat; **Esc** blurs chat while typing

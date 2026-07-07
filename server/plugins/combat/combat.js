@@ -104,6 +104,7 @@ export function processAttack({
     defenderVit: 0,
     defenderResistances: monster.resistances ?? {},
     damageType: 'physical',
+    damagePercent: stats.damagePercent ?? 0,
   });
   player.lastAttackAt = now;
   player.attacking = true;

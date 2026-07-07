@@ -1,3 +1,6 @@
+import { enhanceGearItem } from './plugins/items/rollGear.js';
+import { createGem, rollGemKind } from './plugins/items/gems.js';
+
 export const ITEM_TYPES = {
   WEAPON: 'weapon',
   HELM: 'helm',
@@ -7,6 +10,7 @@ export const ITEM_TYPES = {
   RING: 'ring',
   AMULET: 'amulet',
   CONSUMABLE: 'consumable',
+  GEM: 'gem',
 };
 
 export const EQUIP_SLOTS = [
@@ -79,7 +83,7 @@ function capitalize(str) {
 }
 
 /** Build an item instance from a template and rarity tier. */
-export function createItem(template, rarity = RARITY.COMMON) {
+export function createItem(template, rarity = RARITY.COMMON, options = {}) {
   const mult = RARITY_MULTIPLIER[rarity] ?? 1;
   const stats = {};
 
@@ -89,7 +93,7 @@ export function createItem(template, rarity = RARITY.COMMON) {
 
   const prefix = rarity === RARITY.COMMON ? '' : `${capitalize(rarity)} `;
 
-  return {
+  const item = {
     id: `item${itemIdCounter++}`,
     name: `${prefix}${template.name}`,
     templateKey: template.key,
@@ -98,6 +102,12 @@ export function createItem(template, rarity = RARITY.COMMON) {
     slot: template.slot,
     stats,
   };
+
+  if (rarity !== RARITY.COMMON) {
+    enhanceGearItem(item, template, options);
+  }
+
+  return item;
 }
 
 /** Build a consumable potion instance. */
@@ -135,6 +145,10 @@ export function rollLoot(monsterType, random = Math.random, options = {}) {
 
   if (random() > dropChance) return null;
 
+  if (random() < 0.08) {
+    return createGem(rollGemKind(random));
+  }
+
   if (random() < POTION_LOOT_WEIGHT) {
     const template = POTION_TEMPLATES[Math.floor(random() * POTION_TEMPLATES.length)];
     return createPotion(template, rollRarityForLoot(random, { isBoss, isElite }));
@@ -143,7 +157,7 @@ export function rollLoot(monsterType, random = Math.random, options = {}) {
   const templateIndex = Math.floor(random() * LOOT_TEMPLATES.length);
   const template = LOOT_TEMPLATES[templateIndex];
   const rarity = rollRarityForLoot(random, { isBoss, isElite });
-  return createItem(template, rarity);
+  return createItem(template, rarity, { random, forceSet: isBoss && random() < 0.35 });
 }
 
 function rollRarityForLoot(random, { isBoss = false, isElite = false } = {}) {
@@ -166,12 +180,22 @@ export function itemToJSON(item) {
     rarity: item.rarity,
     slot: item.slot,
     stats: item.stats ? { ...item.stats } : undefined,
+    affixes: item.affixes?.map((affix) => ({ ...affix })),
+    sockets: item.sockets?.map((socket) => ({
+      gem: socket.gem ? itemToJSON(socket.gem) : null,
+    })),
+    setId: item.setId,
+    gemKind: item.gemKind,
     consumableKind: item.consumableKind,
     restoreAmount: item.restoreAmount,
   };
   if (!json.templateKey) delete json.templateKey;
   if (!json.stats) delete json.stats;
   if (!json.slot) delete json.slot;
+  if (!json.affixes?.length) delete json.affixes;
+  if (!json.sockets?.length) delete json.sockets;
+  if (!json.setId) delete json.setId;
+  if (!json.gemKind) delete json.gemKind;
   if (!json.consumableKind) delete json.consumableKind;
   if (json.restoreAmount == null) delete json.restoreAmount;
   return json;

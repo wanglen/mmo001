@@ -205,6 +205,18 @@ export class SocketClient {
     this.socket.emit(EVENTS.TRADE_READY, { ready });
   }
 
+  sendStashStore(inventoryIndex) {
+    this.socket.emit(EVENTS.STASH_STORE, { inventoryIndex });
+  }
+
+  sendStashTake(stashIndex) {
+    this.socket.emit(EVENTS.STASH_TAKE, { stashIndex });
+  }
+
+  sendSocketGem({ gemInventoryIndex, targetInventoryIndex, targetSlot }) {
+    this.socket.emit(EVENTS.SOCKET_GEM, { gemInventoryIndex, targetInventoryIndex, targetSlot });
+  }
+
   onChatMessage(callback) {
     this.onChatMessageCallback = callback;
   }

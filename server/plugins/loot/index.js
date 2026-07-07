@@ -7,6 +7,7 @@ import {
   destroyFromInventory,
   destroyFromEquipment,
 } from './inventory.js';
+import { stashStore, stashTake, socketGem } from './advancedItems.js';
 import { allocateStat } from './progression.js';
 import { interruptTownRecall } from '../core/townHub.js';
 import { getLivingPlayer, getPlayerContext, persistPlayer } from '../../app/handlerUtils.js';
@@ -20,6 +21,9 @@ export const LOOT_EVENTS = [
   EVENTS.UNEQUIP,
   EVENTS.DESTROY_ITEM,
   EVENTS.ALLOCATE_STAT,
+  EVENTS.STASH_STORE,
+  EVENTS.STASH_TAKE,
+  EVENTS.SOCKET_GEM,
 ];
 
 /** @param {import('socket.io').Socket} socket @param {import('../../../shared/plugins/types.js').ServerContext} ctx */
@@ -112,6 +116,50 @@ export function registerLootHandlers(socket, ctx) {
     const result = allocateStat(player, stat);
     if (!result.ok) {
       socket.emit(EVENTS.ERROR, { message: `Cannot allocate stat: ${result.reason}` });
+      return;
+    }
+
+    await persistPlayer(characterStore, player);
+    broadcastAll();
+  });
+
+  socket.on(EVENTS.STASH_STORE, async ({ inventoryIndex }) => {
+    const player = getLivingPlayer(playerManager, socket.id);
+    if (!player || !Number.isInteger(inventoryIndex)) return;
+
+    const { map } = getPlayerContext(world, player);
+    const result = stashStore(player, map, inventoryIndex);
+    if (!result.ok) {
+      socket.emit(EVENTS.ERROR, { message: `Cannot store item: ${result.reason}` });
+      return;
+    }
+
+    await persistPlayer(characterStore, player);
+    broadcastAll();
+  });
+
+  socket.on(EVENTS.STASH_TAKE, async ({ stashIndex }) => {
+    const player = getLivingPlayer(playerManager, socket.id);
+    if (!player || !Number.isInteger(stashIndex)) return;
+
+    const { map } = getPlayerContext(world, player);
+    const result = stashTake(player, map, stashIndex);
+    if (!result.ok) {
+      socket.emit(EVENTS.ERROR, { message: `Cannot take item: ${result.reason}` });
+      return;
+    }
+
+    await persistPlayer(characterStore, player);
+    broadcastAll();
+  });
+
+  socket.on(EVENTS.SOCKET_GEM, async ({ gemInventoryIndex, targetInventoryIndex, targetSlot }) => {
+    const player = getLivingPlayer(playerManager, socket.id);
+    if (!player || !Number.isInteger(gemInventoryIndex)) return;
+
+    const result = socketGem(player, { gemInventoryIndex, targetInventoryIndex, targetSlot });
+    if (!result.ok) {
+      socket.emit(EVENTS.ERROR, { message: `Cannot socket gem: ${result.reason}` });
       return;
     }
 

@@ -123,9 +123,14 @@ export function getSkillCooldownRemaining(player, now = Date.now()) {
  */
 export function calculateSkillDamage(skill, combatStats) {
   const stat = combatStats[skill.damageStat] ?? 5;
-  const base = Math.max(1, Math.floor(stat * skill.damageMult));
+  let base = Math.max(1, Math.floor(stat * skill.damageMult));
   const variance = Math.floor(Math.random() * 3);
-  return base + variance;
+  base += variance;
+  const damagePercent = combatStats.damagePercent ?? 0;
+  if (damagePercent > 0) {
+    base = Math.floor(base * (1 + damagePercent / 100));
+  }
+  return base;
 }
 
 /**

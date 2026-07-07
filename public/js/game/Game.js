@@ -8,6 +8,7 @@ import { onStatKeyDown } from '../plugins/core/CoreInput.js';
 import { Renderer } from '../render/Renderer.js';
 import { CursorManager } from '../ui/CursorManager.js';
 import { NPC_ROLE } from '/shared/npcs.js';
+import { isTownHubMap } from '/shared/townHub.js';
 import { FxBuffer } from './FxBuffer.js';
 import { RemotePlayerDisplay } from './RemotePlayerDisplay.js';
 
@@ -17,6 +18,7 @@ export class Game {
     canvas,
     socketClient,
     inventoryPanel = null,
+    stashPanel = null,
     levelUpPanel = null,
     skillBar = null,
     dialoguePanel = null,
@@ -30,6 +32,7 @@ export class Game {
     this.canvas = canvas;
     this.socketClient = socketClient;
     this.inventoryPanel = inventoryPanel;
+    this.stashPanel = stashPanel;
     this.levelUpPanel = levelUpPanel;
     this.skillBar = skillBar;
     this.dialoguePanel = dialoguePanel;
@@ -61,6 +64,7 @@ export class Game {
     this.lootTargetId = null;
     this.npcTargetId = null;
     this.inventoryVisible = false;
+    this.stashVisible = false;
     this.gamePaused = false;
     this.isDead = false;
 
@@ -96,6 +100,20 @@ export class Game {
     window.addEventListener('resize', () => this.renderer.resize());
     this.renderer.resize();
     this.inventoryPanel?.setVisible(false);
+    this.stashPanel?.setVisible(false);
+  }
+
+  setStashVisible(visible) {
+    if (visible && !isTownHubMap(this.worldState?.map)) return;
+    this.stashVisible = visible;
+    this.stashPanel?.setVisible(visible);
+    if (!visible) {
+      this.stashPanel?.hideContextMenu?.();
+    }
+  }
+
+  isInTown() {
+    return isTownHubMap(this.worldState?.map);
   }
 
   setInventoryVisible(visible) {
@@ -207,6 +225,7 @@ export class Game {
     this.gameLoop.fxBuffer = this.fxBuffer;
 
     this.setInventoryVisible(false);
+    this.setStashVisible(false);
     this.levelUpPanel?.hide();
     this.dialoguePanel?.hide();
     this.deathOverlay?.classList.add('hidden');

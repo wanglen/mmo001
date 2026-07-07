@@ -35,6 +35,8 @@ export function resolveItemIconKey(item, fallbackSlot = '') {
 
   if (item.consumableKind === 'health') return 'health_potion';
   if (item.consumableKind === 'mana') return 'mana_potion';
+  if (item.gemKind) return item.gemKind;
+  if (item.type === 'gem') return item.templateKey ?? 'ruby';
 
   const inferred = inferTemplateKeyFromName(item.name);
   if (inferred) return inferred;

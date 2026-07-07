@@ -5,10 +5,11 @@ import { createEmptyResistances } from '../../shared/plugins/combat/damageTypes.
 import { restoreItems } from '../persistence/CharacterStore.js';
 import { DEFAULT_MAP_ID } from '../../shared/worldMaps.js';
 import { normalizeQuestState } from '../../shared/quests.js';
+import { createEmptyStash } from '../../shared/stash.js';
 import { composePlayer } from '../app/composePlayer.js';
 
 export class Player {
-  constructor({ id, name, characterClass, x, y, stats, inventory, equipment, mapId, questState = null }) {
+  constructor({ id, name, characterClass, x, y, stats, inventory, equipment, stash, mapId, questState = null }) {
     this.id = id;
     this.name = name;
     this.characterClass = characterClass;
@@ -32,6 +33,7 @@ export class Player {
     this.statusEffects = [];
     this.resistances = createEmptyResistances();
     this.inventory = inventory ?? createEmptyInventory();
+    this.stash = stash ?? createEmptyStash();
     this.equipment = equipment ?? createEmptyEquipment();
     this.gold = stats.gold ?? 0;
     this.questState = normalizeQuestState(questState ?? stats.questState);
@@ -91,7 +93,7 @@ export function createPlayerFromSave({
     gold: saved.gold,
   });
 
-  const { inventory, equipment } = restoreItems(saved);
+  const { inventory, equipment, stash } = restoreItems(saved);
 
   const player = new Player({
     id,
@@ -102,6 +104,7 @@ export function createPlayerFromSave({
     stats,
     inventory,
     equipment,
+    stash,
     mapId: resolvedMapId,
     questState: saved.quests,
   });

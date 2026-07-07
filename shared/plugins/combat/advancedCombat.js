@@ -32,6 +32,7 @@ export function applyResistance(damage, resistancePercent) {
  * @param {object} options
  * @param {number} options.str
  * @param {number} [options.dex]
+ * @param {number} [options.damagePercent]
  * @param {number} [options.defenderVit]
  * @param {string} [options.damageType]
  * @param {Record<string, number>} [options.defenderResistances]
@@ -44,6 +45,7 @@ export function resolvePlayerMeleeDamage({
   damageType = 'physical',
   defenderResistances = {},
   random = Math.random,
+  damagePercent = 0,
 }) {
   const base = Math.max(1, str * 2 - Math.floor(defenderVit * 0.5));
   const variance = Math.floor(random() * 3);
@@ -51,6 +53,10 @@ export function resolvePlayerMeleeDamage({
 
   const crit = random() < getCritChance(dex);
   if (crit) damage = Math.floor(damage * CRIT_MULTIPLIER);
+
+  if (damagePercent > 0) {
+    damage = Math.floor(damage * (1 + damagePercent / 100));
+  }
 
   const resistance = getResistance(defenderResistances, damageType);
   damage = applyResistance(damage, resistance);
