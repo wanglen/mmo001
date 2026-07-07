@@ -141,11 +141,11 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 - [x] Chunk-based maps for large worlds
 
 ### Polish
-- [ ] Sound effects and background music
-- [ ] Particle effects (blood, spells, level-up)
+- [x] Sound effects and background music
+- [x] Particle effects (blood, spells, level-up)
 - [x] Death screen + respawn at spawn (town zone deferred)
-- [ ] Settings menu (volume, keybinds, graphics)
-- [ ] Loading screens between zones
+- [x] Settings menu (volume, keybinds, graphics)
+- [x] Loading screens between zones
 
 ### DevOps
 - [ ] `.gitignore`, README, environment config

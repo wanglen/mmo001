@@ -147,6 +147,8 @@ Tests use Node.js built-in test runner. Coverage includes pathfinding, collision
 
 ### Controls
 
+- **Audio** — zone background music (CC0 loops from OpenGameArt; see `public/assets/audio/MUSIC_CREDITS.md`) and procedural SFX after your first click or keypress; adjust volumes in **Settings** (**O**)
+
 - **Click** — move (8-way pathfinding with diagonals), pick up loot, attack/chase enemy, talk to NPCs, or use portals; cursor icon reflects the action (sword, hand, speech bubble, etc.)
 - **Mouse** — aim / facing direction (character faces cursor)
 - **Scroll wheel** — zoom in/out
@@ -157,6 +159,7 @@ Tests use Node.js built-in test runner. Coverage includes pathfinding, collision
 - **8** / **9** — use health / mana potion from bag (dimmed when none or resource full)
 - **WASD** / **Arrow keys** — move including diagonals (e.g. W+D); cancels click path
 - **I** / **Esc** — toggle character inventory (modal sheet, dimmed world)
+- **O** / **Esc** — settings (audio volume, mute, keybind reference)
 - **B** (town only) — shared stash; right-click bag items to store, stash items to take
 - **Inventory** — left-click equip; right-click equip/use/unequip/destroy; hover for floating item tooltips (compare vs equipped)
 - **T** (outside town) — start 6s recall cast to town; interrupted by movement, combat, or damage

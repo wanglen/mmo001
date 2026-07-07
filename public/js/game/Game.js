@@ -11,6 +11,10 @@ import { NPC_ROLE } from '/shared/npcs.js';
 import { isTownHubMap } from '/shared/townHub.js';
 import { FxBuffer } from './FxBuffer.js';
 import { RemotePlayerDisplay } from './RemotePlayerDisplay.js';
+import { AudioManager } from '../audio/AudioManager.js';
+import { GameAudio } from '../audio/GameAudio.js';
+import { ParticleSystem } from '../render/ParticleSystem.js';
+import { GameParticles } from '../render/GameParticles.js';
 
 /** Composition root for in-game client state, panels, and the render loop. */
 export class Game {
@@ -28,6 +32,7 @@ export class Game {
     socialPanel = null,
     vendorPanel = null,
     tradePanel = null,
+    settingsPanel = null,
     pluginHost = null
   ) {
     this.canvas = canvas;
@@ -43,6 +48,7 @@ export class Game {
     this.socialPanel = socialPanel;
     this.vendorPanel = vendorPanel;
     this.tradePanel = tradePanel;
+    this.settingsPanel = settingsPanel;
     this.pluginHost = pluginHost;
 
     this.input = new Input(canvas);
@@ -54,6 +60,10 @@ export class Game {
     this.fogOfWar = new FogOfWar();
     this.remotePlayerDisplay = new RemotePlayerDisplay();
     this.inputRouter = new InputRouter(this);
+    this.audio = new AudioManager();
+    this.gameAudio = new GameAudio(this.audio);
+    this.particleSystem = new ParticleSystem();
+    this.gameParticles = new GameParticles(this.particleSystem);
 
     this.worldState = null;
     this.displayPlayer = null;
@@ -67,6 +77,7 @@ export class Game {
     this.npcTargetId = null;
     this.inventoryVisible = false;
     this.stashVisible = false;
+    this.settingsVisible = false;
     this.gamePaused = false;
     this.isDead = false;
     this.clientDebugLogEnabled = false;
@@ -77,6 +88,12 @@ export class Game {
 
     this.deathOverlay = document.getElementById('death-overlay');
     this.inventoryBackdrop = document.getElementById('inventory-backdrop');
+    this.settingsBackdrop = document.getElementById('settings-backdrop');
+
+    if (this.settingsPanel) {
+      this.settingsPanel.bind(this.audio);
+      this.settingsPanel.onClose = () => this.setSettingsVisible(false);
+    }
 
     this.gameLoop = new GameLoop(this, {
       canvas,
@@ -96,6 +113,10 @@ export class Game {
       if (this.inventoryVisible) this.setInventoryVisible(false);
     });
 
+    this.settingsBackdrop?.addEventListener('click', () => {
+      if (this.settingsVisible) this.setSettingsVisible(false);
+    });
+
     document.getElementById('respawn-btn')?.addEventListener('click', () => {
       this.socketClient.sendRespawn();
     });
@@ -104,6 +125,7 @@ export class Game {
     this.renderer.resize();
     this.inventoryPanel?.setVisible(false);
     this.stashPanel?.setVisible(false);
+    this.settingsPanel?.setVisible(false);
   }
 
   setStashVisible(visible) {
@@ -125,6 +147,17 @@ export class Game {
     if (!visible) {
       this.inventoryPanel?.hideContextMenu?.();
     }
+  }
+
+  setSettingsVisible(visible) {
+    this.settingsVisible = visible;
+    this.settingsPanel?.setVisible(visible);
+    this.settingsBackdrop?.classList.toggle('hidden', !visible);
+    if (visible) this.input.clearKeys();
+  }
+
+  toggleSettingsPanel() {
+    this.setSettingsVisible(!this.settingsVisible);
   }
 
   setWorldState(state) {
@@ -226,12 +259,17 @@ export class Game {
     }
 
     this.gameLoop.start();
+    this.audio.resume().catch(() => {});
   }
 
   stop() {
     this.input.setGameActive(false);
     this.input.clearKeys();
     this.cursorManager.setActive(false);
+
+    this.gameAudio.reset();
+    this.audio.shutdown();
+    this.gameParticles.reset();
 
     this.worldState = null;
     this.displayPlayer = null;
@@ -247,6 +285,7 @@ export class Game {
 
     this.setInventoryVisible(false);
     this.setStashVisible(false);
+    this.setSettingsVisible(false);
     this.skillTreePanel?.hide();
     this.levelUpPanel?.hide();
     this.setStashVisible(false);

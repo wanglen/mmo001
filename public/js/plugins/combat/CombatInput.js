@@ -72,6 +72,7 @@ export function handleAttackChase(game, timestamp) {
     game.pathFollower.clear();
     if (timestamp - game.lastAttackTime >= ATTACK_COOLDOWN_MS) {
       game.socketClient.sendAttack(target.id);
+      game.audio.playSfx('swing', { minIntervalMs: 120 });
       game.lastAttackTime = timestamp;
     }
     return;
@@ -134,12 +135,15 @@ export function handleSkills(game) {
     durationMs: getSkillFxDuration(skillDef, px, py, shot.impactX, shot.impactY),
   });
 
+  game.gameParticles.onLocalSkill(shot.impactX, shot.impactY, skill.id);
+
   game.socketClient.sendUseSkill({
     skillId: skill.id,
     targetX: aim.x,
     targetY: aim.y,
     targetId: shot.monster?.id,
   });
+  game.audio.playSfx('skill', { minIntervalMs: 100 });
 }
 
 /**

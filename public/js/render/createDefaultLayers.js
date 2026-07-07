@@ -135,6 +135,13 @@ export function createDefaultLayers(deps) {
         combatFxRenderer.draw(ctx, frame.visibleCombatFx, camera, frame.now);
       },
     },
+    {
+      id: 'particles',
+      order: 115,
+      draw(ctx, frame, camera) {
+        frame.particleSystem?.draw(ctx, camera);
+      },
+    },
     createMinimapLayer(minimap),
     createHudLayer(playerHud),
   ];

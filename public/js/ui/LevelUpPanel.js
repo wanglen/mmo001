@@ -1,5 +1,4 @@
 import { ALLOCATABLE_STATS } from '/shared/stats.js';
-import { playLevelUpSound } from '../audio/LevelUpSound.js';
 
 const STAT_LABELS = {
   str: 'STR',
@@ -15,6 +14,10 @@ export class LevelUpPanel {
     this.onAllocate = null;
     this.onPauseChange = null;
     this.onRequestCanvasFocus = null;
+    /** @type {(() => void) | null} */
+    this.onPlayLevelUpSound = null;
+    /** @type {(() => void) | null} */
+    this.onLevelUpParticles = null;
     this.lastLevel = 1;
     this.seededLevel = false;
     this.paused = false;
@@ -105,7 +108,8 @@ export class LevelUpPanel {
   }
 
   onLevelUp(player) {
-    playLevelUpSound();
+    this.onPlayLevelUpSound?.();
+    this.onLevelUpParticles?.();
     this.flash();
     this.show(player, {
       title: 'Level Up!',

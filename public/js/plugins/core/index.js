@@ -3,6 +3,7 @@ import { StashPanel } from '../../ui/StashPanel.js';
 import { SkillBar } from '../../ui/SkillBar.js';
 import { LevelUpPanel } from '../../ui/LevelUpPanel.js';
 import { SkillTreePanel } from '../../ui/SkillTreePanel.js';
+import { SettingsPanel } from '../../ui/SettingsPanel.js';
 import { Game } from '../../game/Game.js';
 import { CharacterSelect } from './CharacterSelect.js';
 import { DisconnectModal } from './DisconnectModal.js';
@@ -39,6 +40,8 @@ export function registerCoreClient(ctx) {
   skillTreePanel.onRespec = () => socketClient.sendRespecSkills();
   skillTreePanel.onRequestCanvasFocus = () => canvas.focus();
 
+  const settingsPanel = new SettingsPanel(document.getElementById('settings-panel'));
+
   const disconnectModal = new DisconnectModal(
     document.getElementById('disconnect-overlay'),
     document.getElementById('disconnect-message'),
@@ -55,6 +58,7 @@ export function registerCoreClient(ctx) {
   ctx.panels.skillBar = skillBar;
   ctx.panels.levelUpPanel = levelUpPanel;
   ctx.panels.skillTreePanel = skillTreePanel;
+  ctx.panels.settingsPanel = settingsPanel;
   ctx.setDisconnectModal(disconnectModal);
 }
 
@@ -76,6 +80,7 @@ export function finalizeCoreClient(ctx) {
     socialPanel,
     vendorPanel,
     tradePanel,
+    settingsPanel,
   } = ctx.panels;
 
   const game = new Game(
@@ -92,9 +97,12 @@ export function finalizeCoreClient(ctx) {
     socialPanel,
     vendorPanel,
     tradePanel,
+    settingsPanel,
     pluginHost
   );
   levelUpPanel.onPauseChange = (paused) => game.onGamePause(paused);
+  levelUpPanel.onPlayLevelUpSound = () => game.audio.playSfx('levelUp');
+  levelUpPanel.onLevelUpParticles = () => game.gameParticles.onLevelUp(game);
   skillTreePanel.onPauseChange = (paused) => game.onGamePause(paused);
   ctx.setGame(game);
 

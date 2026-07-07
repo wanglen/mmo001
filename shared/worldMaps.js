@@ -15,3 +15,19 @@ export const WORLD_MAP_SIZES = {
 
 /** Default map for new characters and respawn. */
 export const DEFAULT_MAP_ID = MAP_ID.TOWN;
+
+/** Human-readable zone names for UI (loading screen, minimap hints). */
+export const MAP_LABELS = {
+  [MAP_ID.TOWN]: 'Town',
+  [MAP_ID.WILDERNESS]: 'Wilderness',
+  [MAP_ID.DUNGEON]: 'Dungeon',
+};
+
+/**
+ * @param {string | null | undefined} mapId
+ * @returns {string}
+ */
+export function getMapDisplayName(mapId) {
+  if (!mapId) return 'Unknown Area';
+  return MAP_LABELS[mapId] ?? 'Unknown Area';
+}

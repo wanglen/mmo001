@@ -8,6 +8,7 @@ import {
   mergeMapTileChunks,
 } from '/shared/plugins/world/chunks.js';
 import { configureClientEventLog } from '../debug/clientEventLog.js';
+import { getMapDisplayName } from '/shared/worldMaps.js';
 
 const LERP = 0.3;
 
@@ -43,7 +44,7 @@ export class GameLoop {
       prevMap?.mapId && state.map?.mapId && prevMap.mapId !== state.map.mapId;
 
     if (mapIdChanged) {
-      this.showMapLoading();
+      this.showMapLoading(state.map?.mapId);
       this.pathFollower.clear();
       game.attackTargetId = null;
       game.lootTargetId = null;
@@ -106,6 +107,8 @@ export class GameLoop {
     }
     this.fxBuffer.ingestCombat(state.combatFx);
     this.fxBuffer.ingestSkill(state.skillFx);
+    game.gameAudio.onWorldState(game, state, state.combatFx ?? []);
+    game.gameParticles.onWorldState(game, state, state.combatFx ?? [], state.skillFx ?? []);
 
     game.isDead = !!state.player?.dead;
     this.deathOverlay?.classList.toggle('hidden', !game.isDead);
@@ -190,7 +193,14 @@ export class GameLoop {
     game.displayPlayer.townRecallCastMs = server.townRecallCastMs;
   }
 
-  showMapLoading() {
+  /** @param {string | null | undefined} [mapId] */
+  showMapLoading(mapId) {
+    const name = getMapDisplayName(mapId);
+    const titleEl = this.mapLoadingOverlay?.querySelector('[data-map-loading-title]');
+    const hintEl = this.mapLoadingOverlay?.querySelector('[data-map-loading-hint]');
+    if (titleEl) titleEl.textContent = name;
+    if (hintEl) hintEl.textContent = mapId ? `Entering ${name}…` : 'Preparing zone…';
+
     this.mapLoadingOverlay?.classList.remove('hidden');
     if (this.mapLoadingTimer) clearTimeout(this.mapLoadingTimer);
     this.mapLoadingTimer = setTimeout(() => this.hideMapLoading(), 2500);
@@ -234,10 +244,13 @@ export class GameLoop {
         hoveredMonsterId = findMonsterAt(visibleMonsters, world.x, world.y)?.id ?? null;
       }
 
+      game.particleSystem.update(timestamp);
+
       this.renderer.draw(renderState, game.displayPlayer, timestamp, {
         moveTarget: this.pathFollower.target,
         hoveredMonsterId,
         fogOfWar: this.fogOfWar,
+        particleSystem: game.particleSystem,
       });
     }
 

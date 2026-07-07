@@ -25,3 +25,4 @@ Thumbs.db
 # Runtime / local data
 data/
 *.local
+PENDINGS.md

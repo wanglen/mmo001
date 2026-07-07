@@ -103,9 +103,14 @@
 
   <div id="map-loading-overlay" class="overlay map-loading-overlay hidden">
     <div class="panel map-loading-panel">
-      <p class="map-loading-text">Loading area…</p>
+      <div class="map-loading-spinner" aria-hidden="true"></div>
+      <p class="map-loading-title" data-map-loading-title>Loading</p>
+      <p class="map-loading-hint" data-map-loading-hint>Preparing zone…</p>
     </div>
   </div>
+
+  <div id="settings-backdrop" class="settings-backdrop hidden" aria-hidden="true"></div>
+  <div id="settings-panel" class="settings-panel hidden"></div>
 
   <div id="dialogue-panel" class="dialogue-panel hidden">
     <div class="dialogue-panel-inner">

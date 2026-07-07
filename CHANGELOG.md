@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.3] - 2026-07-07
+
+### Added
+
+- **Settings menu** — **O** / **Esc** opens volume sliders (SFX, music, mute), graphics note, and default keybind reference; preferences persist in localStorage
+- **Zone loading screen** — portal travel shows zone name, spinner, and “Entering …” hint until map tiles arrive
+
+## [3.2.2] - 2026-07-07
+
+### Added
+
+- Canvas particle bursts for blood on hits, skill impacts, and level-up celebrations
+
+## [3.2.1] - 2026-07-07
+
+### Changed
+
+- Zone background music uses CC0 looped OGG tracks (town piano ambience, dark woods, dungeon cave) instead of procedural oscillators
+
+## [3.2.0] - 2026-07-07
+
+### Added
+
+- **Procedural audio** — Web Audio SFX (combat, skills, pickup, level-up, death, zone travel) and zone-aware ambient music (town / wilderness / dungeon)
+
 ## [3.1.6] - 2026-07-07
 
 ### Fixed

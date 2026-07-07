@@ -126,6 +126,7 @@ export function handleLootChase(game, timestamp) {
   if (isInPickupRange(px, py, drop.x, drop.y)) {
     game.pathFollower.clear();
     game.socketClient.sendPickup(drop.id);
+    game.audio.playSfx('pickup');
     game.lootTargetId = null;
     return;
   }
