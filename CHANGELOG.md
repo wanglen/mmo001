@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **DevOps** — `.env.example`, centralized `server/config.js`, GitHub Actions CI (`npm test` on push/PR), cloud VPS deployment guide, and `tests/README.md` documenting combat/loot/movement validation tests
+- **DevOps** — `.env.example`, centralized `server/config.js`, cloud VPS deployment guide, and `tests/README.md` documenting combat/loot/movement validation tests
 
 ### Changed
 

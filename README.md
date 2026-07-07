@@ -1,7 +1,5 @@
 # MMO001
 
-[![CI](https://github.com/wanglen/mmo001/actions/workflows/ci.yml/badge.svg)](https://github.com/wanglen/mmo001/actions/workflows/ci.yml)
-
 A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal is a Diablo-like action RPG with real-time multiplayer, starting from a simple playable prototype.
 
 ## Features (current)
@@ -172,7 +170,7 @@ npm test           # run all unit tests
 npm run test:watch # re-run on file changes
 ```
 
-Tests use Node.js built-in test runner. See [`tests/README.md`](tests/README.md) for critical gameplay validation coverage (combat, loot, movement, anti-cheat). CI runs `npm test` on every push and pull request to `main`.
+Tests use Node.js built-in test runner. See [`tests/README.md`](tests/README.md) for critical gameplay validation coverage (combat, loot, movement, anti-cheat).
 
 ### Controls
 

@@ -150,7 +150,7 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 ### DevOps
 - [x] `.gitignore`, README, environment config
 - [x] Basic tests for combat, loot, movement validation
-- [x] CI pipeline
+- [ ] CI pipeline
 - [x] Deployment (Docker, cloud hosting)
 
 ---
