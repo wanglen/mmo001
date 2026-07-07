@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.1] - 2026-07-07
+
+### Added
+
+- Diablo-style floating item tooltips in inventory and stash (no layout shift on hover)
+- Potion stacking in bag and stash (up to 20 per slot) with stack count badges
+
+### Changed
+
+- Inventory panel uses full height for equipment + backpack grid; bottom inspect bar removed
+
 ## [2.4.0] - 2026-07-07
 
 ### Added

@@ -1,6 +1,6 @@
 import { resolveItemIconKey } from '/shared/itemIcons.js';
 import { getRarityColor } from '/shared/items.js';
-import { CONSUMABLE_KIND } from '/shared/consumables.js';
+import { CONSUMABLE_KIND, getStackCount } from '/shared/consumables.js';
 import { buildItemIconSvg } from './itemIconSvg.js';
 
 /** Inventory tint for consumable potions (overrides rarity color). */
@@ -34,8 +34,10 @@ export function buildSlotIconHtml(item, slotType = '') {
   const type = resolveItemIconKey(item, slotType);
   const icon = buildItemIconSvg(type);
   const empty = !item;
+  const stack = item ? getStackCount(item) : 0;
+  const stackBadge = stack > 1 ? `<span class="slot-stack-badge">${stack}</span>` : '';
 
-  return `<span class="slot-visual${empty ? ' slot-visual--empty' : ''}">${icon}</span>`;
+  return `<span class="slot-visual${empty ? ' slot-visual--empty' : ''}">${icon}${stackBadge}</span>`;
 }
 
 export { buildItemIconSvg } from './itemIconSvg.js';

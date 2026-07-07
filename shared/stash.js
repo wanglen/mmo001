@@ -17,10 +17,7 @@ export function countEmptyStashSlots(stash) {
  * @param {object} item
  */
 export function addItemToStash(stash, item) {
-  const index = stash.findIndex((slot) => slot === null);
-  if (index === -1) return { ok: false, reason: 'stash_full' };
-  stash[index] = item;
-  return { ok: true, index };
+  return addItemToInventory(stash, item);
 }
 
 /**

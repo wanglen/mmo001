@@ -5,11 +5,8 @@ import { listSocketTargets } from '/shared/plugins/items/socketUi.js';
 import { EQUIP_SLOTS } from '/shared/items.js';
 import { buildSlotIconHtml, buildItemIconSvg, getInventoryIconColor } from './itemIcons.js';
 import { resolveItemIconKey } from '/shared/itemIcons.js';
-import {
-  buildEmptyInspectHtml,
-  buildItemInspectHtml,
-  buildSlotHintHtml,
-} from '/shared/itemDisplay.js';
+import { buildItemTooltipHtml, buildSlotHintHtml } from '/shared/itemDisplay.js';
+import { getItemTooltip } from './ItemTooltip.js';
 
 const EMPTY_SLOT_COLOR = '#4a5a6a';
 
@@ -27,6 +24,7 @@ export class InventoryPanel {
     this.inspectKey = '';
     this.activeSlotEl = null;
     this.contextMenuEl = null;
+    this.tooltip = getItemTooltip();
     this.build();
   }
 
@@ -34,7 +32,7 @@ export class InventoryPanel {
     this.root.innerHTML = `
       <div class="inventory-header">
         <span class="inventory-title">Inventory</span>
-        <span class="inventory-hint">I or Esc close · Right-click item menu</span>
+        <span class="inventory-hint">I or Esc close · Hover items for details · Right-click menu</span>
       </div>
       <div class="inventory-main">
         <section class="inventory-equipment-section" aria-label="Equipped items">
@@ -46,14 +44,10 @@ export class InventoryPanel {
           <div class="inventory-grid" id="inventory-grid"></div>
         </section>
       </div>
-      <div class="item-inspect" id="item-inspect" aria-live="polite">
-        ${buildEmptyInspectHtml()}
-      </div>
     `;
 
     this.equipmentEl = this.root.querySelector('#equipment-slots');
     this.gridEl = this.root.querySelector('#inventory-grid');
-    this.inspectEl = this.root.querySelector('#item-inspect');
 
     const hoverZone = this.root;
     hoverZone.addEventListener('mouseleave', (e) => {
@@ -63,7 +57,10 @@ export class InventoryPanel {
 
     document.addEventListener('click', () => this.hideContextMenu());
     document.addEventListener('contextmenu', () => this.hideContextMenu());
-    window.addEventListener('blur', () => this.hideContextMenu());
+    window.addEventListener('blur', () => {
+      this.hideContextMenu();
+      this.clearInspect();
+    });
 
     for (const slot of EQUIP_SLOTS) {
       const el = document.createElement('button');
@@ -94,6 +91,10 @@ export class InventoryPanel {
     backdrop?.classList.toggle('hidden', !visible);
     backdrop?.setAttribute('aria-hidden', visible ? 'false' : 'true');
     this.root.setAttribute('aria-hidden', visible ? 'false' : 'true');
+    if (!visible) {
+      this.hideContextMenu();
+      this.clearInspect();
+    }
   }
 
   update(player, options = {}) {
@@ -274,24 +275,22 @@ export class InventoryPanel {
       const fallbackSlot = isEquipSlot ? slotEl.dataset.slot : '';
       const iconKey = resolveItemIconKey(item, fallbackSlot);
       const iconColor = getInventoryIconColor(item);
-      const iconHtml = `<div class="item-inspect-icon" style="color: ${iconColor}">${buildItemIconSvg(iconKey)}</div>`;
-      const detailsHtml = buildItemInspectHtml(item, {
+      const iconHtml = buildItemIconSvg(iconKey);
+      const tooltipHtml = buildItemTooltipHtml(item, {
         actionHint,
         compareWith,
         compareHeader: compareWith ? `vs ${compareWith.name}` : '',
+        iconHtml: `<span style="color: ${iconColor}">${iconHtml}</span>`,
       });
-      this.showInspect(
-        `<div class="item-inspect-layout">${iconHtml}<div class="item-inspect-details">${detailsHtml}</div></div>`
-      );
+      this.tooltip.show(slotEl, tooltipHtml);
       return;
     }
 
     this.activeSlotEl = null;
-    if (slotEl.classList.contains('equip-slot')) {
-      this.showInspect(buildSlotHintHtml(slotEl.dataset.slot));
-    } else {
-      this.showInspect(buildEmptyInspectHtml('Empty bag slot'));
-    }
+    const hintHtml = slotEl.classList.contains('equip-slot')
+      ? buildSlotHintHtml(slotEl.dataset.slot)
+      : '';
+    this.tooltip.show(slotEl, hintHtml || '');
   }
 
   getInspectKey(slotEl, item) {
@@ -306,7 +305,7 @@ export class InventoryPanel {
     this.inspectKey = '';
     this.activeSlotEl = null;
     this.clearSlotInspectHighlight();
-    this.showInspect(buildEmptyInspectHtml());
+    this.tooltip.hide();
   }
 
   clearSlotInspectHighlight() {
@@ -323,10 +322,6 @@ export class InventoryPanel {
     }
 
     return this.player.inventory?.[Number(el.dataset.index)] ?? null;
-  }
-
-  showInspect(html) {
-    this.inspectEl.innerHTML = html;
   }
 
   renderSlot(el, item, slotType = '') {

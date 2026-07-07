@@ -65,11 +65,11 @@ describe('consumables', () => {
     const inventory = createEmptyInventory();
     const hp = createPotion(POTION_TEMPLATES[0], RARITY.COMMON);
     const mp = createPotion(POTION_TEMPLATES[1], RARITY.COMMON);
-    inventory[0] = hp;
+    inventory[0] = { ...hp, stackCount: 2 };
     inventory[5] = hp;
     inventory[6] = mp;
 
-    assert.equal(countPotionsByKind(inventory, CONSUMABLE_KIND.HEALTH), 2);
+    assert.equal(countPotionsByKind(inventory, CONSUMABLE_KIND.HEALTH), 3);
     assert.equal(countPotionsByKind(inventory, CONSUMABLE_KIND.MANA), 1);
     assert.equal(findFirstPotionIndex(inventory, CONSUMABLE_KIND.MANA), 6);
   });

@@ -10,7 +10,8 @@ import {
   getEffectiveCombatStats,
   INVENTORY_SIZE,
 } from '../../shared/inventory.js';
-import { createItem, RARITY, resetItemIdCounter } from '../../shared/items.js';
+import { createItem, createPotion, POTION_TEMPLATES, RARITY, resetItemIdCounter } from '../../shared/items.js';
+import { getStackCount, MAX_CONSUMABLE_STACK } from '../../shared/consumables.js';
 import { createPlayerStats } from '../../shared/stats.js';
 
 const swordTemplate = {
@@ -41,6 +42,34 @@ describe('inventory', () => {
     const result = addItemToInventory(inv, { id: 'y' });
     assert.equal(result.ok, false);
     assert.equal(result.reason, 'full');
+  });
+
+  it('addItemToInventory stacks matching potions in one slot', () => {
+    resetItemIdCounter();
+    const inv = createEmptyInventory();
+    const potion = createPotion(POTION_TEMPLATES[0], RARITY.COMMON);
+
+    const first = addItemToInventory(inv, potion);
+    const second = addItemToInventory(inv, { ...potion, id: 'potion-copy' });
+
+    assert.equal(first.ok, true);
+    assert.equal(second.ok, true);
+    assert.equal(second.stacked, true);
+    assert.equal(getStackCount(inv[0]), 2);
+    assert.equal(inv[1], null);
+  });
+
+  it('addItemToInventory splits potions across slots at max stack size', () => {
+    resetItemIdCounter();
+    const inv = createEmptyInventory();
+    const potion = createPotion(POTION_TEMPLATES[0], RARITY.COMMON);
+
+    inv[0] = { ...potion, stackCount: MAX_CONSUMABLE_STACK };
+    const result = addItemToInventory(inv, potion);
+
+    assert.equal(result.ok, true);
+    assert.equal(getStackCount(inv[0]), MAX_CONSUMABLE_STACK);
+    assert.equal(getStackCount(inv[1]), 1);
   });
 
   it('findLootAt picks nearest drop under cursor', () => {

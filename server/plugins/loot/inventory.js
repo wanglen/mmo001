@@ -5,7 +5,7 @@ import {
   refreshPlayerDerivedStats,
 } from '../../../shared/inventory.js';
 import { EQUIP_SLOTS } from '../../../shared/items.js';
-import { applyConsumable } from '../../../shared/consumables.js';
+import { applyConsumable, getStackCount } from '../../../shared/consumables.js';
 import { canPlayerPickupDrop } from '../../entities/LootManager.js';
 
 export function pickupLoot({ player, lootId, lootManager, now = Date.now() }) {
@@ -38,7 +38,11 @@ export function useConsumableFromInventory(player, inventoryIndex) {
   const result = applyConsumable(player, item);
   if (!result.ok) return result;
 
-  player.inventory[inventoryIndex] = null;
+  if (getStackCount(item) > 1) {
+    item.stackCount = getStackCount(item) - 1;
+  } else {
+    player.inventory[inventoryIndex] = null;
+  }
   return result;
 }
 

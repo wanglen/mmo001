@@ -5,6 +5,32 @@ export const CONSUMABLE_KIND = {
   MANA: 'mana',
 };
 
+/** Max potions per inventory slot (Diablo-style stacking). */
+export const MAX_CONSUMABLE_STACK = 20;
+
+/**
+ * @param {object | null | undefined} item
+ * @returns {number}
+ */
+export function getStackCount(item) {
+  if (!item) return 0;
+  return Math.max(1, item.stackCount ?? 1);
+}
+
+/**
+ * @param {object | null | undefined} a
+ * @param {object | null | undefined} b
+ */
+export function canStackConsumables(a, b) {
+  if (!isConsumable(a) || !isConsumable(b)) return false;
+  return (
+    a.consumableKind === b.consumableKind &&
+    a.templateKey === b.templateKey &&
+    a.restoreAmount === b.restoreAmount &&
+    a.rarity === b.rarity
+  );
+}
+
 /**
  * @param {object | null | undefined} item
  */
@@ -17,7 +43,7 @@ export function countPotionsByKind(inventory, kind) {
   if (!inventory?.length || !kind) return 0;
   let count = 0;
   for (const item of inventory) {
-    if (item?.consumableKind === kind) count += 1;
+    if (item?.consumableKind === kind) count += getStackCount(item);
   }
   return count;
 }

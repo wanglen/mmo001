@@ -13,7 +13,7 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 - Advanced combat: crits (DEX), dodge (DEX), elemental resistances, status effects (stun/slow/poison/bleed), elite modifiers (~12% spawn), boss phases with scaled damage and guaranteed loot
 - **Items:** Magic/Rare affixes, sockets + gems, item sets with worn bonuses, town stash (`B`)
 - Loot: per-item pixel icons on ground (rarity glow) and in inventory; click to pick up; potions usable from bag
-- Inventory: 10×4 grid, 7 equip slots, stat bonuses from gear (server-side); hover to compare vs equipped, right-click for actions, destroy unwanted items
+- Inventory: 10×4 grid, 7 equip slots, stat bonuses from gear (server-side); floating tooltips with equip comparison, potions stack up to 20 per slot, right-click for actions
 - Leveling: XP curve, +5 stat points per level-up, allocation UI (reopen with C), JSON character save; quest rewards grant XP, gold, and items
 - Login spawn: characters always enter at **town spawn** when you connect (inventory, quests, and progress are restored from save)
 - **Economy:** gold from quests and monster kills; vendor NPC Brok in town (buy/sell); player trade via online list (⇄)
@@ -128,7 +128,7 @@ Tests use Node.js built-in test runner. Coverage includes pathfinding, collision
 - **WASD** / **Arrow keys** — move including diagonals (e.g. W+D); cancels click path
 - **I** / **Esc** — toggle character inventory (modal sheet, dimmed world)
 - **B** (town only) — shared stash; right-click bag items to store, stash items to take
-- **Inventory** — left-click equip; right-click equip/use/unequip/destroy; hover bag gear to compare vs equipped
+- **Inventory** — left-click equip; right-click equip/use/unequip/destroy; hover for floating item tooltips (compare vs equipped)
 - **T** (outside town) — start 6s recall cast to town; interrupted by movement, combat, or damage
 - **Enter** — focus chat; **Esc** blurs chat while typing
 - **Chat** — Global / Zone channels; `/w Name message` whisper; `/p message` party chat (left column, above resource orbs)

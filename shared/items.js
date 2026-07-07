@@ -124,6 +124,7 @@ export function createPotion(template, rarity = RARITY.COMMON) {
     consumableKind: template.consumableKind,
     rarity,
     restoreAmount,
+    stackCount: 1,
   };
 }
 
@@ -186,6 +187,7 @@ export function itemToJSON(item) {
     })),
     setId: item.setId,
     gemKind: item.gemKind,
+    stackCount: (item.stackCount ?? 1) > 1 ? item.stackCount : undefined,
     consumableKind: item.consumableKind,
     restoreAmount: item.restoreAmount,
   };
@@ -196,6 +198,7 @@ export function itemToJSON(item) {
   if (!json.sockets?.length) delete json.sockets;
   if (!json.setId) delete json.setId;
   if (!json.gemKind) delete json.gemKind;
+  if (json.stackCount == null || json.stackCount <= 1) delete json.stackCount;
   if (!json.consumableKind) delete json.consumableKind;
   if (json.restoreAmount == null) delete json.restoreAmount;
   return json;

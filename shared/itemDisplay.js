@@ -1,5 +1,5 @@
 import { getRarityColor } from './items.js';
-import { isConsumable } from './consumables.js';
+import { isConsumable, getStackCount } from './consumables.js';
 import { isGem } from './plugins/items/gems.js';
 import { ITEM_SETS } from './plugins/items/sets.js';
 
@@ -158,6 +158,8 @@ export function buildItemInspectHtml(item, { actionHint = '', compareWith = null
       ? 'Gem'
       : formatSlotType(item.slot ?? item.type);
   const rarityLabel = capitalizeWord(item.rarity);
+  const stackLabel =
+    isConsumable(item) && getStackCount(item) > 1 ? ` · Stack ${getStackCount(item)}` : '';
   const showCompareHeader = !isConsumable(item) && !isGem(item) && compareWith && compareHeader;
   const setName = item.setId ? ITEM_SETS[item.setId]?.name : null;
 
@@ -201,7 +203,7 @@ export function buildItemInspectHtml(item, { actionHint = '', compareWith = null
 
   return `
     <p class="item-inspect-name" style="color: ${color}">${escapeHtml(item.name)}</p>
-    <p class="item-inspect-meta">${escapeHtml(slotLabel)} · ${escapeHtml(rarityLabel)}</p>
+    <p class="item-inspect-meta">${escapeHtml(slotLabel)} · ${escapeHtml(rarityLabel)}${escapeHtml(stackLabel)}</p>
     ${setHtml}
     ${statsHtml}
     ${affixHtml}
@@ -222,6 +224,23 @@ export function buildSlotHintHtml(slotType) {
     <p class="item-inspect-meta">Empty slot</p>
     <p class="item-inspect-action">Equip an item from your bag</p>
   `;
+}
+
+/**
+ * Floating tooltip HTML (icon + details) for inventory/stash hover.
+ * @param {object | null} item
+ * @param {{ actionHint?: string, compareWith?: object | null, compareHeader?: string, iconHtml?: string }} [options]
+ */
+export function buildItemTooltipHtml(item, options = {}) {
+  if (!item) return '';
+
+  const { actionHint = '', compareWith = null, compareHeader = '', iconHtml = '' } = options;
+  const detailsHtml = buildItemInspectHtml(item, { actionHint, compareWith, compareHeader });
+  const iconBlock = iconHtml
+    ? `<div class="item-tooltip-icon">${iconHtml}</div>`
+    : '';
+
+  return `<div class="item-tooltip-layout">${iconBlock}<div class="item-tooltip-details">${detailsHtml}</div></div>`;
 }
 
 function escapeHtml(text) {

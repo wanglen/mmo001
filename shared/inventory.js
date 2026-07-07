@@ -2,6 +2,12 @@ import { BASE_STATS } from './stats.js';
 import { EQUIP_SLOTS } from './items.js';
 import { getSocketStatBonuses } from './plugins/items/sockets.js';
 import { getSetBonuses } from './plugins/items/sets.js';
+import {
+  isConsumable,
+  canStackConsumables,
+  getStackCount,
+  MAX_CONSUMABLE_STACK,
+} from './consumables.js';
 
 export const INVENTORY_COLS = 10;
 export const INVENTORY_ROWS = 4;
@@ -22,6 +28,31 @@ export function createEmptyEquipment() {
 }
 
 export function addItemToInventory(inventory, item) {
+  if (isConsumable(item)) {
+    let incoming = { ...item, stackCount: getStackCount(item) };
+
+    for (let i = 0; i < inventory.length; i++) {
+      const existing = inventory[i];
+      if (!canStackConsumables(existing, incoming)) continue;
+
+      const space = MAX_CONSUMABLE_STACK - getStackCount(existing);
+      if (space <= 0) continue;
+
+      const transfer = Math.min(space, getStackCount(incoming));
+      existing.stackCount = getStackCount(existing) + transfer;
+      const remaining = getStackCount(incoming) - transfer;
+
+      if (remaining <= 0) return { ok: true, index: i, stacked: true };
+
+      incoming = { ...incoming, stackCount: remaining };
+    }
+
+    const index = inventory.findIndex((slot) => slot === null);
+    if (index === -1) return { ok: false, reason: 'full' };
+    inventory[index] = incoming;
+    return { ok: true, index };
+  }
+
   const index = inventory.findIndex((slot) => slot === null);
   if (index === -1) return { ok: false, reason: 'full' };
   inventory[index] = item;
