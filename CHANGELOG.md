@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Architecture (Phase D):** client bootstrap shell (`public/js/app/bootstrap.js`, `PluginHost.js`, `UIManager.js`); feature panels moved under `public/js/plugins/` with `registerClient` wiring; reusable `Panel` and `ItemRow` components; `main.js` re-exports bootstrap
+- **Architecture (Phase E):** split `Game.js` into `GameLoop`, `InputRouter`, and input plugins (`CombatInput`, `InteractionInput`, `CoreInput`); moved `Camera`, `PathFollower`, `FogOfWar` to `public/js/core/`
 
 ## [2.2.0] - 2026-07-06
 

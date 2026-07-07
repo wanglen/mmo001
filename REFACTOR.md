@@ -227,20 +227,20 @@ Each feature plugin should export:
 
 ### E.1 Core loop
 
-- [ ] Add `public/js/core/GameLoop.js` — rAF, `setWorldState`, pause/death flags
-- [ ] Add `public/js/core/InputRouter.js` — delegates to active plugin; chat focus escape hatch
-- [ ] Move `Camera`, `PathFollower`, `FogOfWar` under `core/` (re-export old paths temporarily)
+- [x] Add `public/js/core/GameLoop.js` — rAF, `setWorldState`, pause/death flags
+- [x] Add `public/js/core/InputRouter.js` — delegates to active plugin; chat focus escape hatch
+- [x] Move `Camera`, `PathFollower`, `FogOfWar` under `core/` (re-export old paths temporarily)
 
 ### E.2 Input plugins
 
-- [ ] `public/js/plugins/combat/CombatInput.js` — attack chase, skill hotkeys, aim
-- [ ] `public/js/plugins/world/InteractionInput.js` — NPC, portal, loot click
-- [ ] `public/js/plugins/economy/` — `blocksGameInput()` when vendor/trade open (replace ad-hoc check in Game)
+- [x] `public/js/plugins/combat/CombatInput.js` — attack chase, skill hotkeys, aim
+- [x] `public/js/plugins/world/InteractionInput.js` — NPC, portal, loot click
+- [x] `public/js/plugins/economy/` — `blocksGameInput()` when vendor/trade open (replace ad-hoc check in Game)
 
 ### E.3 Thin Game facade
 
-- [ ] Reduce `Game.js` to composition root or delete after `bootstrap.js` owns lifecycle
-- [ ] Target: no file &gt; ~300 lines in client gameplay path
+- [x] Reduce `Game.js` to composition root or delete after `bootstrap.js` owns lifecycle
+- [x] Target: no file &gt; ~300 lines in client gameplay path
 
 ---
 

@@ -1,28 +1,32 @@
 import { Input } from './Input.js';
-import { Camera } from './Camera.js';
-import { PathFollower } from './PathFollower.js';
+import { Camera } from '../core/Camera.js';
+import { PathFollower } from '../core/PathFollower.js';
+import { FogOfWar } from '../core/FogOfWar.js';
+import { GameLoop } from '../core/GameLoop.js';
+import { InputRouter } from '../core/InputRouter.js';
+import { onStatKeyDown } from '../plugins/core/CoreInput.js';
 import { Renderer } from '../render/Renderer.js';
 import { CursorManager } from '../ui/CursorManager.js';
-import { facingFromTarget } from '/shared/aim.js';
-import { findMonsterAt, isInRange, ATTACK_COOLDOWN_MS } from '/shared/combat.js';
-import { findLootAt, isInPickupRange } from '/shared/inventory.js';
-import { findPortalAt, isInPortalRange } from '/shared/portals.js';
-import { findNpcAt, isNearNpc, NPC_ROLE } from '/shared/npcs.js';
-import { isTownHubMap } from '/shared/townHub.js';
-import { getSkill, getSkillFxDuration, resolveProjectileImpact, canUseSkill } from '/shared/skills.js';
-import { CONSUMABLE_KIND, canQuickUsePotion } from '/shared/consumables.js';
-import { CAMERA_ZOOM_STEP, TILE_SIZE } from '../config.js';
-import { filterRevealedPositions } from '/shared/fog.js';
+import { NPC_ROLE } from '/shared/npcs.js';
 import { FxBuffer } from './FxBuffer.js';
-import { FogOfWar } from './FogOfWar.js';
 import { RemotePlayerDisplay } from './RemotePlayerDisplay.js';
 
-const LERP = 0.3;
-const MOVE_INTERVAL = 50;
-const AIM_INTERVAL = 50;
-
+/** Composition root for in-game client state, panels, and the render loop. */
 export class Game {
-  constructor(canvas, socketClient, inventoryPanel = null, levelUpPanel = null, skillBar = null, dialoguePanel = null, questTracker = null, chatPanel = null, socialPanel = null, vendorPanel = null, tradePanel = null, pluginHost = null) {
+  constructor(
+    canvas,
+    socketClient,
+    inventoryPanel = null,
+    levelUpPanel = null,
+    skillBar = null,
+    dialoguePanel = null,
+    questTracker = null,
+    chatPanel = null,
+    socialPanel = null,
+    vendorPanel = null,
+    tradePanel = null,
+    pluginHost = null
+  ) {
     this.canvas = canvas;
     this.socketClient = socketClient;
     this.inventoryPanel = inventoryPanel;
@@ -35,11 +39,16 @@ export class Game {
     this.vendorPanel = vendorPanel;
     this.tradePanel = tradePanel;
     this.pluginHost = pluginHost;
+
     this.input = new Input(canvas);
     this.camera = new Camera(canvas);
     this.cursorManager = new CursorManager(canvas);
     this.pathFollower = new PathFollower();
     this.renderer = new Renderer(canvas, this.camera);
+    this.fxBuffer = new FxBuffer();
+    this.fogOfWar = new FogOfWar();
+    this.remotePlayerDisplay = new RemotePlayerDisplay();
+    this.inputRouter = new InputRouter(this);
 
     this.worldState = null;
     this.displayPlayer = null;
@@ -50,20 +59,31 @@ export class Game {
     this.aimTarget = null;
     this.attackTargetId = null;
     this.lootTargetId = null;
+    this.npcTargetId = null;
     this.inventoryVisible = false;
     this.gamePaused = false;
     this.isDead = false;
-    this.fxBuffer = new FxBuffer();
-    this.fogOfWar = new FogOfWar();
-    this.remotePlayerDisplay = new RemotePlayerDisplay();
+
     if (this.chatPanel) {
       this.chatPanel.onFocus = () => this.input.clearKeys();
     }
+
     this.deathOverlay = document.getElementById('death-overlay');
-    this.mapLoadingOverlay = document.getElementById('map-loading-overlay');
-    this.mapLoadingTimer = null;
     this.inventoryBackdrop = document.getElementById('inventory-backdrop');
-    this.npcTargetId = null;
+
+    this.gameLoop = new GameLoop(this, {
+      canvas,
+      input: this.input,
+      camera: this.camera,
+      pathFollower: this.pathFollower,
+      renderer: this.renderer,
+      fogOfWar: this.fogOfWar,
+      fxBuffer: this.fxBuffer,
+      remotePlayerDisplay: this.remotePlayerDisplay,
+      inputRouter: this.inputRouter,
+      deathOverlay: this.deathOverlay,
+      mapLoadingOverlay: document.getElementById('map-loading-overlay'),
+    });
 
     this.inventoryBackdrop?.addEventListener('click', () => {
       if (this.inventoryVisible) this.setInventoryVisible(false);
@@ -87,83 +107,7 @@ export class Game {
   }
 
   setWorldState(state) {
-    const prevMap = this.worldState?.map;
-    const mapIdChanged =
-      prevMap?.mapId && state.map?.mapId && prevMap.mapId !== state.map.mapId;
-
-    if (mapIdChanged) {
-      this.showMapLoading();
-      this.pathFollower.clear();
-      this.attackTargetId = null;
-      this.lootTargetId = null;
-      this.dialoguePanel?.hide();
-      this.vendorPanel?.hide();
-      this.remotePlayerDisplay.clear();
-    } else if (prevMap && state.map && !state.map.tiles) {
-      state = {
-        ...state,
-        map: {
-          ...state.map,
-          tiles: prevMap.tiles,
-          zones: state.map.zones?.length ? state.map.zones : prevMap.zones,
-          portals: state.map.portals?.length ? state.map.portals : prevMap.portals,
-        },
-      };
-    }
-
-    this.worldState = state;
-    if (state.map) {
-      this.camera.setMapBounds(state.map.width, state.map.height, TILE_SIZE);
-      if (state.map.tiles) {
-        this.hideMapLoading();
-      }
-    }
-    this.fxBuffer.ingestCombat(state.combatFx);
-    this.fxBuffer.ingestSkill(state.skillFx);
-
-    this.isDead = !!state.player?.dead;
-    this.deathOverlay?.classList.toggle('hidden', !this.isDead);
-    if (this.isDead) {
-      this.pathFollower.clear();
-      this.attackTargetId = null;
-      this.lootTargetId = null;
-    }
-
-    if (!this.displayPlayer && state.player) {
-      this.displayPlayer = { ...state.player };
-      this.aimTarget = { x: state.player.aimX, y: state.player.aimY };
-    } else if (state.player) {
-      if (mapIdChanged) {
-        this.displayPlayer = { ...state.player };
-        this.aimTarget = { x: state.player.aimX, y: state.player.aimY };
-      } else {
-        this.displayPlayer = {
-          ...state.player,
-          x: this.displayPlayer?.x ?? state.player.x,
-          y: this.displayPlayer?.y ?? state.player.y,
-          facing: state.player.facing ?? this.displayPlayer?.facing,
-          attacking: state.player.attacking,
-        };
-        if (!this.input.getMouseScreen()) {
-          this.aimTarget = { x: state.player.aimX, y: state.player.aimY };
-        }
-      }
-      this.inventoryPanel?.update(state.player);
-      this.levelUpPanel?.update(state.player);
-      this.skillBar?.update(state.player);
-      this.questTracker?.update(state.player);
-      this.socialPanel?.setSelf(state.player);
-      if (this.vendorPanel?.isVisible()) {
-        this.vendorPanel.update(state.player);
-      }
-
-      if (this.dialoguePanel?.isVisible() && this.dialoguePanel.currentNpc && state.player) {
-        const npc = (state.npcs ?? []).find(
-          (entry) => entry.id === this.dialoguePanel.currentNpc.id
-        );
-        if (npc) this.openNpcDialogue(npc, state.player);
-      }
-    }
+    this.gameLoop.setWorldState(state);
   }
 
   npcDialogueHandlers(npc) {
@@ -201,53 +145,8 @@ export class Game {
     return (this.worldState?.loot ?? []).filter((drop) => !drop.pickupLocked);
   }
 
-  updateDisplayPlayer() {
-    if (!this.worldState?.player || !this.displayPlayer) return;
-
-    const server = this.worldState.player;
-    this.displayPlayer.x += (server.x - this.displayPlayer.x) * LERP;
-    this.displayPlayer.y += (server.y - this.displayPlayer.y) * LERP;
-    this.displayPlayer.direction = server.direction;
-    this.displayPlayer.facing = this.displayPlayer.facing ?? server.facing;
-    this.displayPlayer.moving = server.moving;
-    this.displayPlayer.attacking = server.attacking;
-    this.displayPlayer.characterClass = server.characterClass;
-    this.displayPlayer.name = server.name;
-    this.displayPlayer.level = server.level;
-    this.displayPlayer.xp = server.xp;
-    this.displayPlayer.statPoints = server.statPoints;
-    this.displayPlayer.skillPoints = server.skillPoints;
-    this.displayPlayer.hp = server.hp;
-    this.displayPlayer.maxHp = server.maxHp;
-    this.displayPlayer.dead = server.dead;
-    this.displayPlayer.mp = server.mp;
-    this.displayPlayer.maxMp = server.maxMp;
-    this.displayPlayer.str = server.str;
-    this.displayPlayer.dex = server.dex;
-    this.displayPlayer.int = server.int;
-    this.displayPlayer.vit = server.vit;
-    this.displayPlayer.gold = server.gold;
-    this.displayPlayer.quests = server.quests;
-    this.displayPlayer.skillCooldowns = server.skillCooldowns;
-    this.displayPlayer.skillBar = server.skillBar;
-    this.displayPlayer.townRecallCasting = server.townRecallCasting;
-    this.displayPlayer.townRecallCastMs = server.townRecallCastMs;
-  }
-
   isRecalling() {
     return !!this.worldState?.player?.townRecallCasting;
-  }
-
-  handleTownRecallCast() {
-    if (this.gamePaused || this.isDead || this.isRecalling()) return;
-    if (isTownHubMap(this.worldState?.map)) return;
-    if (this.dialoguePanel?.isVisible() || this.levelUpPanel?.isVisible()) return;
-    if (!this.input.consumeKeyPress('t')) return;
-
-    this.pathFollower.clear();
-    this.attackTargetId = null;
-    this.lootTargetId = null;
-    this.socketClient.sendCastTownRecall();
   }
 
   onGamePause(paused) {
@@ -261,22 +160,6 @@ export class Game {
 
   focusCanvas() {
     this.canvas.focus();
-  }
-
-  isStatKey(e) {
-    return e.key.toLowerCase() === 'c' || e.code === 'KeyC';
-  }
-
-  onStatKeyDown(e) {
-    if (!this.input.gameActive || e.repeat) return;
-    if (this.chatPanel?.isFocused()) return;
-    if (!this.isStatKey(e)) return;
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
-    if (!this.worldState?.player) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-    this.toggleStatPanel();
   }
 
   toggleStatPanel() {
@@ -293,414 +176,17 @@ export class Game {
     }
   }
 
-  showMapLoading() {
-    this.mapLoadingOverlay?.classList.remove('hidden');
-    if (this.mapLoadingTimer) clearTimeout(this.mapLoadingTimer);
-    this.mapLoadingTimer = setTimeout(() => this.hideMapLoading(), 2500);
-  }
-
-  hideMapLoading() {
-    this.mapLoadingOverlay?.classList.add('hidden');
-    if (this.mapLoadingTimer) {
-      clearTimeout(this.mapLoadingTimer);
-      this.mapLoadingTimer = null;
-    }
-  }
-
-  handleClick() {
-    if (this.gamePaused) return;
-    const click = this.input.consumeClick();
-    if (!click || !this.worldState?.map || !this.displayPlayer) return;
-
-    const world = this.camera.screenToWorld(click.screenX, click.screenY);
-    const npc = findNpcAt(this.worldState.npcs ?? [], world.x, world.y);
-
-    if (npc) {
-      this.attackTargetId = null;
-      this.lootTargetId = null;
-      const px = this.displayPlayer.x;
-      const py = this.displayPlayer.y;
-      if (isNearNpc(px, py, npc)) {
-        this.npcTargetId = null;
-        this.pathFollower.clear();
-        this.beginNpcInteraction(npc);
-      } else {
-        this.npcTargetId = npc.id;
-        this.pathFollower.setPath(this.worldState.map, px, py, npc.x, npc.y);
-      }
-      return;
-    }
-
-    const portals = this.worldState.map.portals ?? [];
-    const portal = findPortalAt(portals, world.x, world.y);
-
-    if (portal) {
-      this.attackTargetId = null;
-      this.lootTargetId = null;
-      const px = this.displayPlayer.x;
-      const py = this.displayPlayer.y;
-      if (isInPortalRange(px, py, portal)) {
-        this.pathFollower.clear();
-        this.socketClient.sendUsePortal(portal.id);
-      } else {
-        this.pathFollower.setPath(this.worldState.map, px, py, portal.x, portal.y);
-      }
-      return;
-    }
-
-    const loot = findLootAt(this.pickableLoot(), world.x, world.y);
-
-    if (loot) {
-      this.lootTargetId = loot.id;
-      this.attackTargetId = null;
-      return;
-    }
-
-    const monsters = this.worldState.monsters ?? [];
-    const target = findMonsterAt(monsters, world.x, world.y);
-
-    if (target) {
-      this.attackTargetId = target.id;
-      this.lootTargetId = null;
-      return;
-    }
-
-    this.attackTargetId = null;
-    this.lootTargetId = null;
-    this.pathFollower.setPath(
-      this.worldState.map,
-      this.displayPlayer.x,
-      this.displayPlayer.y,
-      world.x,
-      world.y
-    );
-  }
-
-  handleAim(timestamp) {
-    if (this.gamePaused) return;
-    const mouse = this.input.getMouseScreen();
-    if (!mouse || !this.displayPlayer) return;
-
-    const world = this.camera.screenToWorld(mouse.screenX, mouse.screenY);
-    this.aimTarget = world;
-    this.cursorManager.update(
-      world,
-      this.worldState.monsters ?? [],
-      this.pickableLoot(),
-      this.worldState.map?.portals ?? []
-    );
-
-    const facing = facingFromTarget(
-      this.displayPlayer.x,
-      this.displayPlayer.y,
-      world.x,
-      world.y
-    );
-    if (facing) this.displayPlayer.facing = facing;
-
-    if (timestamp - this.lastAimTime >= AIM_INTERVAL) {
-      this.socketClient.sendAim({ x: world.x, y: world.y });
-      this.lastAimTime = timestamp;
-    }
-  }
-
-  handleZoom() {
-    const steps = this.input.consumeZoomDelta();
-    if (steps === 0) return;
-    this.camera.adjustZoom(steps * CAMERA_ZOOM_STEP);
-  }
-
-  handleNpcChase(timestamp) {
-    if (!this.npcTargetId || !this.displayPlayer || !this.worldState) return;
-
-    const npc = (this.worldState.npcs ?? []).find((entry) => entry.id === this.npcTargetId);
-    if (!npc) {
-      this.npcTargetId = null;
-      return;
-    }
-
-    const px = this.displayPlayer.x;
-    const py = this.displayPlayer.y;
-
-    if (isNearNpc(px, py, npc)) {
-      this.pathFollower.clear();
-      this.npcTargetId = null;
-      this.beginNpcInteraction(npc);
-      return;
-    }
-
-    if (timestamp - this.lastChasePathTime >= MOVE_INTERVAL) {
-      this.pathFollower.setPath(this.worldState.map, px, py, npc.x, npc.y);
-      this.lastChasePathTime = timestamp;
-    }
-  }
-
-  handleLootChase(timestamp) {
-    if (!this.lootTargetId || !this.displayPlayer || !this.worldState) return;
-
-    const drop = (this.worldState.loot ?? []).find((l) => l.id === this.lootTargetId);
-    if (!drop || drop.pickupLocked) {
-      this.lootTargetId = null;
-      return;
-    }
-
-    const px = this.displayPlayer.x;
-    const py = this.displayPlayer.y;
-
-    if (isInPickupRange(px, py, drop.x, drop.y)) {
-      this.pathFollower.clear();
-      this.socketClient.sendPickup(drop.id);
-      this.lootTargetId = null;
-      return;
-    }
-
-    if (timestamp - this.lastChasePathTime >= MOVE_INTERVAL) {
-      this.pathFollower.setPath(this.worldState.map, px, py, drop.x, drop.y);
-      this.lastChasePathTime = timestamp;
-    }
-  }
-
-  handleAttackChase(timestamp) {
-    if (!this.attackTargetId || !this.displayPlayer || !this.worldState) return;
-
-    const target = (this.worldState.monsters ?? []).find((m) => m.id === this.attackTargetId);
-    if (!target || target.hp <= 0) {
-      this.attackTargetId = null;
-      return;
-    }
-
-    const px = this.displayPlayer.x;
-    const py = this.displayPlayer.y;
-
-    if (isInRange(px, py, target.x, target.y)) {
-      this.pathFollower.clear();
-      if (timestamp - this.lastAttackTime >= ATTACK_COOLDOWN_MS) {
-        this.socketClient.sendAttack(target.id);
-        this.lastAttackTime = timestamp;
-      }
-      return;
-    }
-
-    if (timestamp - this.lastChasePathTime >= MOVE_INTERVAL) {
-      this.pathFollower.setPath(this.worldState.map, px, py, target.x, target.y);
-      this.lastChasePathTime = timestamp;
-    }
-  }
-
-  handleInventoryToggle() {
-    if (this.gamePaused) return;
-    if (this.input.consumeKeyPress('escape') && this.inventoryVisible) {
-      this.setInventoryVisible(false);
-      return;
-    }
-    if (!this.input.consumeKeyPress('i')) return;
-    this.setInventoryVisible(!this.inventoryVisible);
-  }
-
-  handlePotionHotkeys() {
-    if (this.gamePaused || this.isDead || !this.worldState?.player) return;
-
-    const kind = this.input.consumePotionHotkey();
-    if (!kind) return;
-
-    const consumableKind = kind === 'health' ? CONSUMABLE_KIND.HEALTH : CONSUMABLE_KIND.MANA;
-    const check = canQuickUsePotion(this.worldState.player, consumableKind);
-    if (!check.ok) return;
-
-    this.socketClient.sendUseConsumable(check.index);
-  }
-
-  handleSkills() {
-    if (this.gamePaused) return;
-    const slot = this.input.consumeSkillSlot();
-    if (slot === null || !this.worldState?.player || !this.displayPlayer) return;
-
-    const skill = this.worldState.player.skillBar?.[slot];
-    if (!skill) return;
-
-    const serverPlayer = this.worldState.player;
-    const check = canUseSkill(serverPlayer, skill.id);
-    if (!check.ok) return;
-
-    const px = serverPlayer.x;
-    const py = serverPlayer.y;
-    const aim = this.aimTarget ?? {
-      x: serverPlayer.aimX ?? px + 1,
-      y: serverPlayer.aimY ?? py,
-    };
-    const skillDef = getSkill(skill.id);
-    if (!skillDef) return;
-
-    let shot;
-    if (skillDef.type === 'projectile') {
-      shot = resolveProjectileImpact(
-        this.worldState.monsters ?? [],
-        px,
-        py,
-        aim.x,
-        aim.y,
-        skillDef.range ?? 200,
-        skillDef.radius ?? 24
-      );
-    } else {
-      const target = findMonsterAt(this.worldState.monsters ?? [], aim.x, aim.y);
-      shot = {
-        impactX: aim.x,
-        impactY: aim.y,
-        missed: !target,
-        monster: target,
-      };
-    }
-
-    this.fxBuffer.addSkillFx({
-      skillId: skill.id,
-      x: px,
-      y: py,
-      impactX: shot.impactX,
-      impactY: shot.impactY,
-      missed: shot.missed,
-      durationMs: getSkillFxDuration(skillDef, px, py, shot.impactX, shot.impactY),
-    });
-
-    this.socketClient.sendUseSkill({
-      skillId: skill.id,
-      targetX: aim.x,
-      targetY: aim.y,
-      targetId: shot.monster?.id,
-    });
-  }
-
-  handleChatFocus() {
-    if (this.input.consumeKeyPress('enter')) {
-      this.chatPanel?.focus();
-      return true;
-    }
-    return !!this.chatPanel?.isFocused();
-  }
-
-  handleInput(timestamp) {
-    if (this.gamePaused || this.isDead) {
-      return;
-    }
-
-    if (this.handleChatFocus()) {
-      return;
-    }
-
-    this.handleTownRecallCast();
-
-    if (this.isRecalling()) {
-      this.pathFollower.clear();
-      this.handleAim(timestamp);
-      this.handleZoom();
-      return;
-    }
-
-    this.handleInventoryToggle();
-    if (this.inventoryVisible) {
-      this.handlePotionHotkeys();
-      this.handleSkills();
-      return;
-    }
-
-    if (this.pluginHost?.blocksGameInput()) {
-      return;
-    }
-
-    this.handleClick();
-    this.handlePotionHotkeys();
-    this.handleSkills();
-    this.handleAim(timestamp);
-    this.handleZoom();
-
-    const keyboardDirection = this.input.getDirection();
-
-    if (keyboardDirection) {
-      this.attackTargetId = null;
-      this.lootTargetId = null;
-      this.pathFollower.clear();
-      if (timestamp - this.lastMoveTime >= MOVE_INTERVAL) {
-        this.socketClient.sendMove(keyboardDirection);
-        this.lastMoveTime = timestamp;
-      }
-      return;
-    }
-
-    this.handleNpcChase(timestamp);
-    this.handleLootChase(timestamp);
-    this.handleAttackChase(timestamp);
-
-    if (!this.pathFollower.isActive() || !this.displayPlayer) {
-      if (this.displayPlayer) this.displayPlayer.moving = false;
-      return;
-    }
-
-    const direction = this.pathFollower.getDirection(
-      this.displayPlayer.x,
-      this.displayPlayer.y
-    );
-
-    if (!direction) {
-      if (this.displayPlayer) this.displayPlayer.moving = false;
-      return;
-    }
-
-    if (timestamp - this.lastMoveTime >= MOVE_INTERVAL) {
-      this.socketClient.sendMove(direction);
-      this.lastMoveTime = timestamp;
-    }
-  }
-
-  loop(timestamp) {
-    if (this.worldState && this.displayPlayer) {
-      this.handleInput(timestamp);
-      this.updateDisplayPlayer();
-      this.camera.follow(this.displayPlayer.x, this.displayPlayer.y);
-      this.fogOfWar.update(this.worldState.map, this.displayPlayer.x, this.displayPlayer.y);
-
-      const remotePlayers = this.remotePlayerDisplay.sync(this.worldState.players ?? []);
-
-      const renderState = {
-        ...this.worldState,
-        players: remotePlayers,
-        combatFx: this.fxBuffer.getCombatFx(),
-        skillFx: this.fxBuffer.getSkillFx(),
-      };
-
-      let hoveredMonsterId = null;
-      const mouse = this.input.getMouseScreen();
-      if (mouse && this.worldState?.monsters) {
-        const world = this.camera.screenToWorld(mouse.screenX, mouse.screenY);
-        const visibleMonsters = filterRevealedPositions(
-          this.fogOfWar.revealed,
-          this.worldState.monsters,
-          TILE_SIZE
-        );
-        hoveredMonsterId = findMonsterAt(visibleMonsters, world.x, world.y)?.id ?? null;
-      }
-
-      this.renderer.draw(
-        renderState,
-        this.displayPlayer,
-        timestamp,
-        { moveTarget: this.pathFollower.target, hoveredMonsterId, fogOfWar: this.fogOfWar }
-      );
-    }
-
-    requestAnimationFrame((t) => this.loop(t));
-  }
-
   start() {
     this.canvas.classList.add('game-active', 'cursor-move');
     this.input.setGameActive(true);
     this.focusCanvas();
 
     if (!this._statKeyBound) {
-      this._statKeyBound = (e) => this.onStatKeyDown(e);
+      this._statKeyBound = (e) => onStatKeyDown(this, e);
       document.addEventListener('keydown', this._statKeyBound, true);
     }
 
-    requestAnimationFrame((t) => this.loop(t));
+    this.gameLoop.start();
   }
 
   stop() {
@@ -718,12 +204,13 @@ export class Game {
     this.pathFollower.clear();
     this.remotePlayerDisplay.clear();
     this.fxBuffer = new FxBuffer();
+    this.gameLoop.fxBuffer = this.fxBuffer;
 
     this.setInventoryVisible(false);
     this.levelUpPanel?.hide();
     this.dialoguePanel?.hide();
     this.deathOverlay?.classList.add('hidden');
-    this.hideMapLoading();
+    this.gameLoop.hideMapLoading();
 
     this.chatPanel?.blur();
   }

@@ -1,0 +1,203 @@
+import { findMonsterAt } from '/shared/combat.js';
+import { filterRevealedPositions } from '/shared/fog.js';
+import { TILE_SIZE } from '../config.js';
+
+const LERP = 0.3;
+
+/**
+ * Client rAF loop: world-state sync, display interpolation, render.
+ */
+export class GameLoop {
+  /**
+   * @param {import('../game/Game.js').Game} game
+   * @param {object} deps
+   */
+  constructor(game, deps) {
+    this.game = game;
+    this.canvas = deps.canvas;
+    this.input = deps.input;
+    this.camera = deps.camera;
+    this.pathFollower = deps.pathFollower;
+    this.renderer = deps.renderer;
+    this.fogOfWar = deps.fogOfWar;
+    this.fxBuffer = deps.fxBuffer;
+    this.remotePlayerDisplay = deps.remotePlayerDisplay;
+    this.inputRouter = deps.inputRouter;
+    this.deathOverlay = deps.deathOverlay;
+    this.mapLoadingOverlay = deps.mapLoadingOverlay;
+    this.mapLoadingTimer = null;
+  }
+
+  setWorldState(state) {
+    const game = this.game;
+    const prevMap = game.worldState?.map;
+    const mapIdChanged =
+      prevMap?.mapId && state.map?.mapId && prevMap.mapId !== state.map.mapId;
+
+    if (mapIdChanged) {
+      this.showMapLoading();
+      this.pathFollower.clear();
+      game.attackTargetId = null;
+      game.lootTargetId = null;
+      game.dialoguePanel?.hide();
+      game.vendorPanel?.hide();
+      this.remotePlayerDisplay.clear();
+    } else if (prevMap && state.map && !state.map.tiles) {
+      state = {
+        ...state,
+        map: {
+          ...state.map,
+          tiles: prevMap.tiles,
+          zones: state.map.zones?.length ? state.map.zones : prevMap.zones,
+          portals: state.map.portals?.length ? state.map.portals : prevMap.portals,
+        },
+      };
+    }
+
+    game.worldState = state;
+    if (state.map) {
+      this.camera.setMapBounds(state.map.width, state.map.height, TILE_SIZE);
+      if (state.map.tiles) {
+        this.hideMapLoading();
+      }
+    }
+    this.fxBuffer.ingestCombat(state.combatFx);
+    this.fxBuffer.ingestSkill(state.skillFx);
+
+    game.isDead = !!state.player?.dead;
+    this.deathOverlay?.classList.toggle('hidden', !game.isDead);
+    if (game.isDead) {
+      this.pathFollower.clear();
+      game.attackTargetId = null;
+      game.lootTargetId = null;
+    }
+
+    if (!game.displayPlayer && state.player) {
+      game.displayPlayer = { ...state.player };
+      game.aimTarget = { x: state.player.aimX, y: state.player.aimY };
+    } else if (state.player) {
+      if (mapIdChanged) {
+        game.displayPlayer = { ...state.player };
+        game.aimTarget = { x: state.player.aimX, y: state.player.aimY };
+      } else {
+        game.displayPlayer = {
+          ...state.player,
+          x: game.displayPlayer?.x ?? state.player.x,
+          y: game.displayPlayer?.y ?? state.player.y,
+          facing: state.player.facing ?? game.displayPlayer?.facing,
+          attacking: state.player.attacking,
+        };
+        if (!this.input.getMouseScreen()) {
+          game.aimTarget = { x: state.player.aimX, y: state.player.aimY };
+        }
+      }
+      game.inventoryPanel?.update(state.player);
+      game.levelUpPanel?.update(state.player);
+      game.skillBar?.update(state.player);
+      game.questTracker?.update(state.player);
+      game.socialPanel?.setSelf(state.player);
+      if (game.vendorPanel?.isVisible()) {
+        game.vendorPanel.update(state.player);
+      }
+
+      if (game.dialoguePanel?.isVisible() && game.dialoguePanel.currentNpc && state.player) {
+        const npc = (state.npcs ?? []).find(
+          (entry) => entry.id === game.dialoguePanel.currentNpc.id
+        );
+        if (npc) game.openNpcDialogue(npc, state.player);
+      }
+    }
+  }
+
+  updateDisplayPlayer() {
+    const game = this.game;
+    if (!game.worldState?.player || !game.displayPlayer) return;
+
+    const server = game.worldState.player;
+    game.displayPlayer.x += (server.x - game.displayPlayer.x) * LERP;
+    game.displayPlayer.y += (server.y - game.displayPlayer.y) * LERP;
+    game.displayPlayer.direction = server.direction;
+    game.displayPlayer.facing = game.displayPlayer.facing ?? server.facing;
+    game.displayPlayer.moving = server.moving;
+    game.displayPlayer.attacking = server.attacking;
+    game.displayPlayer.characterClass = server.characterClass;
+    game.displayPlayer.name = server.name;
+    game.displayPlayer.level = server.level;
+    game.displayPlayer.xp = server.xp;
+    game.displayPlayer.statPoints = server.statPoints;
+    game.displayPlayer.skillPoints = server.skillPoints;
+    game.displayPlayer.hp = server.hp;
+    game.displayPlayer.maxHp = server.maxHp;
+    game.displayPlayer.dead = server.dead;
+    game.displayPlayer.mp = server.mp;
+    game.displayPlayer.maxMp = server.maxMp;
+    game.displayPlayer.str = server.str;
+    game.displayPlayer.dex = server.dex;
+    game.displayPlayer.int = server.int;
+    game.displayPlayer.vit = server.vit;
+    game.displayPlayer.gold = server.gold;
+    game.displayPlayer.quests = server.quests;
+    game.displayPlayer.skillCooldowns = server.skillCooldowns;
+    game.displayPlayer.skillBar = server.skillBar;
+    game.displayPlayer.townRecallCasting = server.townRecallCasting;
+    game.displayPlayer.townRecallCastMs = server.townRecallCastMs;
+  }
+
+  showMapLoading() {
+    this.mapLoadingOverlay?.classList.remove('hidden');
+    if (this.mapLoadingTimer) clearTimeout(this.mapLoadingTimer);
+    this.mapLoadingTimer = setTimeout(() => this.hideMapLoading(), 2500);
+  }
+
+  hideMapLoading() {
+    this.mapLoadingOverlay?.classList.add('hidden');
+    if (this.mapLoadingTimer) {
+      clearTimeout(this.mapLoadingTimer);
+      this.mapLoadingTimer = null;
+    }
+  }
+
+  /** @param {number} timestamp */
+  loop(timestamp) {
+    const game = this.game;
+    if (game.worldState && game.displayPlayer) {
+      this.inputRouter.handleInput(timestamp);
+      this.updateDisplayPlayer();
+      this.camera.follow(game.displayPlayer.x, game.displayPlayer.y);
+      this.fogOfWar.update(game.worldState.map, game.displayPlayer.x, game.displayPlayer.y);
+
+      const remotePlayers = this.remotePlayerDisplay.sync(game.worldState.players ?? []);
+
+      const renderState = {
+        ...game.worldState,
+        players: remotePlayers,
+        combatFx: this.fxBuffer.getCombatFx(),
+        skillFx: this.fxBuffer.getSkillFx(),
+      };
+
+      let hoveredMonsterId = null;
+      const mouse = this.input.getMouseScreen();
+      if (mouse && game.worldState?.monsters) {
+        const world = this.camera.screenToWorld(mouse.screenX, mouse.screenY);
+        const visibleMonsters = filterRevealedPositions(
+          this.fogOfWar.revealed,
+          game.worldState.monsters,
+          TILE_SIZE
+        );
+        hoveredMonsterId = findMonsterAt(visibleMonsters, world.x, world.y)?.id ?? null;
+      }
+
+      this.renderer.draw(renderState, game.displayPlayer, timestamp, {
+        moveTarget: this.pathFollower.target,
+        hoveredMonsterId,
+        fogOfWar: this.fogOfWar,
+      });
+    }
+
+    requestAnimationFrame((t) => this.loop(t));
+  }
+
+  start() {
+    requestAnimationFrame((t) => this.loop(t));
+  }
+}
