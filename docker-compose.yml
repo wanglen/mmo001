@@ -4,9 +4,15 @@ services:
     image: mmo001:latest
     ports:
       - "${PORT:-3000}:3000"
+    env_file:
+      - path: .env
+        required: false
     environment:
       PORT: 3000
       NODE_ENV: production
+      SESSION_SECRET: ${SESSION_SECRET:-}
+      LEGACY_ACCOUNT_USERNAME: ${LEGACY_ACCOUNT_USERNAME:-legacy}
+      LEGACY_ACCOUNT_PASSWORD: ${LEGACY_ACCOUNT_PASSWORD:-legacy}
       DEBUG_EVENTS: ${DEBUG_EVENTS:-1}
       DEBUG_LOG_FILE: ${DEBUG_LOG_FILE:-/app/data/debug-events.log}
       DEBUG_LOG_MAX_BYTES: ${DEBUG_LOG_MAX_BYTES:-5242880}

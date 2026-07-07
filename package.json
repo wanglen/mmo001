@@ -1,8 +1,11 @@
 {
   "name": "mmo001",
-  "version": "3.2.3",
+  "version": "3.3.0",
   "description": "Simple MMORPG MVP",
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node server/index.js",
     "dev": "node --watch server/index.js",

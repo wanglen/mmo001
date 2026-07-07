@@ -1,5 +1,7 @@
 # MMO001
 
+[![CI](https://github.com/wanglen/mmo001/actions/workflows/ci.yml/badge.svg)](https://github.com/wanglen/mmo001/actions/workflows/ci.yml)
+
 A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal is a Diablo-like action RPG with real-time multiplayer, starting from a simple playable prototype.
 
 ## Features (current)
@@ -59,6 +61,12 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser. Create an account, then create or select a character.
 
+Copy [`.env.example`](.env.example) to `.env` to override defaults locally:
+
+```bash
+cp .env.example .env
+```
+
 **Environment (optional)**
 
 | Variable | Purpose |
@@ -90,6 +98,7 @@ Character data is stored in `data/game.db`. On first run, existing `data/charact
 Build and run with Docker Compose (database and saves persist in the local `data/` directory). The image uses a multi-stage **bookworm-slim** build that compiles `better-sqlite3` when no ARM64 prebuild is available.
 
 ```bash
+cp .env.example .env   # optional — set SESSION_SECRET for production
 mkdir -p data/characters
 docker compose up --build
 ```
@@ -126,6 +135,26 @@ After cloning the repo on a server, pull and redeploy with:
 
 The script fast-forwards `main`, rebuilds the image, and restarts Compose. Character data in `./data` is preserved. Override the branch with `BRANCH=feature/foo ./scripts/update-server.sh` if needed.
 
+### Cloud / VPS deployment
+
+1. **Provision** a Linux VM (e.g. Oracle Cloud, DigitalOcean, Hetzner) with Docker and Docker Compose v2.
+2. **Clone** the repo and configure environment:
+   ```bash
+   git clone https://github.com/wanglen/mmo001.git
+   cd mmo001
+   cp .env.example .env
+   ```
+   Edit `.env` and set a stable `SESSION_SECRET` (at least 16 characters). Set `DEBUG_EVENTS=0` in production unless you need debug logs.
+3. **Start** the stack:
+   ```bash
+   mkdir -p data/characters
+   docker compose up --build -d
+   ```
+4. **Open** port `3000` (or your chosen `PORT`) in the host firewall / security list.
+5. **Update** after pulling new releases: `./scripts/update-server.sh`
+
+Optional: put **nginx** or **Caddy** in front for HTTPS and proxy WebSocket traffic to `localhost:3000`.
+
 ### Commit and push
 
 Stage all changes, run tests, commit, and push to `origin/main`. On a feature branch, the script merges into `main` first:
@@ -143,7 +172,7 @@ npm test           # run all unit tests
 npm run test:watch # re-run on file changes
 ```
 
-Tests use Node.js built-in test runner. Coverage includes pathfinding, collision, combat, skills, items, inventory, and player management.
+Tests use Node.js built-in test runner. See [`tests/README.md`](tests/README.md) for critical gameplay validation coverage (combat, loot, movement, anti-cheat). CI runs `npm test` on every push and pull request to `main`.
 
 ### Controls
 

@@ -1,6 +1,8 @@
 import { createServerApp, listen } from './app/createServer.js';
-import { PORT } from './config.js';
+import { PORT, warnProductionConfig } from './config.js';
 import { isDebugEventsEnabled, getDebugLogPath, getDebugLogRotationConfig } from './debug/eventLog.js';
+
+warnProductionConfig();
 
 const { httpServer } = await createServerApp();
 if (isDebugEventsEnabled()) {

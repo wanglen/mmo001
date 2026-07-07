@@ -11,6 +11,9 @@ logs/
 *.log
 npm-debug.log*
 
+# Test / build artifacts
+coverage/
+
 # OS
 .DS_Store
 Thumbs.db
