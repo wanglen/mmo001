@@ -42,6 +42,14 @@ export class PluginHost {
     return this.inputBlockers.some((fn) => fn());
   }
 
+  isInGame() {
+    return this.inGame;
+  }
+
+  setInGame(value) {
+    this.inGame = value;
+  }
+
   /** @returns {import('../../../shared/plugins/types.js').ClientContext} */
   createContext() {
     return {
@@ -64,10 +72,8 @@ export class PluginHost {
       setDisconnectModal: (disconnectModal) => {
         this.disconnectModal = disconnectModal;
       },
-      setInGame: (value) => {
-        this.inGame = value;
-      },
-      isInGame: () => this.inGame,
+      setInGame: (value) => this.setInGame(value),
+      isInGame: () => this.isInGame(),
       handleForcedDisconnect: (message) => this.handleForcedDisconnect(message),
     };
   }

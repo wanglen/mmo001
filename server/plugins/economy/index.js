@@ -3,7 +3,7 @@ import {
   buyFromVendor,
   sellToVendor,
   validateVendorInteraction,
-} from '../../systems/vendors.js';
+} from './vendors.js';
 import { serializeEconomyPlayer } from './serialize.js';
 import { registerEconomyBusHandlers } from './bus.js';
 

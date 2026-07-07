@@ -1,7 +1,7 @@
 import { loadPlugins } from './loadPlugins.js';
 import { composePlayer } from './composePlayer.js';
-import { clearAttackAnim } from '../systems/combat.js';
-import { clearSkillAnim } from '../systems/skills.js';
+import { clearAttackAnim } from '../plugins/combat/combat.js';
+import { clearSkillAnim } from '../plugins/combat/skills.js';
 
 /**
  * @param {import('../../shared/plugins/types.js').ServerPlugin[]} plugins

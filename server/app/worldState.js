@@ -1,6 +1,6 @@
 import { EVENTS } from '../../shared/events.js';
-import { clearAttackAnim } from '../systems/combat.js';
-import { clearSkillAnim } from '../systems/skills.js';
+import { clearAttackAnim } from '../plugins/combat/combat.js';
+import { clearSkillAnim } from '../plugins/combat/skills.js';
 import { buildWorldState } from './WorldStateBuilder.js';
 
 export function broadcastWorldState(io, world, playerManager, { fullMapSocketIds = null } = {}) {

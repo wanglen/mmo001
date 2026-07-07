@@ -6,9 +6,9 @@ import {
   useConsumableFromInventory,
   destroyFromInventory,
   destroyFromEquipment,
-} from '../../systems/inventory.js';
-import { allocateStat } from '../../systems/progression.js';
-import { interruptTownRecall } from '../../systems/townHub.js';
+} from './inventory.js';
+import { allocateStat } from './progression.js';
+import { interruptTownRecall } from '../core/townHub.js';
 import { getLivingPlayer, getPlayerContext, persistPlayer } from '../../app/handlerUtils.js';
 import { serializeLootPlayer, serializeLootWorld } from './serialize.js';
 import { registerLootBusHandlers } from './bus.js';

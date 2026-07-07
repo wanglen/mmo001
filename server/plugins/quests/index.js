@@ -3,7 +3,7 @@ import {
   acceptQuestForPlayer,
   interactWithNpc,
   turnInQuestForPlayer,
-} from '../../systems/quests.js';
+} from './quests.js';
 import { getLivingPlayer, getPlayerContext, persistPlayer } from '../../app/handlerUtils.js';
 import { registerQuestBusHandlers } from './bus.js';
 import { serializeQuestPlayer } from './serialize.js';

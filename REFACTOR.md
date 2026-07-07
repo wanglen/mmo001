@@ -251,22 +251,22 @@ Each feature plugin should export:
 
 ### F.1 Server entities
 
-- [ ] `server/players/` → `server/entities/Player.js` + `PlayerManager.js`
-- [ ] `server/monsters/` → `server/entities/Monster.js` + `MonsterManager.js`
-- [ ] `server/items/LootManager.js` → `server/entities/LootManager.js`
-- [ ] Add `server/entities/Npc.js` (optional) — wrap town NPC data currently on map JSON
+- [x] `server/players/` → `server/entities/Player.js` + `PlayerManager.js`
+- [x] `server/monsters/` → `server/entities/Monster.js` + `MonsterManager.js`
+- [x] `server/items/LootManager.js` → `server/entities/LootManager.js`
+- [x] Add `server/entities/Npc.js` (optional) — wrap town NPC data currently on map JSON
 
 ### F.2 Systems → plugin folders
 
-- [ ] `server/systems/combat.js` → `server/plugins/combat/combat.js` (etc.)
-- [ ] Keep `server/systems/gameLoop.js` in `app/` or `core/`
-- [ ] Update `tests/server/` paths to mirror
+- [x] `server/systems/combat.js` → `server/plugins/combat/combat.js` (etc.)
+- [x] Keep `server/systems/gameLoop.js` in `app/` or `core/`
+- [x] Update `tests/server/` paths to mirror
 
 ### F.3 Shared kernel split
 
-- [ ] `shared/events.js` → `shared/kernel/events.js` (re-export from old path)
-- [ ] Group combat-related shared modules under `shared/plugins/combat/`
-- [ ] Avoid big-bang: re-export barrels at old paths until imports migrated
+- [x] `shared/events.js` → `shared/kernel/events.js` (re-export from old path)
+- [x] Group combat-related shared modules under `shared/plugins/combat/`
+- [x] Avoid big-bang: re-export barrels at old paths until imports migrated
 
 ---
 
@@ -275,9 +275,9 @@ Each feature plugin should export:
 **Branch:** `refactor/render-layers`  
 **Risk:** Low
 
-- [ ] `Renderer.js` accepts ordered `{ id, draw(ctx, state) }` layers
-- [ ] Plugins register: monsters, loot, players, FX, fog, HUD
-- [ ] Decouple `Renderer` from direct `PlayerHud` / `Minimap` imports
+- [x] `Renderer.js` accepts ordered `{ id, draw(ctx, state) }` layers
+- [x] Plugins register: monsters, loot, players, FX, fog, HUD
+- [x] Decouple `Renderer` from direct `PlayerHud` / `Minimap` imports
 
 ---
 
@@ -309,16 +309,16 @@ Each feature plugin should export:
 
 | Issue | Target phase | Done |
 |-------|--------------|------|
-| `Game.js` ~729 lines | E | [ ] |
-| `socketHandlers.js` ~559 lines | A, B | [ ] |
-| `main.js` manual wiring | D | [ ] |
+| `Game.js` ~729 lines | E | [x] |
+| `socketHandlers.js` ~559 lines | A, B | [x] |
+| `main.js` manual wiring | D | [x] |
 | Three `io.on('connection')` | A | [x] |
 | `broadcastAllFn` closure hack | A | [x] |
 | `Player.toJSON()` kitchen sink | B | [x] |
 | Full world blob every 50 ms | B, I | [ ] |
-| `combat` imports `quests` directly | C | [ ] |
+| `combat` imports `quests` directly | C | [x] |
 | No tests for socket wiring | A | [x] |
-| `TODO.md` target structure mismatch | F | [ ] |
+| `TODO.md` target structure mismatch | F | [x] |
 
 ---
 

@@ -1,7 +1,7 @@
 import { EVENTS } from '../../../shared/events.js';
-import { processAttack } from '../../systems/combat.js';
-import { processSkill } from '../../systems/skills.js';
-import { interruptTownRecall } from '../../systems/townHub.js';
+import { processAttack } from './combat.js';
+import { processSkill } from './skills.js';
+import { interruptTownRecall } from '../core/townHub.js';
 import { getLivingPlayer, getPlayerContext, persistPlayers } from '../../app/handlerUtils.js';
 import { serializeCombatPlayer, serializeCombatWorld } from './serialize.js';
 import { registerCombatBusHandlers } from './bus.js';

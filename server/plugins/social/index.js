@@ -4,7 +4,7 @@ import {
   buildOnlineList,
   isValidChatChannel,
 } from '../../../shared/social.js';
-import { buildSystemChatMessage, getChatRecipients, resolveChatSend } from '../../systems/chat.js';
+import { buildSystemChatMessage, getChatRecipients, resolveChatSend } from './chat.js';
 import { registerSocialBusHandlers } from './bus.js';
 
 function emitToPlayerIds(io, playerIds, event, payload) {

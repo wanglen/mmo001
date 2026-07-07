@@ -1,5 +1,5 @@
 import { DOMAIN_EVENTS } from '../../../shared/plugins/domainEvents.js';
-import { onMonsterKillQuests } from '../../systems/quests.js';
+import { onMonsterKillQuests } from './quests.js';
 
 /** @param {ReturnType<import('../../app/EventBus.js').createEventBus>} bus */
 export function registerQuestBusHandlers(bus) {

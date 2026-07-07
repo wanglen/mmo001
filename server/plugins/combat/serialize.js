@@ -1,6 +1,6 @@
 import { getSkillBar, getSkillCooldownRemaining } from '../../../shared/skills.js';
-import { collectActiveSkillFx } from '../../systems/skills.js';
-import { collectCombatFx } from '../../systems/combatFx.js';
+import { collectActiveSkillFx } from './skills.js';
+import { collectCombatFx } from './combatFx.js';
 import { playerMapId } from '../../app/handlerUtils.js';
 
 /** @param {import('../players/Player.js').Player} player @param {number} now */

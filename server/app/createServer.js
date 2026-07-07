@@ -4,12 +4,12 @@ import { Server } from 'socket.io';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { PORT } from '../config.js';
-import { PlayerManager } from '../players/PlayerManager.js';
+import { PlayerManager } from '../entities/PlayerManager.js';
 import { CharacterStore } from '../persistence/CharacterStore.js';
 import { PartyManager } from '../social/PartyManager.js';
 import { TradeManager } from '../social/TradeManager.js';
 import { registerHandlerRegistry } from './HandlerRegistry.js';
-import { startGameLoop } from '../systems/gameLoop.js';
+import { startGameLoop } from './gameLoop.js';
 import { createWorld } from '../world/World.js';
 import { APP_VERSION } from '../version.js';
 

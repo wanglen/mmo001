@@ -1,5 +1,5 @@
-import { MonsterManager } from '../monsters/MonsterManager.js';
-import { LootManager } from '../items/LootManager.js';
+import { MonsterManager } from '../entities/MonsterManager.js';
+import { LootManager } from '../entities/LootManager.js';
 import { MAP_ID, WORLD_MAP_IDS } from '../../shared/worldMaps.js';
 import {
   attachWorldPortals,

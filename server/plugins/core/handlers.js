@@ -2,10 +2,10 @@ import { EVENTS } from '../../../shared/events.js';
 import { CHARACTER_CLASSES } from '../../../shared/constants.js';
 import { DIRECTION_DELTA, isValidDirection } from '../../../shared/movement.js';
 import { canMoveTo } from '../../map/collision.js';
-import { respawnPlayer, syncDeathState } from '../../systems/playerDeath.js';
+import { respawnPlayer, syncDeathState } from './playerDeath.js';
 import { createNewCharacterData } from '../../persistence/CharacterStore.js';
-import { usePortal } from '../../systems/zoneTransition.js';
-import { startTownRecall, interruptTownRecall } from '../../systems/townHub.js';
+import { usePortal } from './zoneTransition.js';
+import { startTownRecall, interruptTownRecall } from './townHub.js';
 import { DEFAULT_MAP_ID, MAP_ID } from '../../../shared/worldMaps.js';
 import {
   getLivingPlayer,
