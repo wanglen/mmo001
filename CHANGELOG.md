@@ -7,17 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-
-- Debug log rotation — `DEBUG_LOG_MAX_BYTES` and `DEBUG_LOG_MAX_FILES` (defaults: 5 MiB, 5 archives)
+## [3.1.5] - 2026-07-07
 
 ### Fixed
 
-- Debug event log noise — removed per-tick `world_sync_delta` spam; added client `path_failed` / `attack_target_lost` and throttled `move_blocked`
-- Click-to-chase monsters failing after walking away from spawn — map chunks now stream every sync; unreceived tiles are no longer treated as walkable grass
-- Movement and entities freezing after extended play — delta sync no longer drops nearby monsters; game tick is preserved when handlers broadcast world state
+- Docker build on ARM64 (e.g. Oracle Cloud) — use `node:20-bookworm-slim` so `better-sqlite3` loads prebuilt binaries instead of compiling on Alpine/musl
 
-## [3.1.0] - 2026-07-07
+## [3.1.4] - 2026-07-07
 
 ### Added
 

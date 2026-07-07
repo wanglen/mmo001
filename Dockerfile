@@ -1,4 +1,5 @@
-FROM node:20-alpine
+# bookworm-slim (glibc): better-sqlite3 ships prebuilds for linux/arm64; Alpine (musl) cannot use them.
+FROM node:20-bookworm-slim
 
 WORKDIR /app
 
