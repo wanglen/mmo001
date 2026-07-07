@@ -201,22 +201,22 @@ Each feature plugin should export:
 
 ### D.1 App shell
 
-- [ ] Add `public/js/app/PluginHost.js` — register client plugins, `blocksGameInput()`
-- [ ] Add `public/js/app/UIManager.js` — panel show/hide, z-index, backdrop
-- [ ] Rename/split `main.js` → `app/bootstrap.js` (keep `main.js` re-export during transition)
+- [x] Add `public/js/app/PluginHost.js` — register client plugins, `blocksGameInput()`
+- [x] Add `public/js/app/UIManager.js` — panel show/hide, z-index, backdrop
+- [x] Rename/split `main.js` → `app/bootstrap.js` (keep `main.js` re-export during transition)
 
 ### D.2 Client plugins (move panels + wiring together)
 
-- [ ] `public/js/plugins/social/` — ChatPanel, SocialPanel, socket bindings
-- [ ] `public/js/plugins/economy/` — VendorPanel, TradePanel
-- [ ] `public/js/plugins/quests/` — DialoguePanel, QuestTracker
-- [ ] `public/js/plugins/core/` — CharacterSelect, DisconnectModal, inventory wiring
+- [x] `public/js/plugins/social/` — ChatPanel, SocialPanel, socket bindings
+- [x] `public/js/plugins/economy/` — VendorPanel, TradePanel
+- [x] `public/js/plugins/quests/` — DialoguePanel, QuestTracker
+- [x] `public/js/plugins/core/` — CharacterSelect, DisconnectModal, inventory wiring
 
 ### D.3 Reusable components
 
-- [ ] Add `public/js/components/Panel.js` — base: show, hide, backdrop, `isVisible`
-- [ ] Extract `public/js/components/ItemRow.js` from inventory/vendor/trade duplication
-- [ ] Optional: `public/js/ui/Panel.js` adapter wrapping existing panels
+- [x] Add `public/js/components/Panel.js` — base: show, hide, backdrop, `isVisible`
+- [x] Extract `public/js/components/ItemRow.js` from inventory/vendor/trade duplication
+- [x] Optional: `public/js/ui/Panel.js` adapter wrapping existing panels
 
 ---
 

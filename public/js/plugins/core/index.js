@@ -1,0 +1,99 @@
+import { InventoryPanel } from '../../ui/InventoryPanel.js';
+import { SkillBar } from '../../ui/SkillBar.js';
+import { LevelUpPanel } from '../../ui/LevelUpPanel.js';
+import { Game } from '../../game/Game.js';
+import { CharacterSelect } from './CharacterSelect.js';
+import { DisconnectModal } from './DisconnectModal.js';
+
+/** @param {import('../../../../shared/plugins/types.js').ClientContext} ctx */
+export function registerCoreClient(ctx) {
+  const { socketClient, canvas } = ctx;
+
+  const inventoryPanel = new InventoryPanel(document.getElementById('inventory-panel'));
+  inventoryPanel.onEquip = (index) => socketClient.sendEquip(index);
+  inventoryPanel.onUnequip = (slot) => socketClient.sendUnequip(slot);
+  inventoryPanel.onUseConsumable = (index) => socketClient.sendUseConsumable(index);
+  inventoryPanel.onDestroy = ({ inventoryIndex, slot }) =>
+    socketClient.sendDestroyItem({ inventoryIndex, slot });
+
+  const skillBar = new SkillBar(document.getElementById('skill-bar'));
+
+  const levelUpPanel = new LevelUpPanel(
+    document.getElementById('level-up-panel'),
+    document.getElementById('level-up-flash')
+  );
+  levelUpPanel.onAllocate = (stat) => socketClient.sendAllocateStat(stat);
+  levelUpPanel.onRequestCanvasFocus = () => canvas.focus();
+
+  const disconnectModal = new DisconnectModal(
+    document.getElementById('disconnect-overlay'),
+    document.getElementById('disconnect-message'),
+    document.getElementById('disconnect-reload-btn')
+  );
+  disconnectModal.onReload = () => {
+    const message = document.getElementById('disconnect-message')?.textContent;
+    if (message) sessionStorage.setItem('mmo_disconnect_msg', message);
+    window.location.reload();
+  };
+
+  ctx.panels.inventoryPanel = inventoryPanel;
+  ctx.panels.skillBar = skillBar;
+  ctx.panels.levelUpPanel = levelUpPanel;
+  ctx.setDisconnectModal(disconnectModal);
+}
+
+/**
+ * Create Game and CharacterSelect after all client plugins registered.
+ * @param {import('../../../../shared/plugins/types.js').ClientContext} ctx
+ */
+export function finalizeCoreClient(ctx) {
+  const { socketClient, canvas, pluginHost } = ctx;
+  const {
+    inventoryPanel,
+    skillBar,
+    levelUpPanel,
+    dialoguePanel,
+    questTracker,
+    chatPanel,
+    socialPanel,
+    vendorPanel,
+    tradePanel,
+  } = ctx.panels;
+
+  const game = new Game(
+    canvas,
+    socketClient,
+    inventoryPanel,
+    levelUpPanel,
+    skillBar,
+    dialoguePanel,
+    questTracker,
+    chatPanel,
+    socialPanel,
+    vendorPanel,
+    tradePanel,
+    pluginHost
+  );
+  levelUpPanel.onPauseChange = (paused) => game.onGamePause(paused);
+  ctx.setGame(game);
+
+  const characterSelect = new CharacterSelect({
+    socketClient,
+    onStart: () => {
+      ctx.setInGame(true);
+      chatPanel?.show();
+      socialPanel?.show();
+      game.start();
+    },
+  });
+  ctx.setCharacterSelect(characterSelect);
+
+  socketClient.onWorldState((state) => game.setWorldState(state));
+}
+
+/** @type {import('../../../../shared/plugins/types.js').ClientPlugin} */
+export const corePlugin = {
+  id: 'core',
+  dependsOn: [],
+  registerClient: registerCoreClient,
+};

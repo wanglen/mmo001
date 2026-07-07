@@ -22,7 +22,7 @@ const MOVE_INTERVAL = 50;
 const AIM_INTERVAL = 50;
 
 export class Game {
-  constructor(canvas, socketClient, inventoryPanel = null, levelUpPanel = null, skillBar = null, dialoguePanel = null, questTracker = null, chatPanel = null, socialPanel = null, vendorPanel = null, tradePanel = null) {
+  constructor(canvas, socketClient, inventoryPanel = null, levelUpPanel = null, skillBar = null, dialoguePanel = null, questTracker = null, chatPanel = null, socialPanel = null, vendorPanel = null, tradePanel = null, pluginHost = null) {
     this.canvas = canvas;
     this.socketClient = socketClient;
     this.inventoryPanel = inventoryPanel;
@@ -34,6 +34,7 @@ export class Game {
     this.socialPanel = socialPanel;
     this.vendorPanel = vendorPanel;
     this.tradePanel = tradePanel;
+    this.pluginHost = pluginHost;
     this.input = new Input(canvas);
     this.camera = new Camera(canvas);
     this.cursorManager = new CursorManager(canvas);
@@ -602,7 +603,7 @@ export class Game {
       return;
     }
 
-    if (this.vendorPanel?.isVisible()) {
+    if (this.pluginHost?.blocksGameInput()) {
       return;
     }
 

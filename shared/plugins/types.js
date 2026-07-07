@@ -43,4 +43,30 @@
  * @property {(playerId: string) => void} notifyPlayerJoined
  */
 
+/**
+ * Client-side plugin manifest.
+ *
+ * @typedef {object} ClientPlugin
+ * @property {string} id
+ * @property {string[]} [dependsOn]
+ * @property {(ctx: ClientContext) => void} [registerClient]
+ */
+
+/**
+ * @typedef {object} ClientContext
+ * @property {import('../../public/js/network/socketClient.js').SocketClient} socketClient
+ * @property {HTMLCanvasElement} canvas
+ * @property {import('../../public/js/app/UIManager.js').UIManager} uiManager
+ * @property {import('../../public/js/app/PluginHost.js').PluginHost} pluginHost
+ * @property {Record<string, unknown>} panels
+ * @property {(id: string, panel: object, options?: { blocksInput?: boolean, zIndex?: number }) => void} registerPanel
+ * @property {(fn: () => boolean) => void} registerInputBlocker
+ * @property {(game: import('../../public/js/game/Game.js').Game) => void} setGame
+ * @property {(characterSelect: object) => void} setCharacterSelect
+ * @property {(disconnectModal: object) => void} setDisconnectModal
+ * @property {(value: boolean) => void} setInGame
+ * @property {() => boolean} isInGame
+ * @property {(message: string) => void} handleForcedDisconnect
+ */
+
 export {};

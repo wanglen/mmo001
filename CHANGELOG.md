@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Architecture (Phase D):** client bootstrap shell (`public/js/app/bootstrap.js`, `PluginHost.js`, `UIManager.js`); feature panels moved under `public/js/plugins/` with `registerClient` wiring; reusable `Panel` and `ItemRow` components; `main.js` re-exports bootstrap
+
 ## [2.2.0] - 2026-07-06
 
 ### Changed
