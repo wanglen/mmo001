@@ -20,23 +20,31 @@ html, body {
 }
 
 #game-canvas.game-active {
-  cursor: crosshair;
+  cursor: url('/assets/cursors/move.svg') 4 3, pointer;
 }
 
 #game-canvas.cursor-move {
-  cursor: pointer;
+  cursor: url('/assets/cursors/move.svg') 4 3, pointer;
 }
 
 #game-canvas.cursor-attack {
-  cursor: alias;
+  cursor: url('/assets/cursors/attack.svg') 22 22, pointer;
 }
 
 #game-canvas.cursor-loot {
-  cursor: grab;
+  cursor: url('/assets/cursors/loot.svg') 16 18, pointer;
 }
 
 #game-canvas.cursor-portal {
-  cursor: cell;
+  cursor: url('/assets/cursors/portal.svg') 16 16, pointer;
+}
+
+#game-canvas.cursor-talk {
+  cursor: url('/assets/cursors/talk.svg') 10 24, pointer;
+}
+
+#game-canvas.cursor-vendor {
+  cursor: url('/assets/cursors/vendor.svg') 16 20, pointer;
 }
 
 .map-loading-overlay {

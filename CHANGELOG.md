@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.1] - 2026-07-07
+
+### Added
+
+- Diablo-style action cursors — sword (attack), arrow (move), hand (loot), portal swirl, speech bubble (NPCs), coin bag (vendor)
+
+### Fixed
+
+- Combat test flake when crit one-shot killed the test monster
+
 ## [2.3.0] - 2026-07-07
 
 ### Added

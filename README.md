@@ -117,7 +117,7 @@ Tests use Node.js built-in test runner. Coverage includes pathfinding, collision
 
 ### Controls
 
-- **Click** — move (8-way pathfinding with diagonals), pick up loot, attack/chase enemy, or use portals
+- **Click** — move (8-way pathfinding with diagonals), pick up loot, attack/chase enemy, talk to NPCs, or use portals; cursor icon reflects the action (sword, hand, speech bubble, etc.)
 - **Mouse** — aim / facing direction (character faces cursor)
 - **Scroll wheel** — zoom in/out
 

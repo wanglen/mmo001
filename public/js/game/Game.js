@@ -177,7 +177,7 @@ export class Game {
   }
 
   start() {
-    this.canvas.classList.add('game-active', 'cursor-move');
+    this.cursorManager.setActive(true);
     this.input.setGameActive(true);
     this.focusCanvas();
 
@@ -192,7 +192,7 @@ export class Game {
   stop() {
     this.input.setGameActive(false);
     this.input.clearKeys();
-    this.canvas.classList.remove('game-active', 'cursor-move', 'cursor-attack', 'cursor-loot', 'cursor-portal');
+    this.cursorManager.setActive(false);
 
     this.worldState = null;
     this.displayPlayer = null;

@@ -50,4 +50,6 @@ export const CURSOR_MODE = {
   ATTACK: 'attack',
   LOOT: 'loot',
   PORTAL: 'portal',
+  TALK: 'talk',
+  VENDOR: 'vendor',
 };

@@ -41,7 +41,7 @@ describe('processAttack', () => {
       id: 'm1',
       x: 120,
       y: 100,
-      hp: 40,
+      hp: 200,
     });
 
     const result = processAttack({
@@ -53,7 +53,7 @@ describe('processAttack', () => {
 
     assert.equal(result.ok, true);
     assert.ok(result.damage >= 1);
-    assert.equal(monsterManager.monsters.get('m1').hp, 40 - result.damage);
+    assert.equal(monsterManager.monsters.get('m1').hp, 200 - result.damage);
     assert.equal(monsterManager.monsters.get('m1').provoked, true);
     assert.equal(monsterManager.monsters.get('m1').targetPlayerId, 'p1');
   });
