@@ -87,7 +87,7 @@ Character data is stored in `data/game.db`. On first run, existing `data/charact
 
 ### Docker
 
-Build and run with Docker Compose (database and saves persist in the local `data/` directory). The image uses `node:20-bookworm-slim` so native modules such as `better-sqlite3` work on **ARM64** servers (Alpine/musl lacks prebuilt binaries).
+Build and run with Docker Compose (database and saves persist in the local `data/` directory). The image uses a multi-stage **bookworm-slim** build that compiles `better-sqlite3` when no ARM64 prebuild is available.
 
 ```bash
 mkdir -p data/characters

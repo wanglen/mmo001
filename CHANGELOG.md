@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.6] - 2026-07-07
+
+### Fixed
+
+- Docker build on ARM64 when `better-sqlite3` prebuilds are missing — multi-stage image compiles native deps with build tools, runtime stage stays slim
+
 ## [3.1.5] - 2026-07-07
 
 ### Fixed
