@@ -62,6 +62,87 @@ describe('processSkill', () => {
     assert.equal(monsterManager.get('m2').hp, 50);
   });
 
+  it('whirlwind damages monsters on all sides', () => {
+    const player = createMockPlayer('warrior', {
+      mp: 30,
+      aimX: 150,
+      aimY: 100,
+      unlockedSkills: ['cleave', 'charge', 'whirlwind'],
+    });
+    const monsterManager = createMockMonsterManager([
+      { id: 'm1', type: 'goblin', x: 140, y: 100, hp: 50, xpReward: 10 },
+      { id: 'm2', type: 'goblin', x: 60, y: 100, hp: 50, xpReward: 10 },
+    ]);
+
+    const result = processSkill({
+      player,
+      skillId: 'whirlwind',
+      targetX: 150,
+      targetY: 100,
+      monsterManager,
+      map,
+      now: 5000,
+    });
+
+    assert.equal(result.ok, true);
+    assert.equal(result.hits.length, 2);
+    assert.ok(monsterManager.get('m1').hp < 50);
+    assert.ok(monsterManager.get('m2').hp < 50);
+  });
+
+  it('shield bash stuns a single target', () => {
+    const player = createMockPlayer('warrior', {
+      mp: 30,
+      aimX: 130,
+      aimY: 100,
+      unlockedSkills: ['cleave', 'charge', 'shield_bash'],
+    });
+    const monsterManager = createMockMonsterManager([
+      { id: 'm1', type: 'goblin', x: 130, y: 100, hp: 50, xpReward: 10, statusEffects: [] },
+    ]);
+
+    const result = processSkill({
+      player,
+      skillId: 'shield_bash',
+      targetX: 130,
+      targetY: 100,
+      targetId: 'm1',
+      monsterManager,
+      map,
+      now: 5000,
+    });
+
+    assert.equal(result.ok, true);
+    assert.equal(result.hits.length, 1);
+    const monster = monsterManager.get('m1');
+    assert.ok(monster.statusEffects.some((effect) => effect.type === 'stun'));
+  });
+
+  it('iron will heals the caster', () => {
+    const player = createMockPlayer('warrior', {
+      mp: 30,
+      hp: 80,
+      maxHp: 120,
+      aimX: 150,
+      aimY: 100,
+      unlockedSkills: ['cleave', 'charge', 'iron_will'],
+    });
+    const monsterManager = createMockMonsterManager([]);
+
+    const result = processSkill({
+      player,
+      skillId: 'iron_will',
+      targetX: 150,
+      targetY: 100,
+      monsterManager,
+      map,
+      now: 10000,
+    });
+
+    assert.equal(result.ok, true);
+    assert.equal(player.hp, 100);
+  });
+
   it('fireball requires mage class', () => {
     const player = createMockPlayer('warrior', { mp: 30 });
     const monsterManager = createMockMonsterManager([]);

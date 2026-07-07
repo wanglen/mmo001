@@ -161,6 +161,16 @@ function buildSkillShot(skillDef, px, py, aim, monsters) {
   }
 
   if (skillDef.type === 'melee_aoe' || skillDef.type === 'dash') {
+    if (skillDef.aoeShape === 'spin' || skillDef.aoeShape === 'self_pulse') {
+      return {
+        impactX: px,
+        impactY: py,
+        targetX: px,
+        targetY: py,
+        missed: false,
+      };
+    }
+
     const maxR = skillDef.range ?? skillDef.dashDistance ?? 96;
     const clamped = clampToSkillRange(px, py, aim.x, aim.y, maxR);
     return {

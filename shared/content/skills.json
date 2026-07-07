@@ -9,8 +9,9 @@
       "mpCost": 8,
       "cooldownMs": 2000,
       "type": "melee_aoe",
-      "range": 52,
-      "radius": 40,
+      "aoeShape": "arc",
+      "range": 56,
+      "arcHalfRad": 0.75,
       "damageStat": "str",
       "damageMult": 1.2
     },
@@ -24,8 +25,10 @@
       "type": "dash",
       "dashDistance": 96,
       "radius": 32,
+      "onHitStatus": "stun",
+      "statusDurationMs": 800,
       "damageStat": "str",
-      "damageMult": 1.4
+      "damageMult": 1.3
     },
     "whirlwind": {
       "id": "whirlwind",
@@ -35,10 +38,10 @@
       "mpCost": 18,
       "cooldownMs": 5000,
       "type": "melee_aoe",
-      "range": 48,
+      "aoeShape": "spin",
       "radius": 56,
       "damageStat": "str",
-      "damageMult": 1.5
+      "damageMult": 1.45
     },
     "shield_bash": {
       "id": "shield_bash",
@@ -47,11 +50,12 @@
       "classes": ["warrior"],
       "mpCost": 10,
       "cooldownMs": 2500,
-      "type": "melee_aoe",
-      "range": 44,
-      "radius": 28,
+      "type": "single_target",
+      "range": 52,
+      "onHitStatus": "stun",
+      "statusDurationMs": 1200,
       "damageStat": "str",
-      "damageMult": 1.0
+      "damageMult": 1.35
     },
     "iron_will": {
       "id": "iron_will",
@@ -61,10 +65,13 @@
       "mpCost": 14,
       "cooldownMs": 6000,
       "type": "melee_aoe",
-      "range": 40,
-      "radius": 36,
+      "aoeShape": "self_pulse",
+      "radius": 44,
+      "onHitStatus": "slow",
+      "statusDurationMs": 3000,
+      "selfHeal": 20,
       "damageStat": "str",
-      "damageMult": 0.9
+      "damageMult": 0.85
     },
     "fireball": {
       "id": "fireball",
@@ -213,12 +220,12 @@
     "warrior": {
       "berserker": {
         "name": "Berserker",
-        "description": "Cleave, Charge, and Whirlwind for aggressive melee.",
+        "description": "Cleave cone, Charge stun-dash, and Whirlwind 360° spin.",
         "skills": ["cleave", "charge", "whirlwind"]
       },
       "guardian": {
         "name": "Guardian",
-        "description": "Shield Bash and Iron Will for durable control.",
+        "description": "Shield Bash stun, Iron Will slow pulse + heal, and Charge.",
         "skills": ["shield_bash", "iron_will", "charge"]
       }
     },

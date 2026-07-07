@@ -6,14 +6,15 @@ import {
   canUseSkill,
   calculateSkillDamage,
   clampToSkillRange,
-  findMonstersInArc,
   findMonstersInRadius,
   findMonsterAtGroundPoint,
+  resolveMeleeHits,
   resolveProjectileImpact,
   getSkill,
   getSkillFxDuration,
   spendSkillMp,
 } from '../../../shared/skills.js';
+import { applyStatusEffect, createStatusEffect } from '../../../shared/plugins/combat/statusEffects.js';
 import { applyMonsterDamage } from './combat.js';
 import { isInSafeZone } from '../../../shared/zones.js';
 
@@ -60,6 +61,16 @@ function ensureSkillState(player) {
 }
 
 function resolveSkillImpact(skill, player, aimX, aimY, hits) {
+  if (skill.aoeShape === 'spin' || skill.aoeShape === 'self_pulse') {
+    return {
+      impactX: player.x,
+      impactY: player.y,
+      targetX: player.x,
+      targetY: player.y,
+      missed: hits.length === 0,
+    };
+  }
+
   if (hits.length > 0) {
     const primary = hits[0];
     return {
@@ -147,6 +158,18 @@ function damageMonsters({
       eventBus,
       now,
     });
+
+    if (skill.onHitStatus && result.damage > 0) {
+      applyStatusEffect(
+        live,
+        createStatusEffect(skill.onHitStatus, {
+          durationMs: skill.statusDurationMs,
+          sourceId: player.id,
+          now,
+        })
+      );
+    }
+
     results.push({ monsterId: monster.id, ...result });
   }
 
@@ -190,14 +213,7 @@ export function processSkill({
 
   switch (skill.type) {
     case 'melee_aoe': {
-      hits = findMonstersInArc(
-        monsters,
-        player.x,
-        player.y,
-        aimX,
-        aimY,
-        skill.range ?? 52
-      );
+      hits = resolveMeleeHits(skill, player, monsters, aimX, aimY);
       break;
     }
     case 'dash': {
@@ -293,6 +309,11 @@ export function processSkill({
     eventBus,
     now,
   });
+
+  if (skill.selfHeal && player.hp > 0) {
+    const maxHp = player.maxHp ?? player.hp;
+    player.hp = Math.min(maxHp, player.hp + skill.selfHeal);
+  }
 
   return {
     ok: true,

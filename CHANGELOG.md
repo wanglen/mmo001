@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.1] - 2026-07-07
+
+### Changed
+
+- **Warrior skills** — each skill now has a distinct role and VFX:
+  - **Cleave** — narrow frontal cone slash
+  - **Charge** — dash with short stun on hit
+  - **Whirlwind** — 360° spin hitting all nearby enemies
+  - **Shield Bash** — single-target strike with stun
+  - **Iron Will** — defensive pulse that slows nearby foes and heals the warrior
+
 ## [2.5.0] - 2026-07-07
 
 ### Added

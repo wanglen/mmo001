@@ -17,6 +17,11 @@ export const SKILL_SLOT_COUNT = skillsData.skillSlotCount;
  * @property {number} [range]
  * @property {number} [radius]
  * @property {number} [dashDistance]
+ * @property {'arc' | 'spin' | 'self_pulse'} [aoeShape]
+ * @property {number} [arcHalfRad]
+ * @property {string} [onHitStatus]
+ * @property {number} [statusDurationMs]
+ * @property {number} [selfHeal]
  * @property {'str' | 'dex' | 'int'} damageStat
  * @property {number} damageMult
  */
@@ -198,6 +203,27 @@ export function findMonstersInArc(monsters, px, py, aimX, aimY, range, arcHalfRa
 }
 
 /**
+ * Melee hit resolution — arc (default), spin (360°), or self_pulse (centered on caster).
+ * @param {SkillDef} skill
+ * @param {object} player
+ * @param {object[]} monsters
+ * @param {number} aimX
+ * @param {number} aimY
+ * @returns {object[]}
+ */
+export function resolveMeleeHits(skill, player, monsters, aimX, aimY) {
+  const shape = skill.aoeShape ?? 'arc';
+
+  if (shape === 'spin' || shape === 'self_pulse') {
+    return findMonstersInRadius(monsters, player.x, player.y, skill.radius ?? 48);
+  }
+
+  const arcHalfRad = skill.arcHalfRad ?? Math.PI / 2;
+  const range = skill.range ?? 52;
+  return findMonstersInArc(monsters, player.x, player.y, aimX, aimY, range, arcHalfRad);
+}
+
+/**
  * Nearest monster to a ground point within radius (for projectiles).
  * @param {object[]} monsters
  * @param {number} px
@@ -329,7 +355,10 @@ export function getSkillFxDuration(skill, fromX, fromY, toX, toY) {
   }
 
   if (skill.id === 'frost_nova') return 450;
-  if (skill.id === 'whirlwind') return 500;
+  if (skill.id === 'whirlwind') return 520;
+  if (skill.id === 'iron_will') return 480;
+  if (skill.id === 'cleave') return 280;
+  if (skill.id === 'shield_bash') return 300;
   if (skill.type === 'melee_aoe') return 320;
   if (skill.type === 'dash') return 380;
 

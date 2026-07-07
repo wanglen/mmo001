@@ -66,6 +66,31 @@ export class SkillEffectRenderer {
         continue;
       }
 
+      if (fx.skillId === 'cleave') {
+        this.drawCleave(ctx, fx, camera, now, duration);
+        continue;
+      }
+
+      if (fx.skillId === 'whirlwind') {
+        this.drawWhirlwind(ctx, fx, camera, now, duration);
+        continue;
+      }
+
+      if (fx.skillId === 'shield_bash') {
+        this.drawShieldBash(ctx, fx, camera, now, duration);
+        continue;
+      }
+
+      if (fx.skillId === 'iron_will') {
+        this.drawIronWill(ctx, fx, camera, now, duration);
+        continue;
+      }
+
+      if (fx.skillId === 'charge') {
+        this.drawCharge(ctx, fx, camera, now, duration);
+        continue;
+      }
+
       const progress = Math.min(1, age / duration);
       const alpha = 1 - progress;
 
@@ -527,6 +552,158 @@ export class SkillEffectRenderer {
       ctx.moveTo(center.x + Math.cos(a) * 8 * z, center.y + Math.sin(a) * 8 * z);
       ctx.lineTo(center.x + Math.cos(a) * len, center.y + Math.sin(a) * len);
       ctx.stroke();
+    }
+  }
+
+  drawCleave(ctx, fx, camera, now, duration) {
+    const z = zoomScale(camera);
+    const age = Math.max(0, now - fx.at);
+    const progress = Math.min(1, age / duration);
+    const alpha = 1 - progress;
+    const origin = camera.worldToScreen(fx.x, fx.y);
+    const target = camera.worldToScreen(fx.targetX, fx.targetY);
+    const angle = Math.atan2(target.y - origin.y, target.x - origin.x);
+    const reach = (36 + progress * 20) * z;
+
+    ctx.save();
+    ctx.translate(origin.x, origin.y);
+    ctx.rotate(angle);
+    ctx.fillStyle = `rgba(231, 76, 60, ${alpha * 0.4})`;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, reach, -0.75, 0.75);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = `rgba(255, 210, 120, ${alpha})`;
+    ctx.lineWidth = 3 * z;
+    ctx.stroke();
+    ctx.restore();
+
+    if (fx.missed) {
+      this.drawMissPuff(ctx, target.x, target.y, alpha * 0.8, 'fire', z);
+    }
+  }
+
+  drawWhirlwind(ctx, fx, camera, now, duration) {
+    const z = zoomScale(camera);
+    const age = Math.max(0, now - fx.at);
+    const progress = Math.min(1, age / duration);
+    const alpha = 1 - progress;
+    const center = camera.worldToScreen(fx.x, fx.y);
+    const radius = (24 + progress * 40) * z;
+    const spin = progress * Math.PI * 4;
+
+    ctx.save();
+    ctx.translate(center.x, center.y);
+    ctx.rotate(spin);
+    for (let i = 0; i < 4; i++) {
+      const a = (Math.PI * i) / 2;
+      ctx.strokeStyle = `rgba(220, 220, 230, ${alpha * 0.9})`;
+      ctx.lineWidth = 3 * z;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(a) * 8 * z, Math.sin(a) * 8 * z);
+      ctx.lineTo(Math.cos(a) * radius, Math.sin(a) * radius);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    ctx.strokeStyle = `rgba(192, 57, 43, ${alpha * 0.7})`;
+    ctx.lineWidth = 2 * z;
+    ctx.beginPath();
+    ctx.arc(center.x, center.y, radius * 0.85, spin, spin + Math.PI * 1.5);
+    ctx.stroke();
+  }
+
+  drawShieldBash(ctx, fx, camera, now, duration) {
+    const z = zoomScale(camera);
+    const age = Math.max(0, now - fx.at);
+    const progress = Math.min(1, age / duration);
+    const alpha = 1 - progress;
+    const start = camera.worldToScreen(fx.x, fx.y);
+    const end = camera.worldToScreen(fx.impactX ?? fx.targetX, fx.impactY ?? fx.targetY);
+    const x = start.x + (end.x - start.x) * Math.min(1, progress * 1.4);
+    const y = start.y + (end.y - start.y) * Math.min(1, progress * 1.4);
+    const size = (14 + progress * 10) * z;
+
+    ctx.fillStyle = `rgba(189, 195, 199, ${alpha * 0.85})`;
+    ctx.strokeStyle = `rgba(236, 240, 241, ${alpha})`;
+    ctx.lineWidth = 2 * z;
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    if (progress > 0.5) {
+      const burstAlpha = (1 - (progress - 0.5) / 0.5) * alpha;
+      ctx.strokeStyle = `rgba(255, 255, 255, ${burstAlpha})`;
+      ctx.lineWidth = 2 * z;
+      ctx.beginPath();
+      ctx.arc(x, y, size * (1 + (progress - 0.5)), 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    if (fx.missed) {
+      this.drawMissPuff(ctx, end.x, end.y, alpha * 0.8, 'ice', z);
+    }
+  }
+
+  drawIronWill(ctx, fx, camera, now, duration) {
+    const z = zoomScale(camera);
+    const age = Math.max(0, now - fx.at);
+    const progress = Math.min(1, age / duration);
+    const alpha = 1 - progress;
+    const center = camera.worldToScreen(fx.x, fx.y);
+    const radius = (16 + progress * 36) * z;
+
+    const gradient = ctx.createRadialGradient(center.x, center.y, 0, center.x, center.y, radius);
+    gradient.addColorStop(0, `rgba(255, 236, 179, ${alpha * 0.7})`);
+    gradient.addColorStop(0.5, `rgba(241, 196, 15, ${alpha * 0.35})`);
+    gradient.addColorStop(1, 'rgba(180, 140, 20, 0)');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = `rgba(255, 248, 220, ${alpha * 0.9})`;
+    ctx.lineWidth = 2 * z;
+    ctx.beginPath();
+    ctx.arc(center.x, center.y, radius * 0.6, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  drawCharge(ctx, fx, camera, now, duration) {
+    const z = zoomScale(camera);
+    const age = Math.max(0, now - fx.at);
+    const progress = Math.min(1, age / duration);
+    const alpha = 1 - progress;
+    const start = camera.worldToScreen(fx.x, fx.y);
+    const end = camera.worldToScreen(fx.targetX, fx.targetY);
+    const x = start.x + (end.x - start.x) * progress;
+    const y = start.y + (end.y - start.y) * progress;
+
+    ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+    ctx.lineWidth = 3 * z;
+    ctx.beginPath();
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+
+    ctx.fillStyle = `rgba(231, 76, 60, ${alpha * 0.5})`;
+    ctx.beginPath();
+    ctx.arc(x, y, 14 * z, 0, Math.PI * 2);
+    ctx.fill();
+
+    if (progress > 0.75 && !fx.missed) {
+      const sparkAlpha = (1 - (progress - 0.75) / 0.25) * alpha;
+      ctx.strokeStyle = `rgba(255, 255, 200, ${sparkAlpha})`;
+      ctx.lineWidth = 2 * z;
+      for (let i = 0; i < 4; i++) {
+        const a = (Math.PI * i) / 2;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + Math.cos(a) * 18 * z, y + Math.sin(a) * 18 * z);
+        ctx.stroke();
+      }
     }
   }
 }

@@ -4,6 +4,7 @@ import vendorsData from './vendors.json' with { type: 'json' };
 
 const QUEST_OBJECTIVE_TYPES = new Set(['kill', 'fetch', 'talk']);
 const SKILL_TYPES = new Set(['melee_aoe', 'dash', 'projectile', 'ground_aoe', 'single_target']);
+const AOE_SHAPES = new Set(['arc', 'spin', 'self_pulse']);
 const DAMAGE_STATS = new Set(['str', 'dex', 'int']);
 
 /**
@@ -65,6 +66,9 @@ export function validateSkills(pack) {
     const prefix = `skills.${key}`;
     if (skill.id !== key) errors.push(`${prefix}: id must match key`);
     if (!SKILL_TYPES.has(skill.type)) errors.push(`${prefix}: invalid type`);
+    if (skill.aoeShape != null && !AOE_SHAPES.has(skill.aoeShape)) {
+      errors.push(`${prefix}: invalid aoeShape`);
+    }
     if (!DAMAGE_STATS.has(skill.damageStat)) errors.push(`${prefix}: invalid damageStat`);
     if (!Array.isArray(skill.classes) || skill.classes.length === 0) {
       errors.push(`${prefix}: classes required`);

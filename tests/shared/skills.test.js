@@ -14,6 +14,7 @@ import {
   findMonsterAtGroundPoint,
   findFirstMonsterOnRay,
   resolveProjectileImpact,
+  resolveMeleeHits,
 } from '../../shared/skills.js';
 
 describe('skills', () => {
@@ -104,6 +105,25 @@ describe('skills', () => {
     const hits = findMonstersInArc(monsters, 0, 0, 50, 0, 60);
     assert.equal(hits.length, 1);
     assert.equal(hits[0].id, 'front');
+  });
+
+  it('resolveMeleeHits spin hits all sides', () => {
+    const monsters = [
+      { id: 'front', x: 40, y: 0, hp: 10 },
+      { id: 'behind', x: -40, y: 0, hp: 10 },
+    ];
+    const player = { x: 0, y: 0 };
+    const arcHits = resolveMeleeHits(SKILLS.cleave, player, monsters, 50, 0);
+    const spinHits = resolveMeleeHits(SKILLS.whirlwind, player, monsters, 50, 0);
+    assert.equal(arcHits.length, 1);
+    assert.equal(spinHits.length, 2);
+  });
+
+  it('resolveMeleeHits self_pulse uses caster center', () => {
+    const monsters = [{ id: 'near', x: 0, y: 30, hp: 10 }];
+    const player = { x: 0, y: 0 };
+    const hits = resolveMeleeHits(SKILLS.iron_will, player, monsters, 80, 0);
+    assert.equal(hits.length, 1);
   });
 
   it('findMonsterAtGroundPoint picks monster near aim', () => {
