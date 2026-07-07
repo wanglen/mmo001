@@ -1,9 +1,9 @@
-import { distance } from '../../../shared/combat.js';
 import {
   addItemToInventory,
   PICKUP_RANGE,
   refreshPlayerDerivedStats,
 } from '../../../shared/inventory.js';
+import { isLootPickupInRange } from '../../../shared/plugins/core/anticheat.js';
 import { EQUIP_SLOTS } from '../../../shared/items.js';
 import { applyConsumable, getStackCount } from '../../../shared/consumables.js';
 import { canPlayerPickupDrop } from '../../entities/LootManager.js';
@@ -16,7 +16,7 @@ export function pickupLoot({ player, lootId, lootManager, now = Date.now() }) {
     return { ok: false, reason: 'not_eligible' };
   }
 
-  if (distance(player.x, player.y, drop.x, drop.y) > PICKUP_RANGE) {
+  if (!isLootPickupInRange(player.x, player.y, drop.x, drop.y, PICKUP_RANGE)) {
     return { ok: false, reason: 'out_of_range' };
   }
 

@@ -8,10 +8,11 @@ export class PluginHost {
    * @param {HTMLCanvasElement} deps.canvas
    * @param {import('./UIManager.js').UIManager} deps.uiManager
    */
-  constructor({ socketClient, canvas, uiManager }) {
+  constructor({ socketClient, canvas, uiManager, authManager = null }) {
     this.socketClient = socketClient;
     this.canvas = canvas;
     this.uiManager = uiManager;
+    this.authManager = authManager;
     /** @type {import('../../../shared/plugins/types.js').ClientPlugin[]} */
     this.plugins = [];
     /** @type {Record<string, unknown>} */
@@ -56,6 +57,7 @@ export class PluginHost {
       socketClient: this.socketClient,
       canvas: this.canvas,
       uiManager: this.uiManager,
+      authManager: this.authManager,
       pluginHost: this,
       panels: this.panels,
       registerPanel: (id, panel, options) => {

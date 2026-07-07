@@ -100,6 +100,7 @@ export function finalizeCoreClient(ctx) {
 
   const characterSelect = new CharacterSelect({
     socketClient,
+    authManager: ctx.authManager,
     onStart: () => {
       ctx.setInGame(true);
       chatPanel?.show();

@@ -1,6 +1,6 @@
 {
   "name": "mmo001",
-  "version": "2.5.1",
+  "version": "3.0.0",
   "description": "Simple MMORPG MVP",
   "type": "module",
   "scripts": {
@@ -10,6 +10,7 @@
     "test:watch": "node --test --watch tests/shared/pathfinding.test.js tests/server/map/collision.test.js tests/server/map/MapGenerator.test.js tests/server/players/PlayerManager.test.js"
   },
   "dependencies": {
+    "better-sqlite3": "^12.11.1",
     "express": "^4.21.2",
     "socket.io": "^4.8.1"
   }

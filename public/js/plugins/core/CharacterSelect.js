@@ -2,10 +2,12 @@ import { CHARACTER_CLASSES } from '/shared/constants.js';
 import { fetchAppVersion, formatVersionLabel } from '../../appVersion.js';
 
 export class CharacterSelect {
-  constructor({ socketClient, onStart }) {
+  constructor({ socketClient, authManager, onStart }) {
     this.socketClient = socketClient;
+    this.authManager = authManager;
     this.onStart = onStart;
     this.characters = [];
+    this.maxCharacters = 8;
     this.selectedName = null;
     this.selectedClass = null;
     this.mode = 'select';
@@ -31,7 +33,9 @@ export class CharacterSelect {
     this.loadVersionLabel();
     this.socketClient.onCharacterCreated((data) => this.onCharacterCreated(data));
     this.socketClient.onCharactersChanged(() => this.refreshCharacters());
-    this.refreshCharacters();
+    if (this.authManager?.isAuthenticated()) {
+      this.refreshCharacters();
+    }
   }
 
   bindEvents() {
@@ -73,9 +77,24 @@ export class CharacterSelect {
   }
 
   async refreshCharacters() {
+    const token = this.authManager?.getToken();
+    if (!token) {
+      this.characters = [];
+      this.renderCharacterList();
+      return;
+    }
+
     try {
-      const res = await fetch('/api/characters');
-      this.characters = res.ok ? await res.json() : [];
+      const res = await fetch('/api/characters', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.status === 401) {
+        this.authManager?.logout();
+        return;
+      }
+      const data = res.ok ? await res.json() : { characters: [] };
+      this.characters = data.characters ?? [];
+      this.maxCharacters = data.maxCharacters ?? 8;
     } catch {
       this.characters = [];
     }
@@ -86,6 +105,15 @@ export class CharacterSelect {
     } else if (this.mode === 'select') {
       this.setMode('select');
     }
+  }
+
+  showAfterAuth() {
+    document.getElementById('character-select')?.classList.remove('hidden');
+    this.refreshCharacters();
+  }
+
+  hide() {
+    document.getElementById('character-select')?.classList.add('hidden');
   }
 
   renderCharacterList() {
@@ -144,6 +172,12 @@ export class CharacterSelect {
     this.createView.classList.toggle('hidden', mode !== 'create');
     this.showCreateBtn.classList.toggle('hidden', mode === 'create');
     this.showSelectBtn.classList.toggle('hidden', mode !== 'create' || this.characters.length === 0);
+
+    const atLimit = this.characters.length >= this.maxCharacters;
+    this.createSubmitBtn.disabled = !this.selectedClass || atLimit;
+    if (atLimit && mode === 'create') {
+      this.showError(`Character limit reached (${this.maxCharacters})`);
+    }
   }
 
   showError(message) {
@@ -197,14 +231,23 @@ export class CharacterSelect {
     }
 
     this.createSubmitBtn.disabled = true;
-    this.socketClient.createCharacter({ name, characterClass: this.selectedClass });
+    this.clearError();
+
+    this.socketClient
+      .createCharacter({ name, characterClass: this.selectedClass })
+      .catch((err) => {
+        this.showError(err.message ?? 'Could not connect to server');
+        this.createSubmitBtn.disabled = !this.selectedClass;
+      });
   }
 
   handleDelete() {
     if (!this.selectedName) return;
     if (!window.confirm(`Delete character "${this.selectedName}"? This cannot be undone.`)) return;
 
-    this.socketClient.deleteCharacter({ name: this.selectedName });
+    this.socketClient.deleteCharacter({ name: this.selectedName }).catch((err) => {
+      this.showError(err.message ?? 'Could not connect to server');
+    });
   }
 
   onCharacterCreated({ name }) {

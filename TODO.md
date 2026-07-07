@@ -129,10 +129,10 @@ Current MVP: procedural map, character select, WASD movement, Canvas rendering, 
 ## Phase 6 — Production & Scale
 
 ### Accounts & persistence
-- [ ] User registration / login (JWT or sessions)
-- [ ] Save characters to database (PostgreSQL or MongoDB)
-- [ ] Multiple characters per account
-- [ ] Server-side anti-cheat (validate move speed, damage, loot claims)
+- [x] User registration / login (JWT or sessions)
+- [x] Save characters to database (PostgreSQL or MongoDB)
+- [x] Multiple characters per account
+- [x] Server-side anti-cheat (validate move speed, damage, loot claims)
 
 ### Performance
 - [ ] Interest management (only send nearby entities to each client)

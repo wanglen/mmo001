@@ -1,7 +1,8 @@
 import { EVENTS } from '../../../shared/events.js';
 import { CHARACTER_CLASSES } from '../../../shared/constants.js';
-import { DIRECTION_DELTA, isValidDirection } from '../../../shared/movement.js';
+import { isValidDirection } from '../../../shared/movement.js';
 import { isStunned } from '../../../shared/combat.js';
+import { validatePlayerMove } from '../../../shared/plugins/core/anticheat.js';
 import { canMoveTo } from '../../map/collision.js';
 import { respawnPlayer, syncDeathState } from './playerDeath.js';
 import { createNewCharacterData } from '../../persistence/CharacterStore.js';
@@ -34,6 +35,12 @@ export function registerCoreHandlers(socket, ctx) {
   const { io, world, playerManager, characterStore, broadcastAll, eventBus } = ctx;
 
   socket.on(EVENTS.CREATE_CHARACTER, async ({ name, characterClass }) => {
+    const accountId = socket.data.accountId;
+    if (!accountId) {
+      socket.emit(EVENTS.ERROR, { message: 'Not authenticated' });
+      return;
+    }
+
     if (!CHARACTER_CLASSES[characterClass]) {
       socket.emit(EVENTS.ERROR, { message: 'Invalid character class' });
       return;
@@ -45,6 +52,11 @@ export function registerCoreHandlers(socket, ctx) {
       return;
     }
 
+    if (!(await characterStore.canCreate(accountId))) {
+      socket.emit(EVENTS.ERROR, { message: 'Character limit reached' });
+      return;
+    }
+
     if (await characterStore.exists(playerName)) {
       socket.emit(EVENTS.ERROR, { message: 'Character name already exists' });
       return;
@@ -52,7 +64,12 @@ export function registerCoreHandlers(socket, ctx) {
 
     const town = world.getMap(DEFAULT_MAP_ID);
     const data = createNewCharacterData(playerName, characterClass, town.spawn);
-    await characterStore.saveData(data);
+    const saved = await characterStore.saveData(data, accountId);
+    if (!saved) {
+      socket.emit(EVENTS.ERROR, { message: 'Could not create character' });
+      return;
+    }
+
     socket.emit(EVENTS.CHARACTER_CREATED, {
       name: playerName,
       characterClass,
@@ -61,6 +78,9 @@ export function registerCoreHandlers(socket, ctx) {
   });
 
   socket.on(EVENTS.DELETE_CHARACTER, async ({ name }) => {
+    const accountId = socket.data.accountId;
+    if (!accountId) return;
+
     const playerName = sanitizePlayerName(name);
     if (!playerName) return;
 
@@ -70,23 +90,29 @@ export function registerCoreHandlers(socket, ctx) {
       return;
     }
 
-    if (!(await characterStore.exists(playerName))) {
+    if (!(await characterStore.owns(playerName, accountId))) {
       socket.emit(EVENTS.ERROR, { message: 'Character not found' });
       return;
     }
 
-    await characterStore.remove(playerName);
+    await characterStore.remove(playerName, accountId);
     socket.emit(EVENTS.CHARACTERS_CHANGED, { name: playerName });
   });
 
   socket.on(EVENTS.JOIN, async ({ name }) => {
+    const accountId = socket.data.accountId;
+    if (!accountId) {
+      socket.emit(EVENTS.ERROR, { message: 'Not authenticated' });
+      return;
+    }
+
     const playerName = sanitizePlayerName(name);
     if (!playerName) {
       socket.emit(EVENTS.ERROR, { message: 'Character name is required' });
       return;
     }
 
-    const saved = await characterStore.load(playerName);
+    const saved = await characterStore.load(playerName, accountId);
     if (!saved?.characterClass || !CHARACTER_CLASSES[saved.characterClass]) {
       socket.emit(EVENTS.ERROR, { message: 'Character not found' });
       return;
@@ -111,6 +137,8 @@ export function registerCoreHandlers(socket, ctx) {
       mapId: townMapId,
       forceSpawn: true,
     });
+
+    player.accountId = accountId;
 
     player.aimX = player.x + 1;
     player.aimY = player.y;
@@ -177,10 +205,14 @@ export function registerCoreHandlers(socket, ctx) {
 
     if (isStunned(player)) return;
 
+    const now = Date.now();
+    const moveCheck = validatePlayerMove(player, direction, now);
+    if (!moveCheck.ok) return;
+
     interruptTownRecall(player);
 
     const { map } = getPlayerContext(world, player);
-    const delta = DIRECTION_DELTA[direction];
+    const delta = moveCheck.delta;
 
     const nextX = player.x + delta.x;
     const nextY = player.y + delta.y;
@@ -190,7 +222,7 @@ export function registerCoreHandlers(socket, ctx) {
       player.y = nextY;
       player.direction = direction;
       player.moving = true;
-      player.lastMoveAt = Date.now();
+      player.lastMoveAt = now;
     } else {
       player.moving = false;
       player.direction = direction;

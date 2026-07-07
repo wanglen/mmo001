@@ -1,5 +1,5 @@
 import { createServerApp, listen } from './app/createServer.js';
 import { PORT } from './config.js';
 
-const { httpServer } = createServerApp();
+const { httpServer } = await createServerApp();
 listen(httpServer, PORT);

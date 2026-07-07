@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-07-07
+
+### Added
+
+- **Accounts:** register and sign in before character select; signed session tokens (set `SESSION_SECRET` in production)
+- **SQLite persistence:** characters stored in `data/game.db` (up to 8 per account)
+- **Legacy migration:** existing `data/characters/*.json` saves import into a `legacy` account on first DB init (`legacy` / `legacy` by default)
+- **Anti-cheat:** server rejects move packets that arrive too fast; loot pickup range validated with tolerance
+
+### Changed
+
+- Character list API (`GET /api/characters`) requires authentication; socket connections require a valid session token
+- Character create/delete/join are scoped to the signed-in account
+
+### Breaking
+
+- Must create an account and sign in before creating or playing a character
+- Character saves moved from flat JSON files to SQLite (`data/game.db`); use the `legacy` account to access migrated saves
+
 ## [2.5.1] - 2026-07-07
 
 ### Changed

@@ -3,9 +3,16 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { PORT } from '../config.js';
+import { PORT, SESSION_SECRET } from '../config.js';
 import { PlayerManager } from '../entities/PlayerManager.js';
 import { CharacterStore } from '../persistence/CharacterStore.js';
+import { GameDatabase } from '../persistence/GameDatabase.js';
+import { migrateLegacyIfEmpty } from '../persistence/migrateLegacy.js';
+import {
+  createSessionToken,
+  resolveSessionSecret,
+  MAX_CHARACTERS_PER_ACCOUNT,
+} from '../persistence/auth.js';
 import { PartyManager } from '../social/PartyManager.js';
 import { TradeManager } from '../social/TradeManager.js';
 import { registerHandlerRegistry } from './HandlerRegistry.js';
@@ -13,6 +20,7 @@ import { startGameLoop } from './gameLoop.js';
 import { createWorld } from '../world/World.js';
 import { APP_VERSION } from '../version.js';
 import { loadGameContent } from './loadContent.js';
+import { getAccountIdFromRequest, registerSocketAuth } from '../middleware/auth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.join(__dirname, '..', '..');
@@ -21,26 +29,82 @@ const rootDir = path.join(__dirname, '..', '..');
  * Bootstrap Express, Socket.IO, plugins, and the game loop.
  *
  * @param {object} [options]
- * @param {string} [options.dataDir] — character save directory
+ * @param {string} [options.dbPath] — SQLite database path
+ * @param {string} [options.legacyDir] — legacy JSON character directory
  */
-export function createServerApp(options = {}) {
+export async function createServerApp(options = {}) {
   loadGameContent();
 
-  const dataDir = options.dataDir ?? path.join(rootDir, 'data', 'characters');
+  const dbPath = options.dbPath ?? path.join(rootDir, 'data', 'game.db');
+  const legacyDir = options.legacyDir ?? path.join(rootDir, 'data', 'characters');
+  const sessionSecret = resolveSessionSecret(options.sessionSecret ?? SESSION_SECRET);
+
+  const gameDb = new GameDatabase(dbPath);
+  const migration = await migrateLegacyIfEmpty(gameDb, legacyDir);
+  if (migration.imported > 0) {
+    console.log(
+      `Migrated ${migration.imported} legacy character(s) to account "${migration.username}"`
+    );
+  }
+
+  const characterStore = new CharacterStore(gameDb);
 
   const app = express();
+  app.use(express.json({ limit: '32kb' }));
+
   const httpServer = createServer(app);
   const io = new Server(httpServer);
+  registerSocketAuth(io, sessionSecret);
 
   app.use(express.static(path.join(rootDir, 'public')));
   app.use('/shared', express.static(path.join(rootDir, 'shared')));
 
-  const characterStore = new CharacterStore(dataDir);
-
-  app.get('/api/characters', async (_req, res) => {
+  app.post('/api/auth/register', async (req, res) => {
     try {
-      const characters = await characterStore.list();
-      res.json(characters);
+      const { username, password } = req.body ?? {};
+      const result = await gameDb.registerAccount(username, password);
+      if (!result.ok) {
+        const message =
+          result.reason === 'username_taken'
+            ? 'Username already taken'
+            : 'Invalid username or password';
+        res.status(400).json({ error: message });
+        return;
+      }
+
+      const token = createSessionToken(result.accountId, sessionSecret);
+      res.json({ token, username: result.username, accountId: result.accountId });
+    } catch {
+      res.status(500).json({ error: 'Registration failed' });
+    }
+  });
+
+  app.post('/api/auth/login', async (req, res) => {
+    try {
+      const { username, password } = req.body ?? {};
+      const result = await gameDb.loginAccount(username, password);
+      if (!result.ok) {
+        res.status(401).json({ error: 'Invalid username or password' });
+        return;
+      }
+
+      const token = createSessionToken(result.accountId, sessionSecret);
+      res.json({ token, username: result.username, accountId: result.accountId });
+    } catch {
+      res.status(500).json({ error: 'Login failed' });
+    }
+  });
+
+  app.get('/api/characters', async (req, res) => {
+    const accountId = getAccountIdFromRequest(req, sessionSecret);
+    if (!accountId) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    try {
+      const characters = await characterStore.list(accountId);
+      res.json({ characters, maxCharacters: MAX_CHARACTERS_PER_ACCOUNT });
     } catch {
       res.status(500).json({ error: 'Failed to list characters' });
     }
@@ -61,6 +125,7 @@ export function createServerApp(options = {}) {
     characterStore,
     partyManager,
     tradeManager,
+    sessionSecret,
   });
 
   startGameLoop({
@@ -71,7 +136,17 @@ export function createServerApp(options = {}) {
     eventBus,
   });
 
-  return { app, httpServer, io, world, playerManager, broadcastAll, eventBus };
+  return {
+    app,
+    httpServer,
+    io,
+    world,
+    playerManager,
+    broadcastAll,
+    eventBus,
+    gameDb,
+    characterStore,
+  };
 }
 
 /**

@@ -1,5 +1,3 @@
-import fs from 'fs/promises';
-import path from 'path';
 import { itemToJSON } from '../../shared/items.js';
 import { createEmptyInventory, createEmptyEquipment } from '../../shared/inventory.js';
 import { createEmptyStash } from '../../shared/stash.js';
@@ -79,125 +77,70 @@ export function createNewCharacterData(name, characterClass, spawn) {
   };
 }
 
+/**
+ * Account-scoped character persistence backed by SQLite.
+ */
 export class CharacterStore {
-  constructor(dataDir) {
-    this.dataDir = dataDir;
+  /** @param {import('./GameDatabase.js').GameDatabase} db */
+  constructor(db) {
+    this.db = db;
   }
 
-  filePath(name) {
-    return path.join(this.dataDir, `${slugifyCharacterName(name)}.json`);
+  /** @param {string} accountId */
+  async list(accountId) {
+    if (!accountId) return [];
+    return this.db.listCharacters(accountId);
   }
 
-  /** Canonical save path, or legacy file whose JSON `name` field matches. */
-  async findSaveFileByName(name) {
-    const canonical = this.filePath(name);
-    try {
-      await fs.access(canonical);
-      return canonical;
-    } catch {
-      // fall through to legacy lookup
-    }
-
-    let files = [];
-    try {
-      files = await fs.readdir(this.dataDir);
-    } catch {
-      return null;
-    }
-
-    for (const file of files) {
-      if (!file.endsWith('.json')) continue;
-      const fullPath = path.join(this.dataDir, file);
-      const data = await this.readJson(fullPath);
-      if (data?.name === name) return fullPath;
-    }
-
-    return null;
-  }
-
-  async ensureDir() {
-    await fs.mkdir(this.dataDir, { recursive: true });
-  }
-
+  /** @param {string} name */
   async exists(name) {
-    return (await this.findSaveFileByName(name)) !== null;
+    return this.db.characterExists(name);
   }
 
-  async load(name) {
-    const file = await this.findSaveFileByName(name);
-    if (!file) return null;
-
-    const data = await this.readJson(file);
-    if (!data) return null;
-
-    const canonical = this.filePath(name);
-    if (file !== canonical) {
-      await this.saveData(data);
-      await fs.unlink(file).catch(() => {});
-    }
-
-    return data;
+  /**
+   * @param {string} name
+   * @param {string} accountId
+   */
+  async load(name, accountId) {
+    if (!accountId) return null;
+    return this.db.loadCharacter(name, accountId);
   }
 
-  async readJson(filePath) {
-    try {
-      const raw = await fs.readFile(filePath, 'utf8');
-      return JSON.parse(raw);
-    } catch {
-      return null;
-    }
-  }
-
+  /** @param {object} player — must include accountId */
   async save(player) {
-    await this.ensureDir();
-    await fs.writeFile(
-      this.filePath(player.name),
-      JSON.stringify(playerToSaveData(player), null, 2),
-      'utf8'
-    );
+    if (!player?.accountId) return;
+    this.db.saveCharacterData(player.accountId, playerToSaveData(player));
   }
 
-  async saveData(data) {
-    await this.ensureDir();
-    await fs.writeFile(this.filePath(data.name), JSON.stringify(data, null, 2), 'utf8');
+  /**
+   * @param {object} data
+   * @param {string} accountId
+   */
+  async saveData(data, accountId) {
+    if (!accountId) return false;
+    return this.db.saveCharacterData(accountId, data);
   }
 
-  async remove(name) {
-    const file = await this.findSaveFileByName(name);
-    if (!file) return false;
-    await fs.unlink(file);
-    return true;
+  /**
+   * @param {string} name
+   * @param {string} accountId
+   */
+  async remove(name, accountId) {
+    if (!accountId) return false;
+    return this.db.removeCharacter(name, accountId);
   }
 
-  /** @returns {Promise<{ name: string, characterClass: string, level: number, savedAt?: string }[]>} */
-  async list() {
-    await this.ensureDir();
-    let files = [];
-    try {
-      files = await fs.readdir(this.dataDir);
-    } catch {
-      return [];
-    }
+  /** @param {string} accountId */
+  canCreate(accountId) {
+    return this.db.canCreateCharacter(accountId);
+  }
 
-    const characters = [];
-    for (const file of files) {
-      if (!file.endsWith('.json')) continue;
-      try {
-        const raw = await fs.readFile(path.join(this.dataDir, file), 'utf8');
-        const data = JSON.parse(raw);
-        if (!data?.name || !data?.characterClass) continue;
-        characters.push({
-          name: data.name,
-          characterClass: data.characterClass,
-          level: data.level ?? 1,
-          savedAt: data.savedAt,
-        });
-      } catch {
-        // skip corrupt files
-      }
-    }
-
-    return characters.sort((a, b) => a.name.localeCompare(b.name));
+  /**
+   * @param {string} name
+   * @param {string} accountId
+   */
+  owns(name, accountId) {
+    return this.db.characterOwnedByAccount(name, accountId);
   }
 }
 

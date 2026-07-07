@@ -18,10 +18,51 @@
   <div id="level-up-panel" class="level-up-panel hidden"></div>
   <div id="skill-tree-panel" class="skill-tree-panel hidden"></div>
 
-  <div id="character-select" class="overlay">
+  <div id="auth-overlay" class="overlay">
+    <div class="panel character-panel auth-panel">
+      <h1>MMO001</h1>
+      <p id="app-version-auth" class="app-version"></p>
+      <p id="auth-error" class="character-error hidden"></p>
+
+      <div id="auth-login-view">
+        <h2>Sign In</h2>
+        <label class="name-label">
+          Username
+          <input type="text" id="auth-login-username" maxlength="20" autocomplete="username" />
+        </label>
+        <label class="name-label">
+          Password
+          <input type="password" id="auth-login-password" autocomplete="current-password" />
+        </label>
+        <div class="character-actions">
+          <button id="auth-login-btn" type="button">Sign In</button>
+          <button id="auth-show-register" type="button" class="btn-secondary">Create Account</button>
+        </div>
+      </div>
+
+      <div id="auth-register-view" class="hidden">
+        <h2>Create Account</h2>
+        <label class="name-label">
+          Username
+          <input type="text" id="auth-register-username" maxlength="20" autocomplete="username" />
+        </label>
+        <label class="name-label">
+          Password
+          <input type="password" id="auth-register-password" autocomplete="new-password" />
+        </label>
+        <div class="character-actions">
+          <button id="auth-register-btn" type="button">Register</button>
+          <button id="auth-show-login" type="button" class="btn-secondary">Back to Sign In</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="character-select" class="overlay hidden">
     <div class="panel character-panel">
       <h1>MMO001</h1>
       <p id="app-version" class="app-version"></p>
+      <p id="auth-account-label" class="auth-account-label"></p>
       <p id="character-error" class="character-error hidden"></p>
 
       <div id="character-select-view">
@@ -33,6 +74,7 @@
           <button id="delete-btn" type="button" class="btn-danger" disabled>Delete</button>
           <button id="show-create-btn" type="button" class="btn-secondary">New Character</button>
           <button id="create-btn" type="button" class="btn-secondary hidden">Create Character</button>
+          <button id="auth-logout-btn" type="button" class="btn-secondary hidden">Sign Out</button>
         </div>
       </div>
 

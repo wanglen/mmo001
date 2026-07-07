@@ -5,8 +5,9 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 ## Features (current)
 
 - Procedural map generation with grass, water, and forest clusters
-- Character selection (Warrior, Mage, Ranger)
-- Server-authoritative movement with collision detection
+- Character selection (Warrior, Mage, Ranger) — up to **8 characters per account**
+- **Accounts:** register / sign in with username and password before character select
+- Server-authoritative movement with collision detection and move-rate validation
 - Animated sprite sheets per class (idle, walk, attack) with class silhouettes, overhead HP bar, and nameplate
 - Per-template item icons on ground loot and inventory (sword, staff, bow, armor, potions, etc.)
 - Combat: click enemies to attack, 3 mob types with distinct pixel sprites, HP bars, monster chase AI, retaliate on hit, XP on kill
@@ -32,7 +33,7 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 
 | Layer    | Technology        |
 |----------|-------------------|
-| Server   | Node.js, Express  |
+| Server   | Node.js, Express, SQLite (`better-sqlite3`) |
 | Real-time| Socket.IO         |
 | Client   | Vanilla JS, Canvas 2D |
 | Modules  | Native ES modules |
@@ -56,11 +57,21 @@ npm start
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000) in your browser. Create an account, then create or select a character.
+
+**Environment (optional)**
+
+| Variable | Purpose |
+|----------|---------|
+| `SESSION_SECRET` | Signing key for login tokens (required in production; random per restart if unset) |
+| `LEGACY_ACCOUNT_USERNAME` / `LEGACY_ACCOUNT_PASSWORD` | Credentials for imported JSON saves (default `legacy` / `legacy`) |
+| `PORT` | HTTP port (default `3000`) |
+
+Character data is stored in `data/game.db`. On first run, existing `data/characters/*.json` files are imported into the legacy account.
 
 ### Docker
 
-Build and run with Docker Compose (character saves persist in the local `data/` directory):
+Build and run with Docker Compose (database and saves persist in the local `data/` directory):
 
 ```bash
 mkdir -p data/characters
@@ -148,7 +159,7 @@ mmo001/
 │   ├── players/      # Player model and manager
 │   ├── monsters/     # Monster entities and AI
 │   ├── items/        # Ground loot manager
-│   ├── persistence/  # Character JSON save/load
+│   ├── persistence/  # SQLite accounts/characters, legacy JSON migration
 │   ├── systems/      # Combat, inventory, game loop
 │   └── network/      # Socket event handlers
 ├── public/           # Static client files

@@ -2,8 +2,12 @@ import { io } from '/socket.io/socket.io.esm.min.js';
 import { EVENTS } from '/shared/events.js';
 
 export class SocketClient {
-  constructor() {
-    this.socket = io();
+  constructor({ token = null } = {}) {
+    this.authToken = token;
+    this.socket = io({
+      autoConnect: false,
+      auth: { token },
+    });
     this.onWorldStateCallback = null;
     this.onErrorCallback = null;
     this.onCharacterCreatedCallback = null;
@@ -77,11 +81,13 @@ export class SocketClient {
     this.onCharactersChangedCallback = callback;
   }
 
-  createCharacter({ name, characterClass }) {
+  async createCharacter({ name, characterClass }) {
+    await this.ensureConnected();
     this.socket.emit(EVENTS.CREATE_CHARACTER, { name, characterClass });
   }
 
-  deleteCharacter({ name }) {
+  async deleteCharacter({ name }) {
+    await this.ensureConnected();
     this.socket.emit(EVENTS.DELETE_CHARACTER, { name });
   }
 
@@ -261,6 +267,14 @@ export class SocketClient {
     return this.socket.connected;
   }
 
+  setAuthToken(token) {
+    this.authToken = token;
+    this.socket.auth = { token };
+    if (this.socket.connected) {
+      this.socket.disconnect();
+    }
+  }
+
   /** Server-initiated disconnect disables auto-reconnect; call before join. */
   ensureConnected(timeoutMs = 8000) {
     if (this.socket.connected) return Promise.resolve();
@@ -277,6 +291,9 @@ export class SocketClient {
       };
 
       this.socket.once('connect', onConnect);
+      if (this.authToken) {
+        this.socket.auth = { token: this.authToken };
+      }
       this.socket.connect();
     });
   }

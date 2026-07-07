@@ -1151,6 +1151,17 @@ html, body {
   letter-spacing: 0.04em;
 }
 
+.auth-account-label {
+  margin: -0.5rem 0 1rem;
+  font-size: 0.85rem;
+  color: rgba(180, 200, 230, 0.85);
+}
+
+.auth-panel .name-label {
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
 .character-panel h2 {
   margin: 0 0 1rem;
   font-size: 1.1rem;
