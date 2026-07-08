@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.3] - 2026-07-07
+
+### Fixed
+
+- **Bottom HUD layout** — XP bar and recall hint sit above the skill bar (not behind it); bottom canvas scrim hides world sprites under the HUD; skill bar uses a solid background
+
 ## [3.3.2] - 2026-07-07
 
 ### Added

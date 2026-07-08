@@ -235,6 +235,7 @@ export class GameLoop {
         players: remotePlayers,
         combatFx: this.fxBuffer.getCombatFx(),
         skillFx: this.fxBuffer.getSkillFx(),
+        hudLayout: game.hudLayout,
       };
 
       let hoveredMonsterId = null;

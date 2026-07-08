@@ -14,7 +14,8 @@ export function createHudLayer(playerHud) {
         frame.map,
         canvas.width,
         canvas.height,
-        frame.version
+        frame.version,
+        frame.hudLayout
       );
     },
   };

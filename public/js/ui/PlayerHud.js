@@ -1,17 +1,14 @@
 import { xpToNextLevel } from '/shared/stats.js';
 import { isTownHubMap, TOWN_RECALL_CAST_MS, townRecallProgress } from '/shared/townHub.js';
+import { computeHudLayout } from '/shared/hudLayout.js';
 
-const ORB_RADIUS = 34;
-const ORB_MARGIN = 18;
-/** Distance from canvas bottom to orb center (clears center skill bar). */
-const ORB_BOTTOM = 56;
-const XP_BAR_HEIGHT = 5;
-const XP_BAR_GAP = 10;
+const DEFAULT_LAYOUT = computeHudLayout(1280, 720);
 
 export class PlayerHud {
-  draw(ctx, player, zone = null, map = null, canvasWidth = 0, canvasHeight = 0, version = null) {
+  draw(ctx, player, zone = null, map = null, canvasWidth = 0, canvasHeight = 0, version = null, layout = null) {
     if (!player) return;
 
+    const metrics = layout ?? DEFAULT_LAYOUT;
     const width = canvasWidth || ctx.canvas.width;
     const height = canvasHeight || ctx.canvas.height;
 
@@ -19,45 +16,56 @@ export class PlayerHud {
       this.drawZoneBadge(ctx, zone, width);
     }
 
-    this.drawRecallUi(ctx, player, map, width, height);
+    this.drawBottomScrim(ctx, width, height, metrics);
+    this.drawRecallUi(ctx, player, map, width, height, metrics);
 
-    const orbY = height - ORB_BOTTOM;
-    const lifeX = ORB_MARGIN + ORB_RADIUS;
-    const manaX = width - ORB_MARGIN - ORB_RADIUS;
+    const orbY = height - metrics.orbCenterFromBottom;
+    const lifeX = metrics.orbMargin + metrics.orbRadius;
+    const manaX = width - metrics.orbMargin - metrics.orbRadius;
 
-    this.drawResourceOrb(ctx, lifeX, orbY, ORB_RADIUS, player.hp, player.maxHp, {
+    this.drawResourceOrb(ctx, lifeX, orbY, metrics.orbRadius, player.hp, player.maxHp, {
       fillTop: '#e74c3c',
       fillBottom: '#7b1010',
       ring: '#3d1515',
       label: 'Life',
+      labelOffset: metrics.orbLabelOffset,
     });
 
-    this.drawResourceOrb(ctx, manaX, orbY, ORB_RADIUS, player.mp, player.maxMp, {
+    this.drawResourceOrb(ctx, manaX, orbY, metrics.orbRadius, player.mp, player.maxMp, {
       fillTop: '#3498db',
       fillBottom: '#1a4a7a',
       ring: '#152a45',
       label: 'Mana',
+      labelOffset: metrics.orbLabelOffset,
     });
 
-    this.drawLevelBadge(ctx, lifeX, orbY, ORB_RADIUS, player.level ?? 1);
-    this.drawXpBar(ctx, lifeX, manaX, orbY, ORB_RADIUS, player);
-    this.drawStatPointsHint(ctx, lifeX, orbY, ORB_RADIUS, player.statPoints ?? 0);
+    this.drawLevelBadge(ctx, lifeX, orbY, metrics.orbRadius, player.level ?? 1);
+    this.drawXpBar(ctx, lifeX, manaX, height, metrics, player);
+    this.drawStatPointsHint(ctx, lifeX, orbY, metrics.orbRadius, player.statPoints ?? 0);
 
-    this.drawVersionLabel(ctx, version, width, height);
+    this.drawVersionLabel(ctx, version, width, height, metrics.versionOffsetBottom);
   }
 
-  drawResourceOrb(ctx, cx, cy, radius, current, max, { fillTop, fillBottom, ring, label }) {
+  drawBottomScrim(ctx, width, height, metrics) {
+    const fadeStart = height - metrics.hudScrimTopFromBottom;
+    const gradient = ctx.createLinearGradient(0, fadeStart - 24, 0, height);
+    gradient.addColorStop(0, 'rgba(8, 10, 18, 0)');
+    gradient.addColorStop(0.35, 'rgba(8, 10, 18, 0.72)');
+    gradient.addColorStop(1, 'rgba(8, 10, 18, 0.96)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, Math.max(0, fadeStart - 24), width, height - Math.max(0, fadeStart - 24));
+  }
+
+  drawResourceOrb(ctx, cx, cy, radius, current, max, { fillTop, fillBottom, ring, label, labelOffset = 12 }) {
     const ratio = max > 0 ? Math.max(0, Math.min(1, current / max)) : 0;
 
     ctx.save();
 
-    // Stone pedestal shadow
     ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
     ctx.beginPath();
     ctx.ellipse(cx, cy + radius * 0.72, radius * 0.85, radius * 0.22, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Outer ring
     ctx.strokeStyle = '#2a2218';
     ctx.lineWidth = 4;
     ctx.beginPath();
@@ -70,13 +78,11 @@ export class PlayerHud {
     ctx.arc(cx, cy, radius, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Empty globe interior
     ctx.fillStyle = '#0a0c12';
     ctx.beginPath();
     ctx.arc(cx, cy, radius - 2, 0, Math.PI * 2);
     ctx.fill();
 
-    // Liquid fill ( rises from bottom )
     if (ratio > 0) {
       ctx.save();
       ctx.beginPath();
@@ -91,13 +97,11 @@ export class PlayerHud {
       ctx.fillStyle = grad;
       ctx.fillRect(cx - radius, fillY, radius * 2, fillHeight + 2);
 
-      // Surface shimmer
       ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
       ctx.fillRect(cx - radius, fillY, radius * 2, 3);
       ctx.restore();
     }
 
-    // Glass highlight
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -106,7 +110,6 @@ export class PlayerHud {
 
     ctx.restore();
 
-    // Numeric value
     ctx.fillStyle = '#f8f4ec';
     ctx.font = '600 11px system-ui, sans-serif';
     ctx.textAlign = 'center';
@@ -116,10 +119,9 @@ export class PlayerHud {
     ctx.fillStyle = 'rgba(220, 220, 220, 0.75)';
     ctx.fillText(`/${max}`, cx, cy + 10);
 
-    // Label under orb
     ctx.fillStyle = 'rgba(200, 190, 170, 0.85)';
     ctx.font = '700 9px system-ui, sans-serif';
-    ctx.fillText(label.toUpperCase(), cx, cy + radius + 12);
+    ctx.fillText(label.toUpperCase(), cx, cy + radius + labelOffset);
   }
 
   drawLevelBadge(ctx, lifeX, orbY, radius, level) {
@@ -141,25 +143,25 @@ export class PlayerHud {
     ctx.fillText(String(level), bx, by + 1);
   }
 
-  drawXpBar(ctx, lifeX, manaX, orbY, radius, player) {
-    const barY = orbY + radius + XP_BAR_GAP + 8;
-    const barX = lifeX - radius;
-    const barWidth = manaX + radius - barX;
+  drawXpBar(ctx, lifeX, manaX, canvasHeight, metrics, player) {
+    const barY = canvasHeight - metrics.xpBarTopFromBottom - metrics.xpBarHeight;
+    const barX = lifeX - metrics.orbRadius;
+    const barWidth = manaX + metrics.orbRadius - barX;
     const xpNeeded = xpToNextLevel(player.level);
     const ratio = xpNeeded > 0 ? Math.max(0, Math.min(1, player.xp / xpNeeded)) : 0;
 
     ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
-    ctx.fillRect(barX - 2, barY - 2, barWidth + 4, XP_BAR_HEIGHT + 4);
+    ctx.fillRect(barX - 2, barY - 2, barWidth + 4, metrics.xpBarHeight + 4);
 
     ctx.fillStyle = '#1a1408';
-    ctx.fillRect(barX, barY, barWidth, XP_BAR_HEIGHT);
+    ctx.fillRect(barX, barY, barWidth, metrics.xpBarHeight);
 
     if (ratio > 0) {
       const grad = ctx.createLinearGradient(barX, barY, barX + barWidth * ratio, barY);
       grad.addColorStop(0, '#8b6914');
       grad.addColorStop(1, '#f1c40f');
       ctx.fillStyle = grad;
-      ctx.fillRect(barX, barY, barWidth * ratio, XP_BAR_HEIGHT);
+      ctx.fillRect(barX, barY, barWidth * ratio, metrics.xpBarHeight);
     }
 
     ctx.fillStyle = 'rgba(230, 220, 200, 0.9)';
@@ -213,14 +215,14 @@ export class PlayerHud {
     ctx.fillText(label, x + width / 2, y + height / 2);
   }
 
-  drawRecallUi(ctx, player, map, canvasWidth, canvasHeight) {
+  drawRecallUi(ctx, player, map, canvasWidth, canvasHeight, metrics) {
     const width = canvasWidth || ctx.canvas.width;
     const height = canvasHeight || ctx.canvas.height;
 
     if (player.townRecallCasting) {
       const progress = townRecallProgress(player.townRecallCastMs ?? 0, TOWN_RECALL_CAST_MS);
       const cx = width / 2;
-      const cy = height - 120;
+      const cy = height - metrics.recallCastCenterFromBottom;
       const radius = 28;
 
       ctx.strokeStyle = 'rgba(0,0,0,0.55)';
@@ -251,7 +253,7 @@ export class PlayerHud {
     const textWidth = ctx.measureText(hint).width;
     const boxW = textWidth + 20;
     const boxX = width / 2 - boxW / 2;
-    const boxY = height - 100;
+    const boxY = height - metrics.recallHintBottomFromBottom;
     ctx.fillRect(boxX, boxY, boxW, 24);
     ctx.fillStyle = '#c8dce8';
     ctx.textAlign = 'center';
@@ -259,7 +261,7 @@ export class PlayerHud {
     ctx.fillText(hint, width / 2, boxY + 12);
   }
 
-  drawVersionLabel(ctx, version, canvasWidth, canvasHeight) {
+  drawVersionLabel(ctx, version, canvasWidth, canvasHeight, offsetBottom = 12) {
     if (!version) return;
 
     const height = canvasHeight || ctx.canvas.height;
@@ -269,6 +271,6 @@ export class PlayerHud {
     ctx.textAlign = 'right';
     ctx.textBaseline = 'bottom';
     ctx.fillStyle = 'rgba(200, 208, 220, 0.45)';
-    ctx.fillText(label, canvasWidth - 14, height - 14);
+    ctx.fillText(label, canvasWidth - 14, height - offsetBottom);
   }
 }

@@ -9,6 +9,7 @@ import { Renderer } from '../render/Renderer.js';
 import { CursorManager } from '../ui/CursorManager.js';
 import { NPC_ROLE } from '/shared/npcs.js';
 import { isTownHubMap } from '/shared/townHub.js';
+import { updateHudLayout } from '../ui/hudLayout.js';
 import { FxBuffer } from './FxBuffer.js';
 import { RemotePlayerDisplay } from './RemotePlayerDisplay.js';
 import { AudioManager } from '../audio/AudioManager.js';
@@ -77,6 +78,7 @@ export class Game {
     this.npcTargetId = null;
     this.portalTargetId = null;
     this.pendingPickup = null;
+    this.hudLayout = null;
     this.inventoryVisible = false;
     this.stashVisible = false;
     this.settingsVisible = false;
@@ -123,8 +125,12 @@ export class Game {
       this.socketClient.sendRespawn();
     });
 
-    window.addEventListener('resize', () => this.renderer.resize());
+    window.addEventListener('resize', () => {
+      this.renderer.resize();
+      this.hudLayout = updateHudLayout(window.innerWidth, window.innerHeight);
+    });
     this.renderer.resize();
+    this.hudLayout = updateHudLayout(window.innerWidth, window.innerHeight);
     this.inventoryPanel?.setVisible(false);
     this.stashPanel?.setVisible(false);
     this.settingsPanel?.setVisible(false);

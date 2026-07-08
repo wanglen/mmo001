@@ -26,7 +26,7 @@ Work below comes from playtesting feedback. One item per feature branch; check o
 - [x] **Gem and rune icons** — distinct icons for socketables (inventory, tooltips, socket UI)
 
 ### Layout
-- [ ] **Bottom HUD layout** — fix elements clipped or misaligned at the bottom of the viewport (skill bar, orbs, chat overlap)
+- [x] **Bottom HUD layout** — fix elements clipped or misaligned at the bottom of the viewport (skill bar, orbs, chat overlap)
 
 ### World log
 - [ ] **World event list** — UI panel or feed for notable events (kills, level-ups, quest updates, party/trade notices)
@@ -43,7 +43,6 @@ Work below comes from playtesting feedback. One item per feature branch; check o
 
 1. [ ] **Dungeon boss respawn tuning**
 2. [ ] **Dungeon chest spawning**
-3. [ ] **Bottom HUD layout fix**
 
 ---
 
