@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.4] - 2026-07-07
+
+### Fixed
+
+- **Skill cooldown spam** — client input respects synced cooldown remaining (was treating remaining ms as a timestamp); optimistic local cooldown on cast
+
 ## [3.3.3] - 2026-07-07
 
 ### Fixed

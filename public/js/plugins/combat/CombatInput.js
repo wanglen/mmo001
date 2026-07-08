@@ -144,6 +144,9 @@ export function handleSkills(game) {
     targetId: shot.monster?.id,
   });
   game.audio.playSfx('skill', { minIntervalMs: 100 });
+
+  if (!serverPlayer.skillCooldowns) serverPlayer.skillCooldowns = {};
+  serverPlayer.skillCooldowns[skill.id] = skillDef.cooldownMs;
 }
 
 /**

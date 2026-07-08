@@ -8,6 +8,7 @@ import {
   getAvailableMp,
   spendSkillMp,
   getSkillCooldownRemaining,
+  getSkillCooldownRemainingMs,
   calculateSkillDamage,
   findMonstersInRadius,
   findMonstersInArc,
@@ -57,6 +58,30 @@ describe('skills', () => {
       skillCooldowns: { cleave: Date.now() },
     };
     assert.equal(canUseSkill(onCd, 'cleave', Date.now() + 100).reason, 'cooldown');
+
+    const syncedRemaining = {
+      ...warrior,
+      skillCooldowns: { cleave: SKILLS.cleave.cooldownMs - 500 },
+    };
+    assert.equal(canUseSkill(syncedRemaining, 'cleave').reason, 'cooldown');
+  });
+
+  it('getSkillCooldownRemainingMs handles timestamps and synced remaining', () => {
+    const now = 1_000_000;
+    const timestampPlayer = {
+      characterClass: 'warrior',
+      skillCooldowns: { cleave: now - 800 },
+    };
+    assert.equal(
+      getSkillCooldownRemainingMs(timestampPlayer, 'cleave', now),
+      SKILLS.cleave.cooldownMs - 800
+    );
+
+    const syncedPlayer = {
+      characterClass: 'warrior',
+      skillCooldowns: { cleave: 1200 },
+    };
+    assert.equal(getSkillCooldownRemainingMs(syncedPlayer, 'cleave', now), 1200);
   });
 
   it('getAvailableMp floors fractional mp and rejects invalid values', () => {

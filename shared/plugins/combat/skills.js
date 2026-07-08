@@ -80,6 +80,26 @@ export function spendSkillMp(player, mpCost) {
 }
 
 /**
+ * Remaining cooldown for one skill. Server stores last-cast timestamps; synced
+ * client state stores remaining ms from serialize.
+ * @param {object} player
+ * @param {string} skillId
+ * @param {number} [now]
+ */
+export function getSkillCooldownRemainingMs(player, skillId, now = Date.now()) {
+  const skill = getSkill(skillId);
+  if (!skill) return 0;
+
+  const stored = player.skillCooldowns?.[skillId] ?? 0;
+  if (!stored) return 0;
+
+  // Synced world state: remaining ms (never above cooldownMs while active).
+  if (stored <= skill.cooldownMs) return stored;
+
+  return Math.max(0, skill.cooldownMs - (now - stored));
+}
+
+/**
  * @param {object} player
  * @param {string} skillId
  * @param {number} [now]
@@ -99,8 +119,7 @@ export function canUseSkill(player, skillId, now = Date.now()) {
 
   if (getAvailableMp(player) < skill.mpCost) return { ok: false, reason: 'no_mp' };
 
-  const lastCast = player.skillCooldowns?.[skillId] ?? 0;
-  if (now - lastCast < skill.cooldownMs) {
+  if (getSkillCooldownRemainingMs(player, skillId, now) > 0) {
     return { ok: false, reason: 'cooldown' };
   }
 
@@ -121,9 +140,7 @@ export function getSkillCooldownRemaining(player, now = Date.now()) {
 
   for (const skillId of bar) {
     if (!skillId) continue;
-    const skill = SKILLS[skillId];
-    const lastCast = player.skillCooldowns?.[skillId] ?? 0;
-    remaining[skillId] = Math.max(0, skill.cooldownMs - (now - lastCast));
+    remaining[skillId] = getSkillCooldownRemainingMs(player, skillId, now);
   }
 
   return remaining;
