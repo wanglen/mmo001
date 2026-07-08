@@ -19,7 +19,9 @@ When adding a constant used on both sides, add it here once — never duplicate 
 ```
 shared/
 ├── kernel/events.js      # canonical EVENTS
-├── plugins/              # domain logic (combat/, domainEvents.js, types.js)
+├── plugins/              # domain logic (combat/, core/anticheat, render/particles, world/delta+chunks)
+├── audioSettings.js      # client audio prefs, music mood by map
+├── worldMaps.js          # MAP_ID, zone display names
 ├── content/              # quests.json, skills.json, vendors.json
 │   └── validateContent.js
 └── *.js                  # top-level modules; some are re-export stubs (combat.js, events.js)
@@ -41,4 +43,5 @@ shared/
 ## Testing
 
 - Shared pure functions → `tests/shared/<module>.test.js` or `tests/shared/plugins/<domain>/`
+- Critical gameplay coverage index → [tests/README.md](../../tests/README.md) (combat, loot, movement, anticheat)
 - Keep tests deterministic; no DOM or Node-only APIs in shared code

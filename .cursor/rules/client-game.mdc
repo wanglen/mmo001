@@ -23,8 +23,10 @@ public/js/
 ├── core/                 # GameLoop, InputRouter, Camera, PathFollower, FogOfWar
 ├── game/Game.js          # composition root — keep small
 ├── plugins/<feature>/    # registerClient, panels, input plugins
+├── audio/                # AudioManager, GameAudio, MusicPlayer
 ├── render/               # renderers + layer registry (createDefaultLayers.js)
 ├── render/layers/        # HudLayer, MinimapLayer, …
+├── debug/                # clientEventLog (server enables via DEBUG_EVENTS)
 ├── components/           # Panel, ItemRow
 ├── network/              # SocketClient
 └── ui/                   # HUD widgets consumed by layers
@@ -34,7 +36,9 @@ public/js/
 
 - Register client plugins in `public/js/app/loadClientPlugins.js`
 - `PluginHost` wires socket events, panels, and game lifecycle
-- Feature UI belongs in `public/js/plugins/<feature>/` — not loose files in `ui/` unless shared widgets
+- Feature UI belongs in `public/js/plugins/<feature>/` — shared widgets in `ui/` (inventory, settings, chat)
+- Modal panels that block input: toggle visibility in `Game.js`, handle in `InputRouter` / `CoreInput.js`
+- Settings and audio prefs persist via `AudioManager` + `shared/audioSettings.js` (localStorage)
 
 ## Render layers
 
@@ -44,10 +48,12 @@ public/js/
 
 ## Client responsibilities
 
-- **Render** world state; **predict/interpolate** local player for smoothness
+- **Render** world state; **interpolate** local player display position for smoothness
+- **Merge deltas** — `GameLoop.setWorldState` applies `applyWorldStateDelta`; full entity arrays on map change
 - **Never trust** client for gameplay outcomes — send intent, server decides
-- Input → `InputRouter` / input plugins → socket events; world updates → render pipeline
+- Input → `InputRouter` / input plugins → socket events; world updates → render pipeline + `GameAudio` / `GameParticles`
 - Screen ↔ world coords via `Camera.screenToWorld` / `worldToScreen`
+- Zone travel: show `#map-loading-overlay` with name from `getMapDisplayName()` until map tiles arrive
 
 ## Performance
 

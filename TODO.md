@@ -1,192 +1,64 @@
-# MMO001 — Diablo-like MMORPG Roadmap
+# MMO001 — Roadmap
 
-Current MVP: procedural map, character select, WASD movement, Canvas rendering, Socket.IO (single-player, multiplayer-ready).
+MVP complete (v3.3.0): accounts, multiplayer, combat, loot, quests, economy, polish, and Docker deployment.
 
----
-
-## Phase 1 — Core Game Feel (Diablo foundation)
-
-### Movement & camera
-- [x] Switch from WASD-only to **click-to-move** (pathfind toward cursor)
-- [x] Add **mouse aim** for attacks/skills (direction from player to cursor)
-- [x] Improve camera: smooth follow, zoom, optional slight isometric tilt
-- [x] Replace colored squares with **sprite sheets** (walk, idle, attack animations)
-- [x] **Context-sensitive cursor** — change mouse icon by action (move, attack, interact, etc.)
-
-### Combat basics
-- [x] Add player stats: `HP`, `MP`, `STR`, `DEX`, `INT`, `VIT`, `level`, `xp`
-- [x] Implement **basic attack** (click enemy or auto-attack nearest target)
-- [x] Server-authoritative **damage calculation** and hit validation
-- [x] Add **attack cooldowns** and swing animations
-- [x] Show **HP bars** above player and enemies
-
-### Enemies
-- [x] Create `Monster` entity (server-side, like `Player`)
-- [x] Spawn mobs on the map (static spawn points or zones)
-- [x] Simple AI: idle → aggro when player near → chase → attack
-- [x] Mob death: despawn, drop XP (loot deferred to Phase 2)
-- [x] Add 2–3 enemy types (melee, ranged, fast)
+Work below comes from playtesting feedback. One item per feature branch; check off and bump semver on merge.
 
 ---
 
-## Phase 2 — Loot & Character Progression
+## Gameplay & zones
 
-### Items & inventory
-- [x] Define item schema: `{ id, name, type, rarity, stats, slot }`
-- [x] Rarity tiers: Common, Magic, Rare, Unique (Diablo-style colors)
-- [x] Ground loot drops (visible on map, click to pick up)
-- [x] Inventory grid UI (e.g. 10×4)
-- [x] Equip slots: weapon, helm, chest, gloves, boots, ring, amulet
-- [x] Stat bonuses from equipped gear applied server-side
+### Portals & travel
+- [ ] **Portal auto-teleport** — clicking a portal pathfinds to it; travel triggers on arrival (no extra click on the tile)
+- [ ] **Interruptible recall** — town recall (**T**) cancels on click-to-move, monster hit, or starting combat (verify/fix current behavior)
 
-### Leveling
-- [x] XP curve per level
-- [x] Level-up grants stat points (+5 per level)
-- [x] Level-up UI feedback (flash, sound, stat allocation screen)
-- [x] Persist character progress (JSON file or SQLite to start)
-
-### Skills
-- [x] Skill bar (6–8 slots, hotkeys 1–8)
-- [x] 2–3 skills per class (Warrior: cleave, charge; Mage: fireball, frost nova)
-- [x] MP cost, cooldowns, AoE vs single-target
-- [x] Skill visuals (projectiles, ground effects, melee arcs)
+### Dungeon
+- [ ] **Dungeon boss respawn** — reduce how often the dungeon lord respawns
+- [ ] **Dungeon chests** — spawn landmark chests in dungeon rooms (generator / placement)
 
 ---
 
-## Phase 2.1 — In-Game Visual Polish
+## Feedback & UI
 
-### UI / representation
-- [x] Improve **character** representation in game
-- [x] Improve **items** representation in game (ground loot, inventory icons)
-- [x] Improve **monsters** representation in game
-- [x] Add **map fog** — hide unexplored / off-screen areas; grey or muted overlay for obscured tiles (align with void `#0c0e14` palette)
+### Pickup & inventory
+- [ ] **Item pickup message** — brief on-screen or chat notice when loot is collected
+- [ ] **Socket overwrite warning** — confirm before replacing a gem already socketed in gear
+- [ ] **Gem and rune icons** — distinct icons for socketables (inventory, tooltips, socket UI)
 
----
+### Layout
+- [ ] **Bottom HUD layout** — fix elements clipped or misaligned at the bottom of the viewport (skill bar, orbs, chat overlap)
 
-## Phase 3 — World & Content
-
-### Maps & zones
-- [x] Multiple zones (town, wilderness, dungeon)
-- [x] Zone transitions (portals, doors, loading new map)
-- [x] Town hub: safe zone, full hp/mp recovery, no combat, NPCs, teleportation using "T" key after 6 seconds continuous press.
-- [x] Dungeon maps: tighter layouts, higher mob density, boss room
-
-### Map generation improvements
-- [x] Room + corridor dungeon generator (Diablo-style)
-- [x] Hand-crafted landmark tiles (walls, doors, chests)
-- [x] Minimap UI
-
-### NPCs & quests
-- [x] NPC entity type (static, interactable)
-- [x] Dialogue UI (simple text boxes)
-- [x] Quest system: kill X, fetch item, talk to NPC
-- [x] Quest rewards: XP, gold, items
+### World log
+- [ ] **World event list** — UI panel or feed for notable events (kills, level-ups, quest updates, party/trade notices)
 
 ---
 
-## Phase 4 — Multiplayer (MMO layer)
+## Backlog (optional)
 
-### Real-time sync
-- [x] Enable `io.emit` broadcasts (other players visible on map)
-- [x] Sync other players' position, animation state, HP
-- [x] Nameplates and class icons above other players
-
-### Social
-- [x] Global and zone chat
-- [x] Whisper / private messages
-- [x] Party system (invite, accept, shared XP range)
-- [x] Player list / online count
-
-### Economy & trade
-- [x] Gold currency
-- [x] Vendor NPCs (buy/sell items)
-- [x] Player-to-player trade window
-- [x] Item drop rules in multiplayer (who gets loot)
+- [ ] CI pipeline (GitHub Actions) — skipped for now; run `npm test` locally before merge
 
 ---
 
-## Phase 5 — Diablo-like Depth
+## Next tasks (recommended order)
 
-### Combat systems
-- [x] Critical hits, dodge, resistances (fire/cold/lightning/poison)
-- [x] Status effects: stun, slow, poison DoT, bleed
-- [x] Elite/champion mobs with modifiers (extra fast, fire enchanted, etc.)
-- [x] Boss fights: phases, special attacks, unique loot tables
-
-### Items (advanced)
-- [x] Random affixes on Magic/Rare items (`+STR`, `+life`, `% damage`)
-- [x] Socketed items + gems/runes
-- [x] Set items (bonuses for wearing multiple pieces)
-- [x] Stash / shared storage in town
-
-### Character build
-- [x] Skill tree per class
-- [x] Respec option (gold cost or rare item)
-- [x] Multiple viable builds per class
+1. [ ] **Portal auto-teleport on arrival**
+2. [ ] **Item pickup message**
+3. [ ] **Dungeon boss respawn tuning**
+4. [ ] **Dungeon chest spawning**
+5. [ ] **Bottom HUD layout fix**
 
 ---
 
-## Phase 6 — Production & Scale
-
-### Accounts & persistence
-- [x] User registration / login (JWT or sessions)
-- [x] Save characters to database (PostgreSQL or MongoDB)
-- [x] Multiple characters per account
-- [x] Server-side anti-cheat (validate move speed, damage, loot claims)
-
-### Performance
-- [x] Interest management (only send nearby entities to each client)
-- [x] Game tick loop on server (fixed 20–30 Hz simulation)
-- [x] Delta updates instead of full `worldState` every frame
-- [x] Chunk-based maps for large worlds
-
-### Polish
-- [x] Sound effects and background music
-- [x] Particle effects (blood, spells, level-up)
-- [x] Death screen + respawn at spawn (town zone deferred)
-- [x] Settings menu (volume, keybinds, graphics)
-- [x] Loading screens between zones
-
-### DevOps
-- [x] `.gitignore`, README, environment config
-- [x] Basic tests for combat, loot, movement validation
-- [ ] CI pipeline
-- [x] Deployment (Docker, cloud hosting)
-
----
-
-## Target module structure
+## Workflow
 
 ```
-server/
-├── systems/
-│   ├── combat/
-│   ├── loot/
-│   ├── quests/
-│   ├── skills/
-│   └── zones/
-├── entities/
-│   ├── Player.js
-│   ├── Monster.js
-│   ├── Item.js
-│   └── NPC.js
-└── world/
-    ├── ZoneManager.js
-    └── DungeonGenerator.js
-
-public/js/
-├── ui/          (inventory, skills, chat, minimap)
-├── combat/
-├── entities/    (render monsters, loot, effects)
-└── network/     (delta sync, event handlers)
+TODO item → plan → feature/<name> → implement → npm test → docs + version → merge main
 ```
 
----
+Commit and push when ready:
 
-## Next 5 tasks (recommended order)
+```bash
+./scripts/commit-and-push.sh "Your message"
+```
 
-1. [ ] **Enable multiplayer broadcast** — see other players (`socketHandlers.js`)
-2. [x] **Add monsters + basic combat** — core Diablo loop
-3. [x] **Click-to-move + mouse aim** — Diablo control scheme
-4. [x] **HP / XP / level system** — progression loop
-5. [x] **Ground loot + inventory** — ARPG reward loop
+See [AGENTS.md](AGENTS.md) and [.cursor/skills/mmo-feature-development/SKILL.md](.cursor/skills/mmo-feature-development/SKILL.md).

@@ -19,6 +19,7 @@ alwaysApply: true
 - Add unit tests for new pure functions and bug fixes (see [unit-tests.mdc](unit-tests.mdc))
 - Use `tests/helpers/fixtures.js` for deterministic map data
 - Socket/UI-only changes: document manual smoke test if no unit test applies
+- Audio, particles, loading overlay: manual smoke test; test pure presets/helpers when added
 
 ## Documentation
 

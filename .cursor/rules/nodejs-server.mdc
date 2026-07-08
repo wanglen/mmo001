@@ -10,7 +10,8 @@ alwaysApply: false
 
 - ESM only (`import`/`export`); `"type": "module"` in package.json
 - Express for static files; Socket.IO for real-time game events
-- No database in MVP — in-memory managers with clear interfaces for future adapters
+- **SQLite** (`better-sqlite3`) for accounts and characters — `server/persistence/GameDatabase.js`
+- Legacy `data/characters/*.json` migrates into a `legacy` account on first DB init
 
 ## Structure
 
@@ -23,6 +24,8 @@ server/
 ├── entities/             # Player, Monster, LootManager, Npc
 ├── plugins/<feature>/    # registerServer, registerBus, serialize* slices
 ├── map/, world/, persistence/, social/
+├── config.js             # env: PORT, SESSION_SECRET, debug flags
+└── debug/eventLog.js     # optional rotated log when DEBUG_EVENTS=1
 ```
 
 Import entities from `server/entities/` — not deprecated `server/players/` or `server/monsters/` stubs.
@@ -51,15 +54,19 @@ Register new plugins in `server/app/loadPlugins.js`. Use `dependsOn` for load or
 - **Server is authoritative** for movement, combat, loot, and stats
 - Handlers live in `server/plugins/<feature>/` — keep thin; delegate to pure functions in `shared/`
 - Cross-plugin side effects → `registerBus` + `DOMAIN_EVENTS` — not direct imports between plugins
-- Multiplayer: broadcast via `ctx.broadcastAll`, not only `socket.emit`
+- **Anti-cheat:** move rate and loot pickup range in `shared/plugins/core/anticheat.js` — validate before applying
+- Multiplayer: broadcast via `ctx.broadcastAll`; world state uses interest management + delta patches (see `server/app/WorldStateSync.js`)
 
 ## Node best practices
 
-- Use `process.env.PORT` with fallback; never hardcode secrets
+- Env vars via [server/config.js](../../server/config.js) — document new vars in `.env.example`
+- Use `PORT`, `SESSION_SECRET` from config; never hardcode secrets or commit `.env`
+- **`SESSION_SECRET`:** required for stable sessions in production (≥16 chars); random per restart if unset
 - Async errors: catch and respond; do not crash the process on bad client input
 - Stateless handlers; game state lives in managers on `ServerContext`
 - Import shared constants from `shared/` — do not duplicate magic numbers
 - Content JSON loaded once at startup via `loadGameContent()` in `createServer.js`
+- Debug: `DEBUG_EVENTS=1` enables server + client event logging to `data/debug-events.log` (rotated)
 
 ## Testing
 

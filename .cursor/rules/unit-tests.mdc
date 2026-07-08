@@ -17,9 +17,10 @@ alwaysApply: false
 
 ```
 tests/
+├── README.md               # index of critical gameplay validation tests
 ├── helpers/fixtures.js       # shared test maps and mocks
 ├── shared/                   # mirrors shared/ (+ shared/plugins/)
-└── server/                   # mirrors server/ (+ app/, entities/, plugins/)
+└── server/                   # mirrors server/ (+ app/, entities/, plugins/, config.js)
 ```
 
 Mirror source paths:
@@ -39,8 +40,9 @@ Legacy `tests/server/systems/` may still exist for modules re-exported from `ser
 |--------|-------|
 | New pure function (pathfinding, combat, loot) | Required |
 | Bug fix | Regression test required |
+| Portal / pathfinding / zone travel | Test pure helpers in `shared/`; manual smoke for full flow |
 | Socket handler / Express route | Integration test when feasible |
-| UI-only render change | Manual smoke test acceptable |
+| UI-only render / audio change | Manual smoke test acceptable |
 
 ## Conventions
 
