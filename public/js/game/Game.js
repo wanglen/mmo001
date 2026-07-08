@@ -75,6 +75,7 @@ export class Game {
     this.attackTargetId = null;
     this.lootTargetId = null;
     this.npcTargetId = null;
+    this.portalTargetId = null;
     this.inventoryVisible = false;
     this.stashVisible = false;
     this.settingsVisible = false;
@@ -209,6 +210,7 @@ export class Game {
       this.pathFollower.clear();
       this.attackTargetId = null;
       this.lootTargetId = null;
+      this.portalTargetId = null;
     }
   }
 
@@ -278,6 +280,7 @@ export class Game {
     this.attackTargetId = null;
     this.lootTargetId = null;
     this.npcTargetId = null;
+    this.portalTargetId = null;
     this.pathFollower.clear();
     this.remotePlayerDisplay.clear();
     this.fxBuffer = new FxBuffer();

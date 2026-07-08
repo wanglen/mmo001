@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.1] - 2026-07-07
+
+### Changed
+
+- **Portal auto-teleport** — clicking a portal pathfinds to it; zone travel triggers automatically on arrival (no second click on the tile)
+
+### Fixed
+
+- **Interruptible town recall** — recall cast (**T**) cancels when moving, attacking, using skills, or taking monster damage (client no longer blocks input during the cast)
+
 ## [3.3.0] - 2026-07-07
 
 ### Added

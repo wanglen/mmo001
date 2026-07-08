@@ -21,6 +21,7 @@ export function handleTownRecallCast(game) {
   game.pathFollower.clear();
   game.attackTargetId = null;
   game.lootTargetId = null;
+  game.portalTargetId = null;
   game.socketClient.sendCastTownRecall();
 }
 
@@ -69,6 +70,7 @@ export function handleKeyboardMove(game, timestamp) {
 
   game.attackTargetId = null;
   game.lootTargetId = null;
+  game.portalTargetId = null;
   game.pathFollower.clear();
   if (timestamp - game.lastMoveTime >= MOVE_INTERVAL) {
     game.socketClient.sendMove(keyboardDirection);

@@ -48,6 +48,7 @@ export class GameLoop {
       this.pathFollower.clear();
       game.attackTargetId = null;
       game.lootTargetId = null;
+      game.portalTargetId = null;
       game.dialoguePanel?.hide();
       game.vendorPanel?.hide();
       this.remotePlayerDisplay.clear();
@@ -116,6 +117,7 @@ export class GameLoop {
       this.pathFollower.clear();
       game.attackTargetId = null;
       game.lootTargetId = null;
+      game.portalTargetId = null;
     }
 
     if (!game.displayPlayer && state.player) {

@@ -17,6 +17,7 @@ export function handleClick(game) {
   if (npc) {
     game.attackTargetId = null;
     game.lootTargetId = null;
+    game.portalTargetId = null;
     const origin = game.worldState.player ?? game.displayPlayer;
     const px = origin.x;
     const py = origin.y;
@@ -41,9 +42,11 @@ export function handleClick(game) {
     const px = origin.x;
     const py = origin.y;
     if (isInPortalRange(px, py, portal)) {
+      game.portalTargetId = null;
       game.pathFollower.clear();
       game.socketClient.sendUsePortal(portal.id);
     } else {
+      game.portalTargetId = portal.id;
       trySetPath(game, game.worldState.map, px, py, portal.x, portal.y, 'portal_click');
     }
     return;
@@ -54,6 +57,7 @@ export function handleClick(game) {
   if (loot) {
     game.lootTargetId = loot.id;
     game.attackTargetId = null;
+    game.portalTargetId = null;
     return;
   }
 
@@ -63,6 +67,7 @@ export function handleClick(game) {
   if (target) {
     game.attackTargetId = target.id;
     game.lootTargetId = null;
+    game.portalTargetId = null;
     const origin = game.worldState.player ?? game.displayPlayer;
     if (origin && !isInRange(origin.x, origin.y, target.x, target.y)) {
       trySetPath(game, game.worldState.map, origin.x, origin.y, target.x, target.y, 'monster_click');
@@ -75,6 +80,7 @@ export function handleClick(game) {
 
   game.attackTargetId = null;
   game.lootTargetId = null;
+  game.portalTargetId = null;
   trySetPath(game, game.worldState.map, origin.x, origin.y, world.x, world.y, 'ground_click');
 }
 
@@ -103,6 +109,35 @@ export function handleNpcChase(game, timestamp) {
 
   if (timestamp - game.lastChasePathTime >= MOVE_INTERVAL) {
     trySetPath(game, game.worldState.map, px, py, npc.x, npc.y, 'npc_chase');
+    game.lastChasePathTime = timestamp;
+  }
+}
+
+/** @param {import('../../game/Game.js').Game} game @param {number} timestamp */
+export function handlePortalChase(game, timestamp) {
+  if (!game.portalTargetId || !game.displayPlayer || !game.worldState) return;
+
+  const portal = (game.worldState.map?.portals ?? []).find((entry) => entry.id === game.portalTargetId);
+  if (!portal) {
+    game.portalTargetId = null;
+    return;
+  }
+
+  const origin = game.worldState.player ?? game.displayPlayer;
+  if (!origin) return;
+
+  const px = origin.x;
+  const py = origin.y;
+
+  if (isInPortalRange(px, py, portal)) {
+    game.pathFollower.clear();
+    game.socketClient.sendUsePortal(portal.id);
+    game.portalTargetId = null;
+    return;
+  }
+
+  if (timestamp - game.lastChasePathTime >= MOVE_INTERVAL) {
+    trySetPath(game, game.worldState.map, px, py, portal.x, portal.y, 'portal_chase');
     game.lastChasePathTime = timestamp;
   }
 }

@@ -89,6 +89,23 @@ describe('townHub system', () => {
     assert.equal(player.townRecallCastMs, 0);
   });
 
+  it('tickTownRecall does not advance cast after interrupt', () => {
+    const world = createWorld();
+    const player = createPlayer({
+      townRecallCasting: true,
+      townRecallCastMs: 1000,
+    });
+    const map = world.getMap(MAP_ID.WILDERNESS);
+
+    interruptTownRecall(player);
+    const result = tickTownRecall(player, map, world, 200);
+
+    assert.equal(result.teleported, false);
+    assert.equal(player.townRecallCasting, false);
+    assert.equal(player.townRecallCastMs, 0);
+    assert.equal(player.mapId, MAP_ID.WILDERNESS);
+  });
+
   it('teleportToTown moves player to town spawn', () => {
     const world = createWorld();
     const player = createPlayer({ x: 500, y: 500, mapId: MAP_ID.WILDERNESS });

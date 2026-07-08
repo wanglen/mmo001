@@ -9,8 +9,8 @@ Work below comes from playtesting feedback. One item per feature branch; check o
 ## Gameplay & zones
 
 ### Portals & travel
-- [ ] **Portal auto-teleport** — clicking a portal pathfinds to it; travel triggers on arrival (no extra click on the tile)
-- [ ] **Interruptible recall** — town recall (**T**) cancels on click-to-move, monster hit, or starting combat (verify/fix current behavior)
+- [x] **Portal auto-teleport** — clicking a portal pathfinds to it; travel triggers on arrival (no extra click on the tile)
+- [x] **Interruptible recall** — town recall (**T**) cancels on click-to-move, monster hit, or starting combat (verify/fix current behavior)
 
 ### Dungeon
 - [ ] **Dungeon boss respawn** — reduce how often the dungeon lord respawns
@@ -41,11 +41,10 @@ Work below comes from playtesting feedback. One item per feature branch; check o
 
 ## Next tasks (recommended order)
 
-1. [ ] **Portal auto-teleport on arrival**
-2. [ ] **Item pickup message**
-3. [ ] **Dungeon boss respawn tuning**
-4. [ ] **Dungeon chest spawning**
-5. [ ] **Bottom HUD layout fix**
+1. [ ] **Item pickup message**
+2. [ ] **Dungeon boss respawn tuning**
+3. [ ] **Dungeon chest spawning**
+4. [ ] **Bottom HUD layout fix**
 
 ---
 

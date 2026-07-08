@@ -21,13 +21,6 @@ export class InputRouter {
 
     coreInput.handleTownRecallCast(game);
 
-    if (game.isRecalling()) {
-      game.pathFollower.clear();
-      combatInput.handleAim(game, timestamp);
-      combatInput.handleZoom(game);
-      return;
-    }
-
     coreInput.handleInventoryToggle(game);
     coreInput.handleStashToggle(game);
     coreInput.handleSettingsToggle(game);
@@ -48,6 +41,7 @@ export class InputRouter {
     if (coreInput.handleKeyboardMove(game, timestamp)) return;
 
     worldInput.handleNpcChase(game, timestamp);
+    worldInput.handlePortalChase(game, timestamp);
     worldInput.handleLootChase(game, timestamp);
     combatInput.handleAttackChase(game, timestamp);
     coreInput.handlePathFollowerMove(game, timestamp);
