@@ -6,6 +6,7 @@ import {
   canPickupLoot,
   buildLootDropMeta,
   serializeLootForClient,
+  formatPickupMessage,
 } from '../../shared/lootRules.js';
 
 describe('lootRules', () => {
@@ -55,5 +56,10 @@ describe('lootRules', () => {
     const forOther = serializeLootForClient(drop, 'p2');
     assert.equal(forKiller.pickupLocked, false);
     assert.equal(forOther.pickupLocked, true);
+  });
+
+  it('formatPickupMessage builds a system chat line', () => {
+    assert.equal(formatPickupMessage('Rusty Sword'), 'Picked up Rusty Sword');
+    assert.equal(formatPickupMessage(''), 'Picked up Item');
   });
 });

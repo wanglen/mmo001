@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.2] - 2026-07-07
+
+### Added
+
+- **Item pickup message** — system chat notice when loot is successfully collected
+- **Socket gem overwrite** — right-click a gem to replace a socketed gem (in-game confirm dialog); replaced gem returns to inventory
+- **Gem and rune icons** — distinct inventory/tooltip icons and colors for ruby, sapphire, emerald, diamond, and rune socketables
+
 ## [3.3.1] - 2026-07-07
 
 ### Changed

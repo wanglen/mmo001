@@ -16,6 +16,11 @@ describe('itemIcons', () => {
     assert.equal(resolveItemIconKey({ consumableKind: 'mana', type: 'consumable' }), 'mana_potion');
   });
 
+  it('resolveItemIconKey maps gem kinds', () => {
+    assert.equal(resolveItemIconKey({ gemKind: 'ruby', type: 'gem' }), 'ruby');
+    assert.equal(resolveItemIconKey({ gemKind: 'rune', type: 'gem' }), 'rune');
+  });
+
   it('resolveItemIconKey infers from legacy item names', () => {
     assert.equal(resolveItemIconKey({ name: 'Magic Rusty Sword', slot: 'weapon' }), 'rusty_sword');
     assert.equal(resolveItemIconKey({ name: 'Health Potion', type: 'consumable', consumableKind: 'health' }), 'health_potion');

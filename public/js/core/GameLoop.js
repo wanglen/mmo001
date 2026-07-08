@@ -9,6 +9,8 @@ import {
 } from '/shared/plugins/world/chunks.js';
 import { configureClientEventLog } from '../debug/clientEventLog.js';
 import { getMapDisplayName } from '/shared/worldMaps.js';
+import { formatPickupMessage } from '/shared/lootRules.js';
+import { CHAT_CHANNEL } from '/shared/social.js';
 
 const LERP = 0.3;
 
@@ -93,6 +95,7 @@ export class GameLoop {
     }
 
     game.worldState = state;
+    this.notifyPickupSuccess(state);
     if (state.debug && !game.clientDebugLogEnabled) {
       game.clientDebugLogEnabled = true;
       configureClientEventLog({
@@ -261,5 +264,20 @@ export class GameLoop {
 
   start() {
     requestAnimationFrame((t) => this.loop(t));
+  }
+
+  notifyPickupSuccess(state) {
+    const game = this.game;
+    const pending = game.pendingPickup;
+    if (!pending) return;
+
+    const lootStillPresent = (state.loot ?? []).some((drop) => drop.id === pending.lootId);
+    if (lootStillPresent) return;
+
+    game.chatPanel?.appendMessage({
+      channel: CHAT_CHANNEL.SYSTEM,
+      text: formatPickupMessage(pending.itemName),
+    });
+    game.clearPendingPickup();
   }
 }

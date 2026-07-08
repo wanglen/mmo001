@@ -1,12 +1,22 @@
 import { resolveItemIconKey } from '/shared/itemIcons.js';
 import { getRarityColor } from '/shared/items.js';
 import { CONSUMABLE_KIND, getStackCount } from '/shared/consumables.js';
+import { GEM_KIND } from '/shared/plugins/items/gems.js';
 import { buildItemIconSvg } from './itemIconSvg.js';
 
 /** Inventory tint for consumable potions (overrides rarity color). */
 export const POTION_ICON_COLORS = {
   [CONSUMABLE_KIND.HEALTH]: '#e74c3c',
   [CONSUMABLE_KIND.MANA]: '#87ceeb',
+};
+
+/** Distinct colors for socketable gems and runes. */
+export const GEM_ICON_COLORS = {
+  [GEM_KIND.RUBY]: '#e74c3c',
+  [GEM_KIND.SAPPHIRE]: '#3498db',
+  [GEM_KIND.EMERALD]: '#2ecc71',
+  [GEM_KIND.DIAMOND]: '#ecf0f1',
+  [GEM_KIND.RUNE]: '#b57cff',
 };
 
 /**
@@ -16,6 +26,9 @@ export const POTION_ICON_COLORS = {
  */
 export function getInventoryIconColor(item, emptyColor = '#4a5a6a') {
   if (!item) return emptyColor;
+  if (item.gemKind && GEM_ICON_COLORS[item.gemKind]) {
+    return GEM_ICON_COLORS[item.gemKind];
+  }
   if (item.consumableKind === CONSUMABLE_KIND.HEALTH) {
     return POTION_ICON_COLORS[CONSUMABLE_KIND.HEALTH];
   }

@@ -28,16 +28,34 @@ export function getEmptySocketIndex(item) {
 /**
  * @param {object} item
  * @param {object} gem
+ * @param {{ socketIndex?: number }} [options]
  */
-export function socketGemIntoItem(item, gem) {
+export function socketGemIntoItem(item, gem, options = {}) {
   if (!item?.sockets?.length) return { ok: false, reason: 'no_sockets' };
   if (!isGem(gem)) return { ok: false, reason: 'not_gem' };
+
+  const requestedIndex = options.socketIndex;
+  if (Number.isInteger(requestedIndex)) {
+    if (requestedIndex < 0 || requestedIndex >= item.sockets.length) {
+      return { ok: false, reason: 'invalid_socket' };
+    }
+
+    const socket = item.sockets[requestedIndex];
+    const replacedGem = socket.gem ? { ...socket.gem, stats: { ...socket.gem.stats } } : null;
+    item.sockets[requestedIndex] = { gem: { ...gem, stats: { ...gem.stats } } };
+    return {
+      ok: true,
+      socketIndex: requestedIndex,
+      replacedGem,
+      replaced: !!replacedGem,
+    };
+  }
 
   const index = getEmptySocketIndex(item);
   if (index < 0) return { ok: false, reason: 'sockets_full' };
 
   item.sockets[index] = { gem: { ...gem, stats: { ...gem.stats } } };
-  return { ok: true, socketIndex: index };
+  return { ok: true, socketIndex: index, replacedGem: null, replaced: false };
 }
 
 /** @param {object[]} sockets */

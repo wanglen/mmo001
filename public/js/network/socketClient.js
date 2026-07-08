@@ -235,8 +235,13 @@ export class SocketClient {
     this.socket.emit(EVENTS.STASH_TAKE, { stashIndex });
   }
 
-  sendSocketGem({ gemInventoryIndex, targetInventoryIndex, targetSlot }) {
-    this.socket.emit(EVENTS.SOCKET_GEM, { gemInventoryIndex, targetInventoryIndex, targetSlot });
+  sendSocketGem({ gemInventoryIndex, targetInventoryIndex, targetSlot, socketIndex }) {
+    this.socket.emit(EVENTS.SOCKET_GEM, {
+      gemInventoryIndex,
+      targetInventoryIndex,
+      targetSlot,
+      socketIndex,
+    });
   }
 
   onChatMessage(callback) {

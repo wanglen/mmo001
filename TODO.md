@@ -21,9 +21,9 @@ Work below comes from playtesting feedback. One item per feature branch; check o
 ## Feedback & UI
 
 ### Pickup & inventory
-- [ ] **Item pickup message** — brief on-screen or chat notice when loot is collected
-- [ ] **Socket overwrite warning** — confirm before replacing a gem already socketed in gear
-- [ ] **Gem and rune icons** — distinct icons for socketables (inventory, tooltips, socket UI)
+- [x] **Item pickup message** — brief on-screen or chat notice when loot is collected
+- [x] **Socket overwrite warning** — confirm before replacing a gem already socketed in gear
+- [x] **Gem and rune icons** — distinct icons for socketables (inventory, tooltips, socket UI)
 
 ### Layout
 - [ ] **Bottom HUD layout** — fix elements clipped or misaligned at the bottom of the viewport (skill bar, orbs, chat overlap)
@@ -41,10 +41,9 @@ Work below comes from playtesting feedback. One item per feature branch; check o
 
 ## Next tasks (recommended order)
 
-1. [ ] **Item pickup message**
-2. [ ] **Dungeon boss respawn tuning**
-3. [ ] **Dungeon chest spawning**
-4. [ ] **Bottom HUD layout fix**
+1. [ ] **Dungeon boss respawn tuning**
+2. [ ] **Dungeon chest spawning**
+3. [ ] **Bottom HUD layout fix**
 
 ---
 

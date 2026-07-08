@@ -11,8 +11,9 @@ import { getItemTooltip } from './ItemTooltip.js';
 const EMPTY_SLOT_COLOR = '#4a5a6a';
 
 export class InventoryPanel {
-  constructor(rootEl) {
+  constructor(rootEl, confirmModal = null) {
     this.root = rootEl;
+    this.confirmModal = confirmModal;
     this.onEquip = null;
     this.onUnequip = null;
     this.onUseConsumable = null;
@@ -177,8 +178,10 @@ export class InventoryPanel {
       const targets = listSocketTargets(this.player ?? {});
       for (const target of targets) {
         actions.push({
-          id: 'socket',
-          label: `Socket into ${target.label}`,
+          id: target.replace ? 'replace' : 'socket',
+          label: target.replace
+            ? `Replace ${target.occupiedGemName} in ${target.label}`
+            : `Socket into ${target.label}`,
           target,
         });
       }
@@ -215,18 +218,29 @@ export class InventoryPanel {
       button.className = `inv-context-menu__item${action.id === 'destroy' ? ' inv-context-menu__item--danger' : ''}`;
       button.textContent = action.label;
       button.dataset.action = action.id;
-      button.addEventListener('click', (e) => {
+      button.addEventListener('click', async (e) => {
         e.stopPropagation();
         if (action.id === 'primary') {
           this.handlePrimaryAction(slotEl);
         } else if (action.id === 'stash') {
           this.onStoreInStash?.(Number(slotEl.dataset.index));
-        } else if (action.id === 'socket' && action.target) {
+        } else if ((action.id === 'socket' || action.id === 'replace') && action.target) {
           const gemIndex = Number(slotEl.dataset.index);
-          const payload =
-            action.target.kind === 'inventory'
-              ? { gemInventoryIndex: gemIndex, targetInventoryIndex: action.target.index }
-              : { gemInventoryIndex: gemIndex, targetSlot: action.target.slot };
+          const gem = this.getItemFromSlotEl(slotEl);
+          this.hideContextMenu();
+          if (action.id === 'replace') {
+            const confirmed = await this.confirmSocketReplace(gem, action.target);
+            if (!confirmed) return;
+          }
+          const payload = {
+            gemInventoryIndex: gemIndex,
+            socketIndex: action.target.socketIndex ?? undefined,
+          };
+          if (action.target.kind === 'inventory') {
+            payload.targetInventoryIndex = action.target.index;
+          } else {
+            payload.targetSlot = action.target.slot;
+          }
           this.onSocketGem?.(payload);
         } else {
           this.handleDestroy(slotEl);
@@ -249,6 +263,19 @@ export class InventoryPanel {
   hideContextMenu() {
     this.contextMenuEl?.remove();
     this.contextMenuEl = null;
+  }
+
+  confirmSocketReplace(gem, target) {
+    if (!this.confirmModal) return Promise.resolve(false);
+
+    const gemName = gem?.name ?? 'this gem';
+    return this.confirmModal.ask({
+      title: 'Replace socketed gem?',
+      message: `Replace ${target.occupiedGemName} in ${target.label} with ${gemName}? The replaced gem returns to your inventory.`,
+      confirmLabel: 'Replace',
+      cancelLabel: 'Cancel',
+      danger: true,
+    });
   }
 
   inspectSlot(slotEl, force = false) {

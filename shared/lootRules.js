@@ -53,3 +53,9 @@ export function serializeLootForClient(drop, viewerId, now = Date.now()) {
     pickupLocked: locked,
   };
 }
+
+/** System chat line when loot is added to inventory. */
+export function formatPickupMessage(itemName) {
+  const name = typeof itemName === 'string' && itemName.trim() ? itemName.trim() : 'Item';
+  return `Picked up ${name}`;
+}

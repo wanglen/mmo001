@@ -23,7 +23,7 @@ export function stashTake(player, map, stashIndex) {
  * @param {number} [options.targetInventoryIndex]
  * @param {string} [options.targetSlot]
  */
-export function socketGem(player, { gemInventoryIndex, targetInventoryIndex, targetSlot }) {
+export function socketGem(player, { gemInventoryIndex, targetInventoryIndex, targetSlot, socketIndex }) {
   if (!Number.isInteger(gemInventoryIndex)) return { ok: false, reason: 'invalid_gem' };
 
   const gem = player.inventory[gemInventoryIndex];
@@ -40,10 +40,11 @@ export function socketGem(player, { gemInventoryIndex, targetInventoryIndex, tar
 
   if (!targetItem) return { ok: false, reason: 'empty_target' };
 
-  const result = socketGemIntoItem(targetItem, gem);
+  const options = Number.isInteger(socketIndex) ? { socketIndex } : {};
+  const result = socketGemIntoItem(targetItem, gem, options);
   if (!result.ok) return result;
 
-  player.inventory[gemInventoryIndex] = null;
+  player.inventory[gemInventoryIndex] = result.replacedGem ?? null;
   refreshPlayerDerivedStats(player, player.equipment);
-  return { ok: true };
+  return { ok: true, replaced: !!result.replaced };
 }

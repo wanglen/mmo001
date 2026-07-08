@@ -1,4 +1,5 @@
 import { InventoryPanel } from '../../ui/InventoryPanel.js';
+import { ConfirmModal } from '../../ui/ConfirmModal.js';
 import { StashPanel } from '../../ui/StashPanel.js';
 import { SkillBar } from '../../ui/SkillBar.js';
 import { LevelUpPanel } from '../../ui/LevelUpPanel.js';
@@ -12,7 +13,18 @@ import { DisconnectModal } from './DisconnectModal.js';
 export function registerCoreClient(ctx) {
   const { socketClient, canvas } = ctx;
 
-  const inventoryPanel = new InventoryPanel(document.getElementById('inventory-panel'));
+  const confirmModal = new ConfirmModal(document.getElementById('confirm-overlay'), {
+    titleEl: document.querySelector('[data-confirm-title]'),
+    messageEl: document.querySelector('[data-confirm-message]'),
+    confirmBtn: document.querySelector('[data-confirm-ok]'),
+    cancelBtn: document.querySelector('[data-confirm-cancel]'),
+  });
+  ctx.registerPanel('confirm', confirmModal, { blocksInput: true, zIndex: 30 });
+
+  const inventoryPanel = new InventoryPanel(
+    document.getElementById('inventory-panel'),
+    confirmModal
+  );
   inventoryPanel.onEquip = (index) => socketClient.sendEquip(index);
   inventoryPanel.onUnequip = (slot) => socketClient.sendUnequip(slot);
   inventoryPanel.onUseConsumable = (index) => socketClient.sendUseConsumable(index);

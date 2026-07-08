@@ -23,4 +23,20 @@ describe('sockets', () => {
     assert.equal(item.sockets[0].gem.name, 'Ruby');
     assert.equal(getSocketStatBonuses(item.sockets).str, 3);
   });
+
+  it('socketGemIntoItem replaces an occupied socket when socketIndex is given', () => {
+    const ruby = createGem('ruby');
+    const sapphire = createGem('sapphire');
+    const item = {
+      sockets: [{ gem: { ...ruby, stats: { ...ruby.stats } } }, { gem: null }],
+    };
+
+    const result = socketGemIntoItem(item, sapphire, { socketIndex: 0 });
+
+    assert.equal(result.ok, true);
+    assert.equal(result.replaced, true);
+    assert.equal(result.replacedGem?.name, 'Ruby');
+    assert.equal(item.sockets[0].gem.name, 'Sapphire');
+    assert.equal(item.sockets[1].gem, null);
+  });
 });

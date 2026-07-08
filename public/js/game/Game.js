@@ -76,6 +76,7 @@ export class Game {
     this.lootTargetId = null;
     this.npcTargetId = null;
     this.portalTargetId = null;
+    this.pendingPickup = null;
     this.inventoryVisible = false;
     this.stashVisible = false;
     this.settingsVisible = false;
@@ -202,6 +203,15 @@ export class Game {
 
   isRecalling() {
     return !!this.worldState?.player?.townRecallCasting;
+  }
+
+  trackPendingPickup({ lootId, itemName }) {
+    if (!lootId) return;
+    this.pendingPickup = { lootId, itemName: itemName ?? 'Item' };
+  }
+
+  clearPendingPickup() {
+    this.pendingPickup = null;
   }
 
   onGamePause(paused) {

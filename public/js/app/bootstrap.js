@@ -64,6 +64,7 @@ export function bootstrap() {
       skillTreePanel.setStatus(err.message);
     }
     if (pluginHost.isInGame()) {
+      pluginHost.game?.clearPendingPickup();
       chatPanel?.appendMessage({
         channel: CHAT_CHANNEL.SYSTEM,
         text: err.message,

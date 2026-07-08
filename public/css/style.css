@@ -1461,6 +1461,64 @@ html, body {
   color: #c8d0dc;
 }
 
+.confirm-overlay {
+  z-index: 30;
+}
+
+.confirm-panel {
+  min-width: 320px;
+  max-width: min(420px, calc(100vw - 32px));
+  text-align: center;
+}
+
+.confirm-panel h1 {
+  font-size: 1.15rem;
+  margin-bottom: 0.75rem;
+}
+
+.confirm-message {
+  color: #c8d0dc;
+  font-size: 0.95rem;
+  margin-bottom: 1.25rem;
+  line-height: 1.45;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.confirm-actions button {
+  min-width: 100px;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.confirm-actions [data-confirm-ok] {
+  background: #e94560;
+  color: #fff;
+}
+
+.confirm-actions [data-confirm-ok].btn-danger {
+  background: #c0392b;
+}
+
+.confirm-actions [data-confirm-ok]:hover {
+  background: #c73652;
+}
+
+.confirm-actions [data-confirm-ok].btn-danger:hover {
+  background: #922b21;
+}
+
+.confirm-actions .btn-secondary:hover {
+  background: #1a4a7a;
+}
+
 #disconnect-reload-btn {
   min-width: 200px;
 }

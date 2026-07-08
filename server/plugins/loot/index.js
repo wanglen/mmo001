@@ -153,11 +153,14 @@ export function registerLootHandlers(socket, ctx) {
     broadcastAll();
   });
 
-  socket.on(EVENTS.SOCKET_GEM, async ({ gemInventoryIndex, targetInventoryIndex, targetSlot }) => {
+  socket.on(EVENTS.SOCKET_GEM, async ({ gemInventoryIndex, targetInventoryIndex, targetSlot, socketIndex }) => {
     const player = getLivingPlayer(playerManager, socket.id);
     if (!player || !Number.isInteger(gemInventoryIndex)) return;
 
-    const result = socketGem(player, { gemInventoryIndex, targetInventoryIndex, targetSlot });
+    const options = { gemInventoryIndex, targetInventoryIndex, targetSlot };
+    if (Number.isInteger(socketIndex)) options.socketIndex = socketIndex;
+
+    const result = socketGem(player, options);
     if (!result.ok) {
       socket.emit(EVENTS.ERROR, { message: `Cannot socket gem: ${result.reason}` });
       return;
