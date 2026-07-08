@@ -32,6 +32,7 @@ export function applyMonsterDamage({
   let xpResult = null;
   let lootDrop = null;
   let xpRecipientIds = [];
+  let xpByRecipient = [];
 
   provokeMonster(monster, player);
 
@@ -47,6 +48,11 @@ export function applyMonsterDamage({
       const result = grantXp(recipient, monster.xpReward, recipient.characterClass);
       if (recipient.id === player.id) xpResult = result;
       xpRecipientIds.push(recipient.id);
+      xpByRecipient.push({
+        playerId: recipient.id,
+        playerName: recipient.name,
+        result,
+      });
     }
 
     monsterManager.remove(monster.id);
@@ -58,6 +64,7 @@ export function applyMonsterDamage({
       partyMemberIds,
       allPlayers,
       lootManager,
+      xpByRecipient,
       now,
     });
   }

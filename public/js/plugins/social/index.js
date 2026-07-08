@@ -1,5 +1,6 @@
 import { CHAT_CHANNEL } from '/shared/social.js';
 import { ChatPanel } from './ChatPanel.js';
+import { WorldEventPanel } from './WorldEventPanel.js';
 import { SocialPanel } from './SocialPanel.js';
 
 /** @param {import('../../../../shared/plugins/types.js').ClientContext} ctx */
@@ -9,6 +10,8 @@ export function registerSocialClient(ctx) {
   const chatPanel = new ChatPanel(document.getElementById('chat-panel'));
   chatPanel.setCanvas(canvas);
   chatPanel.onSend = ({ text, channel }) => socketClient.sendChat({ text, channel });
+
+  const worldEventPanel = new WorldEventPanel(document.getElementById('world-event-panel'));
 
   const socialPanel = new SocialPanel(document.getElementById('social-panel'));
   socialPanel.onInvite = (targetName) => socketClient.sendPartyInvite(targetName);
@@ -21,9 +24,11 @@ export function registerSocialClient(ctx) {
   ctx.registerPanel('social', socialPanel);
   ctx.registerInputBlocker(() => chatPanel.isFocused());
   ctx.panels.chatPanel = chatPanel;
+  ctx.panels.worldEventPanel = worldEventPanel;
   ctx.panels.socialPanel = socialPanel;
 
   socketClient.onChatMessage((msg) => chatPanel.appendMessage(msg));
+  socketClient.onWorldEvent((event) => worldEventPanel.append(event));
   socketClient.onOnlinePlayers((payload) => socialPanel.updateOnline(payload));
   socketClient.onPartyState((state) => socialPanel.updateParty(state));
 }

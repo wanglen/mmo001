@@ -124,6 +124,7 @@ export function finalizeCoreClient(ctx) {
     onStart: () => {
       ctx.setInGame(true);
       chatPanel?.show();
+      ctx.panels.worldEventPanel?.show();
       socialPanel?.show();
       game.start();
     },

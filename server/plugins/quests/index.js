@@ -4,15 +4,22 @@ import {
   interactWithNpc,
   turnInQuestForPlayer,
 } from './quests.js';
+import { getQuestDef } from '../../../shared/quests.js';
+import {
+  formatLevelUpEvent,
+  formatQuestAcceptedEvent,
+  formatQuestCompletedEvent,
+} from '../../../shared/worldLog.js';
 import { getLivingPlayer, getPlayerContext, persistPlayer } from '../../app/handlerUtils.js';
 import { registerQuestBusHandlers } from './bus.js';
 import { serializeQuestPlayer } from './serialize.js';
+import { emitWorldEvent } from '../social/worldLog.js';
 
 export const QUEST_EVENTS = [EVENTS.NPC_INTERACT, EVENTS.QUEST_ACCEPT, EVENTS.QUEST_TURN_IN];
 
 /** @param {import('socket.io').Socket} socket @param {import('../../../shared/plugins/types.js').ServerContext} ctx */
 export function registerQuestHandlers(socket, ctx) {
-  const { world, playerManager, characterStore, broadcastAll } = ctx;
+  const { world, playerManager, characterStore, broadcastAll, io } = ctx;
 
   socket.on(EVENTS.NPC_INTERACT, async ({ npcId }) => {
     const player = getLivingPlayer(playerManager, socket.id);
@@ -37,6 +44,11 @@ export function registerQuestHandlers(socket, ctx) {
       return;
     }
 
+    const quest = getQuestDef(questId);
+    if (quest) {
+      emitWorldEvent(ctx.io, player.id, formatQuestAcceptedEvent({ questTitle: quest.title }));
+    }
+
     await persistPlayer(characterStore, player);
     broadcastAll();
   });
@@ -49,6 +61,21 @@ export function registerQuestHandlers(socket, ctx) {
     if (!result.ok) {
       socket.emit(EVENTS.ERROR, { message: 'Cannot turn in quest' });
       return;
+    }
+
+    const quest = getQuestDef(questId);
+    if (quest) {
+      emitWorldEvent(io, player.id, formatQuestCompletedEvent({ questTitle: quest.title }));
+    }
+    if (result.xp?.leveledUp) {
+      emitWorldEvent(
+        io,
+        player.id,
+        formatLevelUpEvent({
+          level: player.level,
+          levelsGained: result.xp.levelsGained,
+        })
+      );
     }
 
     await persistPlayer(characterStore, player);

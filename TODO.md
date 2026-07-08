@@ -29,7 +29,7 @@ Work below comes from playtesting feedback. One item per feature branch; check o
 - [x] **Bottom HUD layout** — fix elements clipped or misaligned at the bottom of the viewport (skill bar, orbs, chat overlap)
 
 ### World log
-- [ ] **World event list** — UI panel or feed for notable events (kills, level-ups, quest updates, party/trade notices)
+- [x] **World event list** — transient toast feed for notable events (kills, level-ups, quest updates, party/trade notices)
 
 ---
 

@@ -24,7 +24,7 @@ export function pickupLoot({ player, lootId, lootManager, now = Date.now() }) {
   if (!result.ok) return result;
 
   lootManager.remove(lootId);
-  return { ok: true, index: result.index };
+  return { ok: true, index: result.index, item: drop.item };
 }
 
 export function useConsumableFromInventory(player, inventoryIndex) {

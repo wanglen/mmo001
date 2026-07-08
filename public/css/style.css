@@ -2142,6 +2142,82 @@ html, body {
   padding: 0.25rem 0.5rem;
 }
 
+.world-event-toasts {
+  position: fixed;
+  left: var(--hud-chat-left, 16px);
+  bottom: calc(var(--hud-chat-bottom, 150px) + var(--hud-chat-log-height, 88px) + 52px);
+  width: min(var(--hud-chat-width, 220px), calc(100vw - 32px));
+  z-index: 10;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.world-event-toasts.hidden {
+  display: none;
+}
+
+.world-event-toast {
+  padding: 0.45rem 0.55rem;
+  font-size: 0.74rem;
+  line-height: 1.35;
+  color: #e8edf5;
+  background: rgba(0, 0, 0, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  word-break: break-word;
+}
+
+.world-event-toast--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.world-event-toast--leaving {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.world-event-tag {
+  display: inline-block;
+  min-width: 2.8rem;
+  margin-right: 0.25rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #8fa0b8;
+}
+
+.world-event-toast--kill .world-event-tag {
+  color: #e8a060;
+}
+
+.world-event-toast--levelUp .world-event-tag {
+  color: #f0d060;
+}
+
+.world-event-toast--quest .world-event-tag {
+  color: #7ec8a0;
+}
+
+.world-event-toast--party .world-event-tag {
+  color: #8ab4f0;
+}
+
+.world-event-toast--trade .world-event-tag {
+  color: #c8a0f0;
+}
+
+.world-event-toast--loot .world-event-tag {
+  color: #d8c878;
+}
+
 .chat-panel {
   position: fixed;
   left: var(--hud-chat-left, 16px);

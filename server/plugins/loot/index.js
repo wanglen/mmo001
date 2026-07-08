@@ -13,6 +13,8 @@ import { interruptTownRecall } from '../core/townHub.js';
 import { getLivingPlayer, getPlayerContext, persistPlayer } from '../../app/handlerUtils.js';
 import { serializeLootPlayer, serializeLootWorld } from './serialize.js';
 import { registerLootBusHandlers } from './bus.js';
+import { emitWorldEvent } from '../social/worldLog.js';
+import { formatLootEvent } from '../../../shared/worldLog.js';
 
 export const LOOT_EVENTS = [
   EVENTS.USE_CONSUMABLE,
@@ -28,7 +30,7 @@ export const LOOT_EVENTS = [
 
 /** @param {import('socket.io').Socket} socket @param {import('../../../shared/plugins/types.js').ServerContext} ctx */
 export function registerLootHandlers(socket, ctx) {
-  const { world, playerManager, characterStore, broadcastAll } = ctx;
+  const { world, playerManager, characterStore, broadcastAll, io } = ctx;
 
   socket.on(EVENTS.USE_CONSUMABLE, async ({ inventoryIndex }) => {
     const player = getLivingPlayer(playerManager, socket.id);
@@ -57,6 +59,8 @@ export function registerLootHandlers(socket, ctx) {
       socket.emit(EVENTS.ERROR, { message: `Cannot pick up: ${result.reason}` });
       return;
     }
+
+    emitWorldEvent(io, player.id, formatLootEvent(result.item?.name));
 
     await persistPlayer(characterStore, player);
     broadcastAll();

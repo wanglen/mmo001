@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4.0] - 2026-07-07
+
+### Added
+
+- **World event list** — transient toast notifications for kills, level-ups, quest progress, loot pickups, party invites, and trade notices (auto-dismiss; does not block minimap or zone badge)
+
 ## [3.3.4] - 2026-07-07
 
 ### Fixed

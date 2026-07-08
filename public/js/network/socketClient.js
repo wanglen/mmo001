@@ -13,6 +13,7 @@ export class SocketClient {
     this.onCharacterCreatedCallback = null;
     this.onCharactersChangedCallback = null;
     this.onChatMessageCallback = null;
+    this.onWorldEventCallback = null;
     this.onOnlinePlayersCallback = null;
     this.onPartyStateCallback = null;
     this.onDisconnectCallback = null;
@@ -38,6 +39,10 @@ export class SocketClient {
 
     this.socket.on(EVENTS.CHAT_MESSAGE, (msg) => {
       if (this.onChatMessageCallback) this.onChatMessageCallback(msg);
+    });
+
+    this.socket.on(EVENTS.WORLD_EVENT, (event) => {
+      if (this.onWorldEventCallback) this.onWorldEventCallback(event);
     });
 
     this.socket.on(EVENTS.ONLINE_PLAYERS, (payload) => {
@@ -246,6 +251,10 @@ export class SocketClient {
 
   onChatMessage(callback) {
     this.onChatMessageCallback = callback;
+  }
+
+  onWorldEvent(callback) {
+    this.onWorldEventCallback = callback;
   }
 
   onOnlinePlayers(callback) {

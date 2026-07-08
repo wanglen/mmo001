@@ -28,6 +28,7 @@ export const EVENTS = {
   ERROR: 'error',
   CHAT_SEND: 'chatSend',
   CHAT_MESSAGE: 'chatMessage',
+  WORLD_EVENT: 'worldEvent',
   PARTY_INVITE: 'partyInvite',
   PARTY_ACCEPT: 'partyAccept',
   PARTY_DECLINE: 'partyDecline',

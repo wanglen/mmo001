@@ -6,6 +6,8 @@ import {
 } from './vendors.js';
 import { serializeEconomyPlayer } from './serialize.js';
 import { registerEconomyBusHandlers } from './bus.js';
+import { emitWorldEvent } from '../social/worldLog.js';
+import { formatTradeEvent } from '../../../shared/worldLog.js';
 
 const TRADE_ERROR_MESSAGES = {
   invalid_target: 'Invalid trade target',
@@ -159,6 +161,11 @@ export function registerEconomyHandlers(socket, ctx) {
     }
 
     emitTradeState(io, tradeManager, playerManager, [player.id, target.id]);
+    emitWorldEvent(
+      io,
+      target.id,
+      formatTradeEvent(`${player.name} wants to trade.`)
+    );
   });
 
   socket.on(EVENTS.TRADE_ACCEPT, () => {
@@ -245,6 +252,8 @@ export function registerEconomyHandlers(socket, ctx) {
       tradeManager.endSession(session.id);
       broadcastAll();
       emitTradeState(io, tradeManager, playerManager, [session.playerAId, session.playerBId]);
+      emitWorldEvent(io, session.playerAId, formatTradeEvent('Trade completed.'));
+      emitWorldEvent(io, session.playerBId, formatTradeEvent('Trade completed.'));
       return;
     }
 

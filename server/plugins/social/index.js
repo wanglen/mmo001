@@ -6,6 +6,8 @@ import {
 } from '../../../shared/social.js';
 import { buildSystemChatMessage, getChatRecipients, resolveChatSend } from './chat.js';
 import { registerSocialBusHandlers } from './bus.js';
+import { emitWorldEvent } from './worldLog.js';
+import { formatPartyEvent } from '../../../shared/worldLog.js';
 
 function emitToPlayerIds(io, playerIds, event, payload) {
   for (const playerId of playerIds) {
@@ -99,9 +101,10 @@ export function registerSocialHandlers(socket, ctx) {
       target.id,
     ]);
     target.id &&
-      io.to(target.id).emit(
-        EVENTS.CHAT_MESSAGE,
-        buildSystemChatMessage(`${inviter.name} invited you to a party.`)
+      emitWorldEvent(
+        io,
+        target.id,
+        formatPartyEvent(`${inviter.name} invited you to a party.`)
       );
   });
 
@@ -122,7 +125,7 @@ export function registerSocialHandlers(socket, ctx) {
       }
     }
     emitPartyState(io, partyManager, playerManager, [...affected]);
-    io.to(socket.id).emit(EVENTS.CHAT_MESSAGE, buildSystemChatMessage('You joined the party.'));
+    emitWorldEvent(io, socket.id, formatPartyEvent('You joined the party.'));
   });
 
   socket.on(EVENTS.PARTY_DECLINE, () => {
@@ -152,7 +155,7 @@ export function registerSocialHandlers(socket, ctx) {
 
     const affected = new Set([player.id, ...memberIds]);
     emitPartyState(io, partyManager, playerManager, [...affected]);
-    socket.emit(EVENTS.CHAT_MESSAGE, buildSystemChatMessage('You left the party.'));
+    emitWorldEvent(io, socket.id, formatPartyEvent('You left the party.'));
   });
 }
 

@@ -9,8 +9,6 @@ import {
 } from '/shared/plugins/world/chunks.js';
 import { configureClientEventLog } from '../debug/clientEventLog.js';
 import { getMapDisplayName } from '/shared/worldMaps.js';
-import { formatPickupMessage } from '/shared/lootRules.js';
-import { CHAT_CHANNEL } from '/shared/social.js';
 
 const LERP = 0.3;
 
@@ -275,10 +273,6 @@ export class GameLoop {
     const lootStillPresent = (state.loot ?? []).some((drop) => drop.id === pending.lootId);
     if (lootStillPresent) return;
 
-    game.chatPanel?.appendMessage({
-      channel: CHAT_CHANNEL.SYSTEM,
-      text: formatPickupMessage(pending.itemName),
-    });
     game.clearPendingPickup();
   }
 }
