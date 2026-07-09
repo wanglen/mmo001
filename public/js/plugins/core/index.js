@@ -112,10 +112,13 @@ export function finalizeCoreClient(ctx) {
     settingsPanel,
     pluginHost
   );
-  levelUpPanel.onPauseChange = (paused) => game.onGamePause(paused);
+  levelUpPanel.onPauseChange = () => game.syncManagementPause();
   levelUpPanel.onPlayLevelUpSound = () => game.audio.playSfx('levelUp');
   levelUpPanel.onLevelUpParticles = () => game.gameParticles.onLevelUp(game);
-  skillTreePanel.onPauseChange = (paused) => game.onGamePause(paused);
+  skillTreePanel.onPauseChange = () => game.syncManagementPause();
+  if (socialPanel) {
+    socialPanel.onOnlineChange = () => game.syncManagementPause();
+  }
   ctx.setGame(game);
 
   const characterSelect = new CharacterSelect({

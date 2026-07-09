@@ -56,7 +56,12 @@ export function canAttackNow(lastAttackAt, now = Date.now(), cooldownMs = ATTACK
   return now - lastAttackAt >= cooldownMs;
 }
 
-export { resolvePlayerMeleeDamage, resolveMonsterHitOnPlayer } from './advancedCombat.js';
+export {
+  resolvePlayerMeleeDamage,
+  resolveMonsterHitOnPlayer,
+  MELEE_STR_MULTIPLIER,
+  getMeleeDamageBounds,
+} from './advancedCombat.js';
 export { DAMAGE_TYPE, createEmptyResistances } from './damageTypes.js';
 export { STATUS, isStunned, getMovementSpeedMultiplier, tickStatusEffects, applyStatusEffect, createStatusEffect, clearStatusEffects } from './statusEffects.js';
 export { ELITE_MODIFIERS, rollEliteModifier, applyEliteModifier } from './eliteModifiers.js';

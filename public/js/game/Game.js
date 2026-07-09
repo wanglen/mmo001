@@ -16,6 +16,11 @@ import { AudioManager } from '../audio/AudioManager.js';
 import { GameAudio } from '../audio/GameAudio.js';
 import { ParticleSystem } from '../render/ParticleSystem.js';
 import { GameParticles } from '../render/GameParticles.js';
+import {
+  isAloneOnServer,
+  wantsManagementPause,
+  shouldPauseGameplay,
+} from './managementPause.js';
 
 /** Composition root for in-game client state, panels, and the render loop. */
 export class Game {
@@ -144,6 +149,7 @@ export class Game {
     if (!visible) {
       this.stashPanel?.hideContextMenu?.();
     }
+    this.syncManagementPause();
   }
 
   isInTown() {
@@ -156,6 +162,7 @@ export class Game {
     if (!visible) {
       this.inventoryPanel?.hideContextMenu?.();
     }
+    this.syncManagementPause();
   }
 
   setSettingsVisible(visible) {
@@ -230,6 +237,31 @@ export class Game {
       this.portalTargetId = null;
       this.chestTarget = null;
     }
+  }
+
+  isAloneOnServer() {
+    return isAloneOnServer(
+      this.socialPanel?.online?.count,
+      (this.worldState?.players ?? []).length
+    );
+  }
+
+  wantsManagementPause() {
+    return wantsManagementPause({
+      inventoryVisible: this.inventoryVisible,
+      stashVisible: this.stashVisible,
+      levelUpVisible: this.levelUpPanel?.isVisible(),
+      skillTreeVisible: this.skillTreePanel?.isVisible(),
+    });
+  }
+
+  /** Pause input only when alone and a stat/skill/inventory UI is open. */
+  syncManagementPause() {
+    const paused = shouldPauseGameplay({
+      wantsPause: this.wantsManagementPause(),
+      alone: this.isAloneOnServer(),
+    });
+    this.onGamePause(paused);
   }
 
   focusCanvas() {

@@ -6,8 +6,11 @@ import {
   applyResistance,
   resolvePlayerMeleeDamage,
   resolveMonsterHitOnPlayer,
+  MELEE_STR_MULTIPLIER,
   CRIT_MULTIPLIER,
 } from '../../../../shared/plugins/combat/advancedCombat.js';
+import { MONSTER_TYPES } from '../../../../shared/monsters.js';
+import { BASE_STATS } from '../../../../shared/stats.js';
 
 describe('advancedCombat', () => {
   it('getCritChance scales with dex and caps at 50%', () => {
@@ -43,7 +46,21 @@ describe('advancedCombat', () => {
       random: () => 0,
     });
     assert.equal(crit.crit, true);
-    assert.ok(crit.damage >= Math.floor(10 * 2 * CRIT_MULTIPLIER));
+    assert.ok(
+      crit.damage >= Math.floor(Math.floor(10 * MELEE_STR_MULTIPLIER) * CRIT_MULTIPLIER)
+    );
+  });
+
+  it('level-1 warrior melee does not one-shot a goblin without crit', () => {
+    const str = BASE_STATS.warrior.str;
+    const goblinHp = MONSTER_TYPES.goblin.hp;
+    const hit = resolvePlayerMeleeDamage({
+      str,
+      dex: BASE_STATS.warrior.dex,
+      random: () => 0.99,
+    });
+    assert.equal(hit.crit, false);
+    assert.ok(hit.damage < goblinHp);
   });
 
   it('resolveMonsterHitOnPlayer can dodge', () => {

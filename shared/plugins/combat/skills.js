@@ -1,7 +1,10 @@
 import skillsData from '../../content/skills.json' with { type: 'json' };
 import { distance, MONSTER_HIT_RADIUS, PROJECTILE_HIT_PADDING } from './combat.js';
+import { getCritChance, CRIT_MULTIPLIER } from './advancedCombat.js';
 
 export const SKILL_SLOT_COUNT = skillsData.skillSlotCount;
+/** Scales skill damage down so early skills do not one-shot common mobs. */
+export const SKILL_DAMAGE_SCALAR = 0.72;
 
 /** @typedef {'melee_aoe' | 'dash' | 'projectile' | 'ground_aoe' | 'single_target'} SkillType */
 
@@ -147,20 +150,59 @@ export function getSkillCooldownRemaining(player, now = Date.now()) {
 }
 
 /**
+ * Skill damage range before variance and crit.
+ * @param {SkillDef} skill
+ * @param {object} combatStats
+ */
+export function getSkillDamageBounds(skill, combatStats) {
+  const stat = combatStats[skill.damageStat] ?? 5;
+  const base = Math.max(1, Math.floor(stat * skill.damageMult * SKILL_DAMAGE_SCALAR));
+  const applyPercent = (value) => {
+    const damagePercent = combatStats.damagePercent ?? 0;
+    if (damagePercent <= 0) return value;
+    return Math.floor(value * (1 + damagePercent / 100));
+  };
+
+  const min = applyPercent(base);
+  const max = applyPercent(base + 2);
+  return {
+    min,
+    max,
+    critMin: applyPercent(Math.floor(base * CRIT_MULTIPLIER)),
+    critMax: applyPercent(Math.floor((base + 2) * CRIT_MULTIPLIER)),
+  };
+}
+
+/**
+ * @param {SkillDef} skill
+ * @param {object} combatStats
+ * @param {() => number} [random]
+ * @returns {{ damage: number, crit: boolean }}
+ */
+export function resolveSkillDamage(skill, combatStats, random = Math.random) {
+  const stat = combatStats[skill.damageStat] ?? 5;
+  let damage = Math.max(1, Math.floor(stat * skill.damageMult * SKILL_DAMAGE_SCALAR));
+  damage += Math.floor(random() * 3);
+
+  const damagePercent = combatStats.damagePercent ?? 0;
+  if (damagePercent > 0) {
+    damage = Math.floor(damage * (1 + damagePercent / 100));
+  }
+
+  const dex = combatStats.dex ?? 0;
+  const crit = random() < getCritChance(dex);
+  if (crit) damage = Math.floor(damage * CRIT_MULTIPLIER);
+
+  return { damage, crit };
+}
+
+/**
  * @param {SkillDef} skill
  * @param {object} combatStats
  * @returns {number}
  */
 export function calculateSkillDamage(skill, combatStats) {
-  const stat = combatStats[skill.damageStat] ?? 5;
-  let base = Math.max(1, Math.floor(stat * skill.damageMult));
-  const variance = Math.floor(Math.random() * 3);
-  base += variance;
-  const damagePercent = combatStats.damagePercent ?? 0;
-  if (damagePercent > 0) {
-    base = Math.floor(base * (1 + damagePercent / 100));
-  }
-  return base;
+  return resolveSkillDamage(skill, combatStats).damage;
 }
 
 /**

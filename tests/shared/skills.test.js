@@ -10,6 +10,9 @@ import {
   getSkillCooldownRemaining,
   getSkillCooldownRemainingMs,
   calculateSkillDamage,
+  resolveSkillDamage,
+  getSkillDamageBounds,
+  SKILL_DAMAGE_SCALAR,
   findMonstersInRadius,
   findMonstersInArc,
   findMonsterAtGroundPoint,
@@ -109,7 +112,63 @@ describe('skills', () => {
   it('calculateSkillDamage scales with stat', () => {
     const dmg = calculateSkillDamage(SKILLS.cleave, { str: 20, dex: 5, int: 5 });
     assert.ok(dmg >= 1);
-    assert.ok(dmg >= 20);
+    assert.ok(dmg >= Math.floor(20 * SKILLS.cleave.damageMult * SKILL_DAMAGE_SCALAR));
+  });
+
+  it('resolveSkillDamage can crit from dex', () => {
+    const bounds = getSkillDamageBounds(SKILLS.arrow_shot, { dex: 15, str: 8, int: 8 });
+    const { damage, crit } = resolveSkillDamage(
+      SKILLS.arrow_shot,
+      { dex: 15, str: 8, int: 8 },
+      () => 0
+    );
+    assert.equal(crit, true);
+    assert.ok(damage >= bounds.critMin);
+  });
+
+  it('level-1 starter skills do not one-shot a goblin', () => {
+    const stats = { str: 15, dex: 15, int: 15 };
+    const goblinHp = 40;
+    for (const skillId of ['cleave', 'fireball', 'arrow_shot']) {
+      const dmg = calculateSkillDamage(SKILLS[skillId], stats);
+      assert.ok(dmg < goblinHp, `${skillId} damage ${dmg} should not one-shot goblin`);
+    }
+  });
+
+  it('mage tier-1/2 skills stay below goblin HP at level 1 and mid-level int', () => {
+    const goblinHp = 40;
+    const batHp = 25;
+    const earlySkills = ['fireball', 'icebolt', 'frost_nova', 'chain_spark'];
+
+    const maxDamage = (skillId, int) => {
+      const skill = SKILLS[skillId];
+      const base = Math.max(1, Math.floor(int * skill.damageMult * SKILL_DAMAGE_SCALAR));
+      return base + 2;
+    };
+
+    for (const skillId of earlySkills) {
+      assert.ok(
+        maxDamage(skillId, 15) < goblinHp,
+        `${skillId} max level-1 damage should not one-shot goblin`
+      );
+      assert.ok(
+        maxDamage(skillId, 15) < batHp + 10,
+        `${skillId} level-1 damage should not reliably one-shot bats`
+      );
+      assert.ok(
+        maxDamage(skillId, 35) < goblinHp,
+        `${skillId} max int-35 damage should not one-shot goblin`
+      );
+    }
+
+    assert.ok(
+      maxDamage('meteor', 15) < goblinHp,
+      'meteor should not one-shot goblins at level 1'
+    );
+    assert.ok(
+      maxDamage('meteor', 35) >= goblinHp,
+      'meteor should pay off skill points with goblin one-shots by mid-level int'
+    );
   });
 
   it('findMonstersInRadius finds nearby targets', () => {

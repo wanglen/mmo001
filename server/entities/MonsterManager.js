@@ -25,6 +25,7 @@ import {
   isInstancedDungeonMap,
   canRespawnBoss,
 } from '../../shared/dungeon.js';
+import { resolveMonsterScaleLevel } from '../../shared/plugins/combat/monsterScaling.js';
 import { resolveMonsterTarget, monsterAttackPlayer } from '../plugins/combat/monsterCombat.js';
 
 const DIRECTION_DELTA = {
@@ -133,7 +134,7 @@ function filterSpawnCandidates(map, connected) {
   return candidates;
 }
 
-function placeMonstersOnTiles(manager, tiles, count, types, startIndex = 0) {
+function placeMonstersOnTiles(manager, tiles, count, types, startIndex = 0, scaleLevel = 1) {
   if (count <= 0 || tiles.length === 0) return 0;
 
   const shuffled = shuffle(tiles);
@@ -144,7 +145,7 @@ function placeMonstersOnTiles(manager, tiles, count, types, startIndex = 0) {
     const tile = shuffled[i];
     const type = types[(startIndex + placed) % types.length];
     const { x, y } = tileToPixel(tile.x, tile.y);
-    const monster = createMonster(type, x, y);
+    const monster = createMonster(type, x, y, scaleLevel);
     if (!MONSTER_TYPES[type]?.isBoss) {
       const eliteId = rollEliteModifier();
       if (eliteId) applyEliteModifier(monster, eliteId);
@@ -161,10 +162,13 @@ export class MonsterManager {
     this.monsters = new Map();
     /** @type {number | null} ms timestamp when instanced dungeon boss was last killed */
     this.bossDefeatedAt = null;
+    /** @type {Array<{ level?: number, dead?: boolean }>} players used for last scale resolution */
+    this.lastSpawnPlayers = [];
   }
 
   spawnOnMap(map, count = defaultSpawnCount(map), options = {}) {
     const types = REGULAR_MONSTER_TYPES;
+    const scaleLevel = resolveMonsterScaleLevel(map, options.players ?? []);
     const connected = getConnectedWalkableTiles(map);
     const candidates = filterSpawnCandidates(map, connected);
 
@@ -174,8 +178,8 @@ export class MonsterManager {
 
     if (isInstancedDungeonMap(map)) {
       const mobCandidates = candidates.filter((tile) => !isBossRoomTile(map, tile.x, tile.y));
-      const placed = placeMonstersOnTiles(this, mobCandidates, toPlace, types, 0);
-      this.spawnBossIfNeeded(map);
+      const placed = placeMonstersOnTiles(this, mobCandidates, toPlace, types, 0, scaleLevel);
+      this.spawnBossIfNeeded(map, Date.now(), scaleLevel);
       return placed;
     }
 
@@ -186,13 +190,21 @@ export class MonsterManager {
       isTileInZoneId(map, ZONE_ID.DUNGEON, tile.x, tile.y)
     );
 
-    const basePlaced = placeMonstersOnTiles(this, wildernessCandidates, count, types, 0);
+    const basePlaced = placeMonstersOnTiles(
+      this,
+      wildernessCandidates,
+      count,
+      types,
+      0,
+      scaleLevel
+    );
     const bonusPlaced = placeMonstersOnTiles(
       this,
       dungeonCandidates,
       totalSpawnTarget(count) - count,
       types,
-      basePlaced
+      basePlaced,
+      scaleLevel
     );
     return basePlaced + bonusPlaced;
   }
@@ -205,25 +217,29 @@ export class MonsterManager {
     this.bossDefeatedAt = now;
   }
 
-  spawnBossIfNeeded(map, now = Date.now()) {
+  spawnBossIfNeeded(map, now = Date.now(), scaleLevel = null) {
     const bossZone = getBossRoomZone(map);
     if (!bossZone || this.hasBoss()) return false;
     if (isInstancedDungeonMap(map) && !canRespawnBoss(this.bossDefeatedAt, now)) {
       return false;
     }
 
+    const level =
+      scaleLevel ?? resolveMonsterScaleLevel(map, this.lastSpawnPlayers ?? []);
     const { x, y } = tileToPixel(bossZone.center.x, bossZone.center.y);
-    const boss = createMonster(BOSS_TYPE, x, y);
+    const boss = createMonster(BOSS_TYPE, x, y, level);
     this.monsters.set(boss.id, boss);
     return true;
   }
 
   /** Top up monsters on the player's reachable region when population is low. */
-  ensurePopulation(map, target = defaultSpawnCount(map), now = Date.now()) {
+  ensurePopulation(map, target = defaultSpawnCount(map), now = Date.now(), playersOnMap = []) {
+    this.lastSpawnPlayers = playersOnMap;
+    const scaleLevel = resolveMonsterScaleLevel(map, playersOnMap);
     const goal = resolveSpawnTarget(map, target);
     const current = this.getAllEntities().filter((monster) => !monster.isBoss).length;
     if (current >= goal) {
-      this.spawnBossIfNeeded(map, now);
+      this.spawnBossIfNeeded(map, now, scaleLevel);
       return 0;
     }
     const missing = goal - current;
@@ -232,8 +248,11 @@ export class MonsterManager {
       hasWildernessDungeon && !isInstancedDungeonMap(map)
         ? Math.max(1, Math.ceil(missing / (1 + DUNGEON_EXTRA_SPAWN_RATIO)))
         : missing;
-    const added = this.spawnOnMap(map, baseMissing, { exactCount: true });
-    this.spawnBossIfNeeded(map, now);
+    const added = this.spawnOnMap(map, baseMissing, {
+      exactCount: true,
+      players: playersOnMap,
+    });
+    this.spawnBossIfNeeded(map, now, scaleLevel);
     return added;
   }
 

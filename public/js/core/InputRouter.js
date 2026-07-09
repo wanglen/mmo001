@@ -15,20 +15,24 @@ export class InputRouter {
   /** @param {number} timestamp */
   handleInput(timestamp) {
     const game = this.game;
-    if (game.gamePaused || game.isDead) return;
 
     if (coreInput.handleChatFocus(game)) return;
-
-    coreInput.handleTownRecallCast(game);
 
     coreInput.handleInventoryToggle(game);
     coreInput.handleStashToggle(game);
     coreInput.handleSettingsToggle(game);
+
     if (game.inventoryVisible || game.stashVisible || game.settingsVisible) {
-      combatInput.handlePotionHotkeys(game);
-      combatInput.handleSkills(game);
+      if (!game.gamePaused && !game.isDead) {
+        combatInput.handlePotionHotkeys(game);
+        combatInput.handleSkills(game);
+      }
       return;
     }
+
+    if (game.gamePaused || game.isDead) return;
+
+    coreInput.handleTownRecallCast(game);
 
     if (game.pluginHost?.blocksGameInput()) return;
 

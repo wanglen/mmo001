@@ -11,6 +11,7 @@ export class SocialPanel {
     this.selfName = null;
     this.selfId = null;
     this.online = { count: 0, players: [] };
+    this.onOnlineChange = null;
     this.party = { partyId: null, leaderId: null, members: [], pendingInvite: null };
     this.onInvite = null;
     this.onAcceptInvite = null;
@@ -39,6 +40,7 @@ export class SocialPanel {
     this.online = payload;
     if (this.countEl) this.countEl.textContent = String(payload.count ?? 0);
     this.renderOnlineList();
+    this.onOnlineChange?.();
   }
 
   updateParty(party) {

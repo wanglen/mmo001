@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.2] - 2026-07-08
+
+### Added
+
+- **Solo management pause** — inventory, stash, stat points, and skill tree pause gameplay only when you are the only player online; multiplayer sessions keep moving as before
+
+### Fixed
+
+- **Inventory close while solo** — I and Esc work again when solo pause freezes gameplay with the inventory open
+
+## [3.6.1] - 2026-07-08
+
+### Fixed
+
+- **Player damage tuning** — lowered melee and skill damage so common monsters survive several hits; crits can still finish weak targets in one blow
+- **Skill balance pass** — tier 1/2/3 damage now scales with skill-point investment (T3 hits hardest per cast); skills crit from DEX; Poison Arrow applies poison DoT
+
+## [3.6.0] - 2026-07-08
+
+### Added
+
+- **Level-scaled monsters** — new spawns scale HP, damage, and XP from average player level on the map (+3 levels in dungeon)
+
 ## [3.5.0] - 2026-07-08
 
 ### Changed

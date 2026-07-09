@@ -4,7 +4,7 @@ import { distance, isInRange, SKILL_AIM_RADIUS, isStunned } from '../../../share
 import { getEffectiveCombatStats } from '../../../shared/inventory.js';
 import {
   canUseSkill,
-  calculateSkillDamage,
+  resolveSkillDamage,
   clampToSkillRange,
   findMonstersInRadius,
   findMonsterAtGroundPoint,
@@ -146,10 +146,11 @@ function damageMonsters({
     const live = monsterManager.get(monster.id);
     if (!live || live.hp <= 0) continue;
 
-    const damage = calculateSkillDamage(skill, combatStats);
+    const { damage, crit } = resolveSkillDamage(skill, combatStats);
     const result = applyMonsterDamage({
       monster: live,
       damage,
+      crit,
       player,
       monsterManager,
       lootManager,

@@ -1,35 +1,27 @@
 # MMO001 — Roadmap
 
-MVP complete (v3.3.0): accounts, multiplayer, combat, loot, quests, economy, polish, and Docker deployment.
-
-Work below comes from playtesting feedback. One item per feature branch; check off and bump semver on merge.
+Playtesting phase complete through v3.5.0. New work below comes from [PENDINGS.md](PENDINGS.md). One item per feature branch; check off and bump semver on merge.
 
 ---
 
-## Gameplay & zones
+## Combat & progression
 
-### Portals & travel
-- [x] **Portal auto-teleport** — clicking a portal pathfinds to it; travel triggers on arrival (no extra click on the tile)
-- [x] **Interruptible recall** — town recall (**T**) cancels on click-to-move, monster hit, or starting combat (verify/fix current behavior)
-
-### Dungeon
-- [x] **Dungeon boss respawn** — reduce how often the dungeon lord respawns
-- [x] **Dungeon chests** — openable landmark chests in dungeon side rooms (click to loot)
+- [x] **Level-scaled monsters** — scale monster stats (HP, damage, XP) with player level or zone depth
 
 ---
 
-## Feedback & UI
+## Inventory & economy
 
-### Pickup & inventory
-- [x] **Item pickup message** — brief on-screen or chat notice when loot is collected
-- [x] **Socket overwrite warning** — confirm before replacing a gem already socketed in gear
-- [x] **Gem and rune icons** — distinct icons for socketables (inventory, tooltips, socket UI)
+- [ ] **Gems and runes in stash** — allow socketables to be stored in the shared town stash
+- [ ] **Inventory sort** — sort button to organize bag slots (type, rarity, etc.)
+- [ ] **Vendor potion stacks** — group potions in sell view; choose how many to sell at once
 
-### Layout
-- [x] **Bottom HUD layout** — fix elements clipped or misaligned at the bottom of the viewport (skill bar, orbs, chat overlap)
+---
 
-### World log
-- [x] **World event list** — transient toast feed for notable events (kills, level-ups, quest updates, party/trade notices)
+## World & content
+
+- [ ] **More maps and zones** — add new areas (e.g. desert, forest) with portals and spawns
+- [ ] **More quests** — additional quest lines tied to new or existing zones
 
 ---
 
@@ -41,7 +33,11 @@ Work below comes from playtesting feedback. One item per feature branch; check o
 
 ## Next tasks (recommended order)
 
-1. [ ] CI pipeline (GitHub Actions) — optional backlog; run `npm test` locally before merge
+1. [ ] **Inventory sort**
+2. [ ] **Gems and runes in stash**
+3. [ ] **Vendor potion stacks**
+4. [ ] **More maps and zones**
+5. [ ] **More quests**
 
 ---
 
@@ -58,3 +54,27 @@ Commit and push when ready:
 ```
 
 See [AGENTS.md](AGENTS.md) and [.cursor/skills/mmo-feature-development/SKILL.md](.cursor/skills/mmo-feature-development/SKILL.md).
+
+---
+
+## Completed (v3.3.x – v3.5.0)
+
+<details>
+<summary>Playtesting fixes — all done</summary>
+
+### Portals & travel
+- [x] Portal auto-teleport
+- [x] Interruptible recall
+
+### Dungeon
+- [x] Dungeon boss respawn tuning
+- [x] Openable dungeon chests
+
+### Feedback & UI
+- [x] Item pickup message
+- [x] Socket overwrite warning
+- [x] Gem and rune icons
+- [x] Bottom HUD layout
+- [x] World event toasts
+
+</details>

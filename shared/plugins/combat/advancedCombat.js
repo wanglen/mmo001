@@ -5,6 +5,24 @@ export const CRIT_DEX_BONUS = 0.005;
 export const CRIT_MULTIPLIER = 1.5;
 export const DODGE_DEX_FACTOR = 0.003;
 export const MAX_RESISTANCE_PERCENT = 75;
+/** Strength-to-damage ratio for basic melee (tuned so mobs survive several hits). */
+export const MELEE_STR_MULTIPLIER = 1.15;
+
+/**
+ * Melee damage range before resistance (variance 0–2).
+ * @param {object} options
+ * @param {number} options.str
+ * @param {number} [options.defenderVit]
+ */
+export function getMeleeDamageBounds({ str, defenderVit = 0 }) {
+  const base = Math.max(1, Math.floor(str * MELEE_STR_MULTIPLIER) - Math.floor(defenderVit * 0.5));
+  return {
+    min: base,
+    max: base + 2,
+    critMin: Math.floor(base * CRIT_MULTIPLIER),
+    critMax: Math.floor((base + 2) * CRIT_MULTIPLIER),
+  };
+}
 
 /**
  * @param {number} dex
@@ -47,7 +65,7 @@ export function resolvePlayerMeleeDamage({
   random = Math.random,
   damagePercent = 0,
 }) {
-  const base = Math.max(1, str * 2 - Math.floor(defenderVit * 0.5));
+  const base = Math.max(1, Math.floor(str * MELEE_STR_MULTIPLIER) - Math.floor(defenderVit * 0.5));
   const variance = Math.floor(random() * 3);
   let damage = base + variance;
 

@@ -13,7 +13,7 @@
       "range": 56,
       "arcHalfRad": 0.75,
       "damageStat": "str",
-      "damageMult": 1.2
+      "damageMult": 0.95
     },
     "charge": {
       "id": "charge",
@@ -21,27 +21,27 @@
       "icon": "💨",
       "classes": ["warrior"],
       "mpCost": 12,
-      "cooldownMs": 4000,
+      "cooldownMs": 3500,
       "type": "dash",
       "dashDistance": 96,
       "radius": 32,
       "onHitStatus": "stun",
       "statusDurationMs": 800,
       "damageStat": "str",
-      "damageMult": 1.3
+      "damageMult": 1.2
     },
     "whirlwind": {
       "id": "whirlwind",
       "name": "Whirlwind",
       "icon": "🌀",
       "classes": ["warrior"],
-      "mpCost": 18,
+      "mpCost": 20,
       "cooldownMs": 5000,
       "type": "melee_aoe",
       "aoeShape": "spin",
       "radius": 56,
       "damageStat": "str",
-      "damageMult": 1.45
+      "damageMult": 1.8
     },
     "shield_bash": {
       "id": "shield_bash",
@@ -55,7 +55,7 @@
       "onHitStatus": "stun",
       "statusDurationMs": 1200,
       "damageStat": "str",
-      "damageMult": 1.35
+      "damageMult": 1.05
     },
     "iron_will": {
       "id": "iron_will",
@@ -63,7 +63,7 @@
       "icon": "✦",
       "classes": ["warrior"],
       "mpCost": 14,
-      "cooldownMs": 6000,
+      "cooldownMs": 5500,
       "type": "melee_aoe",
       "aoeShape": "self_pulse",
       "radius": 44,
@@ -71,7 +71,7 @@
       "statusDurationMs": 3000,
       "selfHeal": 20,
       "damageStat": "str",
-      "damageMult": 0.85
+      "damageMult": 0.8
     },
     "fireball": {
       "id": "fireball",
@@ -84,7 +84,7 @@
       "range": 200,
       "radius": 28,
       "damageStat": "int",
-      "damageMult": 1.15
+      "damageMult": 0.95
     },
     "icebolt": {
       "id": "icebolt",
@@ -97,20 +97,20 @@
       "range": 200,
       "radius": 24,
       "damageStat": "int",
-      "damageMult": 1.1
+      "damageMult": 0.9
     },
     "meteor": {
       "id": "meteor",
       "name": "Meteor",
       "icon": "☄",
       "classes": ["mage"],
-      "mpCost": 22,
+      "mpCost": 24,
       "cooldownMs": 5500,
       "type": "ground_aoe",
       "range": 180,
       "radius": 52,
       "damageStat": "int",
-      "damageMult": 1.6
+      "damageMult": 1.8
     },
     "frost_nova": {
       "id": "frost_nova",
@@ -118,12 +118,12 @@
       "icon": "💠",
       "classes": ["mage"],
       "mpCost": 16,
-      "cooldownMs": 4500,
+      "cooldownMs": 4000,
       "type": "melee_aoe",
       "range": 48,
       "radius": 64,
       "damageStat": "int",
-      "damageMult": 1.25
+      "damageMult": 1.1
     },
     "chain_spark": {
       "id": "chain_spark",
@@ -136,7 +136,7 @@
       "range": 160,
       "radius": 36,
       "damageStat": "int",
-      "damageMult": 1.2
+      "damageMult": 1.1
     },
     "arrow_shot": {
       "id": "arrow_shot",
@@ -148,15 +148,15 @@
       "type": "single_target",
       "range": 160,
       "damageStat": "dex",
-      "damageMult": 1.25
+      "damageMult": 1.05
     },
     "multishot": {
       "id": "multishot",
       "name": "Multishot",
       "icon": "✦",
       "classes": ["ranger"],
-      "mpCost": 14,
-      "cooldownMs": 3000,
+      "mpCost": 12,
+      "cooldownMs": 2800,
       "type": "ground_aoe",
       "range": 160,
       "radius": 40,
@@ -172,21 +172,23 @@
       "cooldownMs": 2000,
       "type": "single_target",
       "range": 160,
+      "onHitStatus": "poison",
+      "statusDurationMs": 5000,
       "damageStat": "dex",
-      "damageMult": 1.15
+      "damageMult": 1.05
     },
     "piercing_shot": {
       "id": "piercing_shot",
       "name": "Piercing Shot",
       "icon": "➤",
       "classes": ["ranger"],
-      "mpCost": 12,
-      "cooldownMs": 2500,
+      "mpCost": 16,
+      "cooldownMs": 4000,
       "type": "projectile",
       "range": 200,
       "radius": 20,
       "damageStat": "dex",
-      "damageMult": 1.35
+      "damageMult": 1.7
     }
   },
   "classSkillBars": {

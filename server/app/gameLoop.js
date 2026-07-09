@@ -59,7 +59,8 @@ export function startGameLoop({ world, playerManager, characterStore, broadcast,
       for (const mapId of world.mapIdsWithPlayers(players)) {
         if (mapId === MAP_ID.TOWN) continue;
         const { map, monsterManager } = world.getContext(mapId);
-        monsterManager.ensurePopulation(map);
+        const mapPlayers = players.filter((player) => (player.mapId ?? MAP_ID.TOWN) === mapId);
+        monsterManager.ensurePopulation(map, undefined, now, mapPlayers);
       }
     }
 

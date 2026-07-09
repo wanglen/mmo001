@@ -10,6 +10,7 @@ import { createTownZone, createDungeonZone, isTileInAnySafeZone, totalSpawnTarge
 import { generateDungeonLayout } from '../../../server/map/DungeonGenerator.js';
 import { MAP_ID } from '../../../shared/worldMaps.js';
 import { BOSS_RESPAWN_MS } from '../../../shared/dungeon.js';
+import { MONSTER_TYPES } from '../../../shared/monsters.js';
 import { createOpenMap } from '../../helpers/fixtures.js';
 
 describe('MonsterManager', () => {
@@ -124,5 +125,20 @@ describe('MonsterManager', () => {
     assert.equal(manager.spawnBossIfNeeded(map, 50_000 + BOSS_RESPAWN_MS - 1000), false);
     assert.equal(manager.spawnBossIfNeeded(map, 50_000 + BOSS_RESPAWN_MS), true);
     assert.ok(manager.hasBoss());
+  });
+
+  it('spawnOnMap scales monsters to average player level on the map', () => {
+    const map = {
+      ...createOpenMap(20, 20),
+      mapId: MAP_ID.WILDERNESS,
+      spawn: { x: 10, y: 10 },
+    };
+    const manager = new MonsterManager();
+    manager.spawnOnMap(map, 3, { players: [{ level: 10 }, { level: 8 }] });
+
+    for (const monster of manager.getAll()) {
+      assert.equal(monster.level, 9);
+      assert.ok(monster.maxHp > MONSTER_TYPES[monster.type].hp);
+    }
   });
 });
