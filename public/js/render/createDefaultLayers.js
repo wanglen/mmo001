@@ -38,7 +38,8 @@ export function createDefaultLayers(deps) {
       id: 'map',
       order: 10,
       draw(ctx, frame, camera, canvas) {
-        mapRenderer.draw(ctx, frame.map, camera, canvas.width, canvas.height);
+        const opened = frame.displayPlayer?.openedChests ?? frame.player?.openedChests ?? [];
+        mapRenderer.draw(ctx, frame.map, camera, canvas.width, canvas.height, opened);
       },
     },
     {

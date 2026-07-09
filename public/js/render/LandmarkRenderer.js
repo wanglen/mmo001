@@ -31,15 +31,20 @@ function drawDoor(ctx, x, y, w, h) {
   ctx.fillRect(x + w * 0.34, y + h * 0.28, w * 0.32, h * 0.58);
 }
 
-function drawChest(ctx, x, y, w, h) {
+function drawChest(ctx, x, y, w, h, opened = false) {
   const cx = x + w * 0.5;
   const cy = y + h * 0.55;
   const bw = w * 0.52;
   const bh = h * 0.34;
-  ctx.fillStyle = CHEST_WOOD;
-  ctx.fillRect(cx - bw / 2, cy - bh / 2, bw, bh);
-  ctx.fillStyle = CHEST_GOLD;
-  ctx.fillRect(cx - bw * 0.12, cy - bh * 0.08, bw * 0.24, bh * 0.16);
+  ctx.fillStyle = opened ? '#6b4a2a' : CHEST_WOOD;
+  if (opened) {
+    ctx.fillRect(cx - bw / 2, cy - bh * 0.95, bw, bh * 0.55);
+    ctx.fillRect(cx - bw / 2, cy - bh * 0.15, bw, bh * 0.45);
+  } else {
+    ctx.fillRect(cx - bw / 2, cy - bh / 2, bw, bh);
+  }
+  ctx.fillStyle = opened ? '#9a8040' : CHEST_GOLD;
+  ctx.fillRect(cx - bw * 0.12, cy - bh * (opened ? 0.55 : 0.08), bw * 0.24, bh * 0.16);
   ctx.fillStyle = '#5c3d1e';
   ctx.fillRect(cx - bw / 2, cy - bh * 0.02, bw, Math.max(1, bh * 0.08));
   ctx.fillRect(cx - bw / 2, cy - bh / 2, Math.max(2, w * 0.06), bh);
@@ -47,7 +52,7 @@ function drawChest(ctx, x, y, w, h) {
 }
 
 export class LandmarkRenderer {
-  draw(ctx, map, camera, tileSize, startCol, startRow, endCol, endRow) {
+  draw(ctx, map, camera, tileSize, startCol, startRow, endCol, endRow, openedChestKeys = new Set()) {
     for (let row = startRow; row < endRow; row++) {
       for (let col = startCol; col < endCol; col++) {
         const tile = map.tiles[row][col];
@@ -60,7 +65,10 @@ export class LandmarkRenderer {
 
         if (tile === TILE.WALL) drawWall(ctx, x, y, w, h);
         else if (tile === TILE.DOOR) drawDoor(ctx, x, y, w, h);
-        else if (tile === TILE.CHEST) drawChest(ctx, x, y, w, h);
+        else if (tile === TILE.CHEST) {
+          const key = `${col},${row}`;
+          drawChest(ctx, x, y, w, h, openedChestKeys.has(key));
+        }
       }
     }
   }

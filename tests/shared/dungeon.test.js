@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {
   BOSS_TYPE,
   BOSS_ROOM_ZONE_ID,
+  BOSS_RESPAWN_MS,
+  canRespawnBoss,
   createBossRoomZone,
   dungeonMobCount,
   getBossRoomZone,
@@ -27,6 +29,13 @@ describe('dungeon helpers', () => {
     assert.equal(zone.id, BOSS_ROOM_ZONE_ID);
     assert.equal(zone.radius, 4);
     assert.equal(getBossRoomZone({ zones: [zone] }), zone);
+  });
+
+  it('canRespawnBoss respects cooldown after defeat', () => {
+    const now = 1_000_000;
+    assert.equal(canRespawnBoss(null, now), true);
+    assert.equal(canRespawnBoss(now - 1000, now), false);
+    assert.equal(canRespawnBoss(now - BOSS_RESPAWN_MS, now), true);
   });
 
   it('BOSS_TYPE is defined on monster types', async () => {

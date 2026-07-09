@@ -49,6 +49,7 @@ export class GameLoop {
       game.attackTargetId = null;
       game.lootTargetId = null;
       game.portalTargetId = null;
+      game.chestTarget = null;
       game.dialoguePanel?.hide();
       game.vendorPanel?.hide();
       this.remotePlayerDisplay.clear();
@@ -194,6 +195,7 @@ export class GameLoop {
     game.displayPlayer.skillBar = server.skillBar;
     game.displayPlayer.townRecallCasting = server.townRecallCasting;
     game.displayPlayer.townRecallCastMs = server.townRecallCastMs;
+    game.displayPlayer.openedChests = server.openedChests;
   }
 
   /** @param {string | null | undefined} [mapId] */

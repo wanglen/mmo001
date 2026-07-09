@@ -57,6 +57,27 @@ describe('landmarks', () => {
     assert.equal(tiles[7][8], TILE.GRASS);
   });
 
+  it('placeRoomChests places a chest in every side room', () => {
+    const tiles = rockGrid(30, 30);
+    const rooms = [
+      { x: 2, y: 2, w: 6, h: 5 },
+      { x: 12, y: 2, w: 6, h: 5 },
+      { x: 22, y: 2, w: 6, h: 5 },
+      { x: 12, y: 12, w: 6, h: 5 },
+    ];
+    for (const carved of rooms) carveRoom(tiles, carved);
+
+    placeRoomChests(tiles, rooms, 0, 2);
+
+    let chestCount = 0;
+    for (const row of tiles) {
+      for (const tile of row) {
+        if (tile === TILE.CHEST) chestCount++;
+      }
+    }
+    assert.equal(chestCount, 2, 'entry and boss skipped; two side rooms get chests');
+  });
+
   it('placeRoomChests skips entry and boss rooms', () => {
     const tiles = rockGrid(30, 30);
     const rooms = [

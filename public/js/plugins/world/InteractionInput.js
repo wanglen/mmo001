@@ -1,5 +1,6 @@
 import { findMonsterAt, isInRange } from '/shared/combat.js';
 import { findLootAt, isInPickupRange } from '/shared/inventory.js';
+import { findChestAt, isInChestOpenRange } from '/shared/dungeonChests.js';
 import { findPortalAt, isInPortalRange } from '/shared/portals.js';
 import { findNpcAt, isNearNpc } from '/shared/npcs.js';
 import { MOVE_INTERVAL } from '../core/CoreInput.js';
@@ -18,6 +19,7 @@ export function handleClick(game) {
     game.attackTargetId = null;
     game.lootTargetId = null;
     game.portalTargetId = null;
+    game.chestTarget = null;
     const origin = game.worldState.player ?? game.displayPlayer;
     const px = origin.x;
     const py = origin.y;
@@ -38,6 +40,8 @@ export function handleClick(game) {
   if (portal) {
     game.attackTargetId = null;
     game.lootTargetId = null;
+    game.chestTargetId = null;
+    game.chestTargetId = null;
     const origin = game.worldState.player ?? game.displayPlayer;
     const px = origin.x;
     const py = origin.y;
@@ -52,12 +56,33 @@ export function handleClick(game) {
     return;
   }
 
+  const openedChests = game.worldState.player?.openedChests ?? [];
+  const chest = findChestAt(game.worldState.map, world.x, world.y, openedChests);
+
+  if (chest) {
+    game.chestTarget = chest;
+    game.attackTargetId = null;
+    game.lootTargetId = null;
+    game.portalTargetId = null;
+    const origin = game.worldState.player ?? game.displayPlayer;
+    if (origin && isInChestOpenRange(origin.x, origin.y, chest.x, chest.y)) {
+      game.chestTarget = null;
+      game.pathFollower.clear();
+      game.socketClient.sendOpenChest({ tileX: chest.tileX, tileY: chest.tileY });
+      game.audio.playSfx('pickup');
+    } else if (origin) {
+      trySetPath(game, game.worldState.map, origin.x, origin.y, chest.x, chest.y, 'chest_click');
+    }
+    return;
+  }
+
   const loot = findLootAt(game.pickableLoot(), world.x, world.y);
 
   if (loot) {
     game.lootTargetId = loot.id;
     game.attackTargetId = null;
     game.portalTargetId = null;
+    game.chestTarget = null;
     return;
   }
 
@@ -68,6 +93,7 @@ export function handleClick(game) {
     game.attackTargetId = target.id;
     game.lootTargetId = null;
     game.portalTargetId = null;
+    game.chestTarget = null;
     const origin = game.worldState.player ?? game.displayPlayer;
     if (origin && !isInRange(origin.x, origin.y, target.x, target.y)) {
       trySetPath(game, game.worldState.map, origin.x, origin.y, target.x, target.y, 'monster_click');
@@ -81,6 +107,7 @@ export function handleClick(game) {
   game.attackTargetId = null;
   game.lootTargetId = null;
   game.portalTargetId = null;
+  game.chestTarget = null;
   trySetPath(game, game.worldState.map, origin.x, origin.y, world.x, world.y, 'ground_click');
 }
 
@@ -138,6 +165,37 @@ export function handlePortalChase(game, timestamp) {
 
   if (timestamp - game.lastChasePathTime >= MOVE_INTERVAL) {
     trySetPath(game, game.worldState.map, px, py, portal.x, portal.y, 'portal_chase');
+    game.lastChasePathTime = timestamp;
+  }
+}
+
+/** @param {import('../../game/Game.js').Game} game @param {number} timestamp */
+export function handleChestChase(game, timestamp) {
+  const chest = game.chestTarget;
+  if (!chest || !game.displayPlayer || !game.worldState) return;
+
+  const openedChests = game.worldState.player?.openedChests ?? [];
+  if (openedChests.includes(chest.key)) {
+    game.chestTarget = null;
+    return;
+  }
+
+  const origin = game.worldState.player ?? game.displayPlayer;
+  if (!origin) return;
+
+  const px = origin.x;
+  const py = origin.y;
+
+  if (isInChestOpenRange(px, py, chest.x, chest.y)) {
+    game.pathFollower.clear();
+    game.socketClient.sendOpenChest({ tileX: chest.tileX, tileY: chest.tileY });
+    game.audio.playSfx('pickup');
+    game.chestTarget = null;
+    return;
+  }
+
+  if (timestamp - game.lastChasePathTime >= MOVE_INTERVAL) {
+    trySetPath(game, game.worldState.map, px, py, chest.x, chest.y, 'chest_chase');
     game.lastChasePathTime = timestamp;
   }
 }

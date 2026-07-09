@@ -13,8 +13,8 @@ Work below comes from playtesting feedback. One item per feature branch; check o
 - [x] **Interruptible recall** — town recall (**T**) cancels on click-to-move, monster hit, or starting combat (verify/fix current behavior)
 
 ### Dungeon
-- [ ] **Dungeon boss respawn** — reduce how often the dungeon lord respawns
-- [ ] **Dungeon chests** — spawn landmark chests in dungeon rooms (generator / placement)
+- [x] **Dungeon boss respawn** — reduce how often the dungeon lord respawns
+- [x] **Dungeon chests** — openable landmark chests in dungeon side rooms (click to loot)
 
 ---
 
@@ -41,8 +41,7 @@ Work below comes from playtesting feedback. One item per feature branch; check o
 
 ## Next tasks (recommended order)
 
-1. [ ] **Dungeon boss respawn tuning**
-2. [ ] **Dungeon chest spawning**
+1. [ ] CI pipeline (GitHub Actions) — optional backlog; run `npm test` locally before merge
 
 ---
 

@@ -15,6 +15,7 @@ import { serializeLootPlayer, serializeLootWorld } from './serialize.js';
 import { registerLootBusHandlers } from './bus.js';
 import { emitWorldEvent } from '../social/worldLog.js';
 import { formatLootEvent } from '../../../shared/worldLog.js';
+import { openDungeonChest } from './chests.js';
 
 export const LOOT_EVENTS = [
   EVENTS.USE_CONSUMABLE,
@@ -26,6 +27,7 @@ export const LOOT_EVENTS = [
   EVENTS.STASH_STORE,
   EVENTS.STASH_TAKE,
   EVENTS.SOCKET_GEM,
+  EVENTS.OPEN_CHEST,
 ];
 
 /** @param {import('socket.io').Socket} socket @param {import('../../../shared/plugins/types.js').ServerContext} ctx */
@@ -168,6 +170,43 @@ export function registerLootHandlers(socket, ctx) {
     if (!result.ok) {
       socket.emit(EVENTS.ERROR, { message: `Cannot socket gem: ${result.reason}` });
       return;
+    }
+
+    await persistPlayer(characterStore, player);
+    broadcastAll();
+  });
+
+  socket.on(EVENTS.OPEN_CHEST, async ({ tileX, tileY }) => {
+    const player = getLivingPlayer(playerManager, socket.id);
+    if (!player) return;
+
+    const { map } = getPlayerContext(world, player);
+    const col = Number(tileX);
+    const row = Number(tileY);
+    if (!Number.isInteger(col) || !Number.isInteger(row)) return;
+
+    interruptTownRecall(player);
+
+    const result = openDungeonChest({ player, map, tileX: col, tileY: row });
+    if (!result.ok) {
+      const silent = result.reason === 'already_opened' || result.reason === 'no_chest';
+      if (!silent) {
+        const messages = {
+          out_of_range: 'Stand closer to open the chest',
+          inventory_full: 'Inventory full',
+          not_dungeon: 'Cannot open chest here',
+        };
+        socket.emit(EVENTS.ERROR, {
+          message: messages[result.reason] ?? 'Cannot open chest',
+        });
+      }
+      return;
+    }
+
+    if (result.item) {
+      emitWorldEvent(io, player.id, formatLootEvent(result.item.name));
+    } else if (result.gold) {
+      emitWorldEvent(io, player.id, formatLootEvent(`${result.gold} gold`));
     }
 
     await persistPlayer(characterStore, player);

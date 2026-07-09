@@ -161,6 +161,25 @@ export function rollLoot(monsterType, random = Math.random, options = {}) {
   return createItem(template, rarity, { random, forceSet: isBoss && random() < 0.35 });
 }
 
+/** Roll loot for an opened dungeon chest (always returns an item or gold grant). */
+export function rollChestLoot(random = Math.random) {
+  if (random() < 0.22) {
+    return { kind: 'gold', gold: 8 + Math.floor(random() * 18) };
+  }
+
+  if (random() < 0.5) {
+    const template = POTION_TEMPLATES[Math.floor(random() * POTION_TEMPLATES.length)];
+    return { kind: 'item', item: createPotion(template, rollRarity(random)) };
+  }
+
+  if (random() < 0.08) {
+    return { kind: 'item', item: createGem(rollGemKind(random)) };
+  }
+
+  const template = LOOT_TEMPLATES[Math.floor(random() * LOOT_TEMPLATES.length)];
+  return { kind: 'item', item: createItem(template, rollRarity(random), { random }) };
+}
+
 function rollRarityForLoot(random, { isBoss = false, isElite = false } = {}) {
   if (isBoss && random() < 0.4) {
     return random() < 0.15 ? RARITY.UNIQUE : RARITY.RARE;

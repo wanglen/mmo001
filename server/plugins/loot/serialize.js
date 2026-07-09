@@ -1,15 +1,18 @@
 import { itemToJSON } from '../../../shared/items.js';
 import { playerMapId } from '../../app/handlerUtils.js';
 import { filterEntitiesForViewer } from '../../app/interest.js';
+import { getOpenedChestKeys } from '../../../shared/dungeonChests.js';
 
-/** @param {import('../players/Player.js').Player} player */
-export function serializeLootPlayer(player) {
+/** @param {import('../players/Player.js').Player} player @param {number} [now] */
+export function serializeLootPlayer(player, now = Date.now()) {
+  const mapId = player.mapId;
   return {
     inventory: player.inventory.map(itemToJSON),
     stash: (player.stash ?? []).map(itemToJSON),
     equipment: Object.fromEntries(
       Object.entries(player.equipment).map(([slot, item]) => [slot, itemToJSON(item)])
     ),
+    openedChests: getOpenedChestKeys(player, mapId),
   };
 }
 

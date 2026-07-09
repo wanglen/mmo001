@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.0] - 2026-07-08
+
+### Changed
+
+- **Dungeon boss respawn** — dungeon lord waits 3 minutes after defeat before respawning (was ~15 seconds)
+- **Dungeon chests** — openable landmark chests in side rooms (loot or gold; per-character, persisted)
+
 ## [3.4.0] - 2026-07-07
 
 ### Added

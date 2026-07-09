@@ -68,7 +68,7 @@ export function placeRoomWallsAndDoors(tiles, rooms) {
 }
 
 /**
- * Scatter decorative chests in non-entry, non-boss rooms.
+ * Scatter openable chests in non-entry, non-boss rooms.
  * @param {number[][]} tiles
  * @param {Array<{ x: number, y: number, w: number, h: number }>} rooms
  * @param {number} entryIdx
@@ -78,7 +78,6 @@ export function placeRoomWallsAndDoors(tiles, rooms) {
 export function placeRoomChests(tiles, rooms, entryIdx, bossIdx, random = Math.random) {
   for (let i = 0; i < rooms.length; i++) {
     if (i === entryIdx || i === bossIdx) continue;
-    if (random() > 0.42) continue;
 
     const room = rooms[i];
     const candidates = [];

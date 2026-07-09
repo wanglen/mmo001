@@ -11,6 +11,7 @@ import {
   getDefaultUnlockedSkills,
   migratePlayerSkillState,
 } from '../../shared/plugins/combat/skillTree.js';
+import { normalizeOpenedChests } from '../../shared/dungeonChests.js';
 import { composePlayer } from '../app/composePlayer.js';
 
 export class Player {
@@ -35,6 +36,7 @@ export class Player {
     this.townRecallCasting = false;
     this.townRecallCastMs = 0;
     this.skillCooldowns = {};
+    this.openedChests = {};
     this.unlockedSkills = getDefaultUnlockedSkills(characterClass);
     this.skillBarSlots = getDefaultSkillBarSlots(characterClass);
     this.statusEffects = [];
@@ -125,5 +127,6 @@ export function createPlayerFromSave({
     skillBarSlots: saved.skillBarSlots,
     skillPoints: saved.skillPoints,
   });
+  player.openedChests = normalizeOpenedChests(saved.openedChests);
   return player;
 }

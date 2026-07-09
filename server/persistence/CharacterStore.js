@@ -41,6 +41,7 @@ export function playerToSaveData(player) {
     ),
     gold: player.gold ?? 0,
     quests: player.questState ?? createEmptyQuestState(),
+    openedChests: player.openedChests ?? {},
     savedAt: new Date().toISOString(),
   };
 }

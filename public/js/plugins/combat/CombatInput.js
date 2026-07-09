@@ -27,7 +27,9 @@ export function handleAim(game, timestamp) {
     game.worldState.monsters ?? [],
     game.pickableLoot(),
     game.worldState.map?.portals ?? [],
-    game.worldState.npcs ?? []
+    game.worldState.npcs ?? [],
+    game.worldState.map,
+    game.worldState.player?.openedChests ?? []
   );
 
   const facing = facingFromTarget(game.displayPlayer.x, game.displayPlayer.y, world.x, world.y);

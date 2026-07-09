@@ -93,6 +93,15 @@ describe('DungeonGenerator', () => {
     assert.ok(bossReachable, 'boss room should be reachable from spawn');
   });
 
+  it('places chests in every side room', () => {
+    const map = generateDungeonLayout(48, 40, { random: mulberry32(3) });
+
+    const chestCount = countTileType(map.tiles, TILE.CHEST);
+    const sideRooms = Math.max(0, map.rooms.length - 2);
+
+    assert.ok(chestCount >= sideRooms, 'each non-entry, non-boss room should have a chest');
+  });
+
   it('places wall, door, and chest landmark tiles in rooms', () => {
     const map = generateDungeonLayout(48, 40, { random: mulberry32(3) });
 

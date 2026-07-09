@@ -23,6 +23,7 @@ import {
   dungeonMobCount,
   getBossRoomZone,
   isInstancedDungeonMap,
+  canRespawnBoss,
 } from '../../shared/dungeon.js';
 import { resolveMonsterTarget, monsterAttackPlayer } from '../plugins/combat/monsterCombat.js';
 
@@ -158,6 +159,8 @@ function placeMonstersOnTiles(manager, tiles, count, types, startIndex = 0) {
 export class MonsterManager {
   constructor() {
     this.monsters = new Map();
+    /** @type {number | null} ms timestamp when instanced dungeon boss was last killed */
+    this.bossDefeatedAt = null;
   }
 
   spawnOnMap(map, count = defaultSpawnCount(map), options = {}) {
@@ -198,9 +201,16 @@ export class MonsterManager {
     return this.getAllEntities().some((monster) => monster.isBoss);
   }
 
-  spawnBossIfNeeded(map) {
+  recordBossDefeat(now = Date.now()) {
+    this.bossDefeatedAt = now;
+  }
+
+  spawnBossIfNeeded(map, now = Date.now()) {
     const bossZone = getBossRoomZone(map);
     if (!bossZone || this.hasBoss()) return false;
+    if (isInstancedDungeonMap(map) && !canRespawnBoss(this.bossDefeatedAt, now)) {
+      return false;
+    }
 
     const { x, y } = tileToPixel(bossZone.center.x, bossZone.center.y);
     const boss = createMonster(BOSS_TYPE, x, y);
@@ -209,11 +219,11 @@ export class MonsterManager {
   }
 
   /** Top up monsters on the player's reachable region when population is low. */
-  ensurePopulation(map, target = defaultSpawnCount(map)) {
+  ensurePopulation(map, target = defaultSpawnCount(map), now = Date.now()) {
     const goal = resolveSpawnTarget(map, target);
     const current = this.getAllEntities().filter((monster) => !monster.isBoss).length;
     if (current >= goal) {
-      this.spawnBossIfNeeded(map);
+      this.spawnBossIfNeeded(map, now);
       return 0;
     }
     const missing = goal - current;
@@ -223,7 +233,7 @@ export class MonsterManager {
         ? Math.max(1, Math.ceil(missing / (1 + DUNGEON_EXTRA_SPAWN_RATIO)))
         : missing;
     const added = this.spawnOnMap(map, baseMissing, { exactCount: true });
-    this.spawnBossIfNeeded(map);
+    this.spawnBossIfNeeded(map, now);
     return added;
   }
 

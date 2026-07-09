@@ -42,6 +42,7 @@ export class InputRouter {
 
     worldInput.handleNpcChase(game, timestamp);
     worldInput.handlePortalChase(game, timestamp);
+    worldInput.handleChestChase(game, timestamp);
     worldInput.handleLootChase(game, timestamp);
     combatInput.handleAttackChase(game, timestamp);
     coreInput.handlePathFollowerMove(game, timestamp);

@@ -211,7 +211,7 @@ export class MapRenderer {
     this.landmarkRenderer = new LandmarkRenderer();
   }
 
-  draw(ctx, map, camera, canvasWidth, canvasHeight) {
+  draw(ctx, map, camera, canvasWidth, canvasHeight, openedChestKeys = []) {
     drawWorldVoid(ctx, map, camera, canvasWidth, canvasHeight);
 
     const bounds = camera.getViewBounds();
@@ -256,6 +256,16 @@ export class MapRenderer {
 
     this.townRenderer.draw(ctx, map, camera, tileSize, startCol, startRow, endCol, endRow);
     this.dungeonRenderer.draw(ctx, map, camera, tileSize, startCol, startRow, endCol, endRow);
-    this.landmarkRenderer.draw(ctx, map, camera, tileSize, startCol, startRow, endCol, endRow);
+    this.landmarkRenderer.draw(
+      ctx,
+      map,
+      camera,
+      tileSize,
+      startCol,
+      startRow,
+      endCol,
+      endRow,
+      new Set(openedChestKeys)
+    );
   }
 }

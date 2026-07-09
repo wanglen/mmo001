@@ -1,6 +1,7 @@
 import { CURSOR_MODE } from '/shared/events.js';
 import { findMonsterAt } from '/shared/combat.js';
 import { findLootAt } from '/shared/inventory.js';
+import { findChestAt } from '/shared/dungeonChests.js';
 import { findPortalAt } from '/shared/portals.js';
 import { findNpcAt } from '/shared/npcs.js';
 import { resolveCursorMode } from '/shared/cursorModes.js';
@@ -35,13 +36,17 @@ export class CursorManager {
     this.applyMode(this.mode === CURSOR_MODE.DEFAULT ? CURSOR_MODE.MOVE : this.mode);
   }
 
-  update(worldPos, monsters = [], loot = [], portals = [], npcs = []) {
+  update(worldPos, monsters = [], loot = [], portals = [], npcs = [], map = null, openedChests = []) {
     if (!this.active) return;
+
+    const chest =
+      map && findChestAt(map, worldPos.x, worldPos.y, openedChests);
 
     const nextMode = resolveCursorMode({
       portal: findPortalAt(portals, worldPos.x, worldPos.y),
       npc: findNpcAt(npcs, worldPos.x, worldPos.y),
       lootDrop: findLootAt(loot, worldPos.x, worldPos.y),
+      chest,
       monster: findMonsterAt(monsters, worldPos.x, worldPos.y),
     });
 

@@ -13,6 +13,18 @@ export const BOSS_ROOM_META = {
   color: '#e74c3c',
 };
 
+/** Minimum delay before the dungeon lord respawns after defeat. */
+export const BOSS_RESPAWN_MS = 180_000;
+
+/**
+ * @param {number | null | undefined} defeatedAt — ms timestamp when boss was last killed
+ * @param {number} [now]
+ */
+export function canRespawnBoss(defeatedAt, now = Date.now()) {
+  if (defeatedAt == null) return true;
+  return now - defeatedAt >= BOSS_RESPAWN_MS;
+}
+
 /**
  * @param {number} baseCount — default SPAWN_COUNT for map dimensions
  */

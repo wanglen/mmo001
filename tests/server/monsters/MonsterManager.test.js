@@ -7,6 +7,9 @@ import {
 } from '../../../server/monsters/MonsterManager.js';
 import { spawnCountForMap } from '../../../shared/monsters.js';
 import { createTownZone, createDungeonZone, isTileInAnySafeZone, totalSpawnTarget, dungeonSpawnBonus } from '../../../shared/zones.js';
+import { generateDungeonLayout } from '../../../server/map/DungeonGenerator.js';
+import { MAP_ID } from '../../../shared/worldMaps.js';
+import { BOSS_RESPAWN_MS } from '../../../shared/dungeon.js';
 import { createOpenMap } from '../../helpers/fixtures.js';
 
 describe('MonsterManager', () => {
@@ -104,5 +107,22 @@ describe('MonsterManager', () => {
     manager.spawnOnMap(map, 2);
     manager.ensurePopulation(map, spawnCountForMap(map.width, map.height));
     assert.equal(manager.getAll().length, spawnCountForMap(map.width, map.height));
+  });
+
+  it('waits for boss respawn cooldown on instanced dungeon maps', () => {
+    const map = {
+      ...generateDungeonLayout(48, 40),
+      mapId: MAP_ID.DUNGEON,
+    };
+    const manager = new MonsterManager();
+    manager.spawnOnMap(map);
+    const boss = manager.getAll().find((monster) => monster.isBoss);
+    assert.ok(boss);
+
+    manager.remove(boss.id);
+    manager.recordBossDefeat(50_000);
+    assert.equal(manager.spawnBossIfNeeded(map, 50_000 + BOSS_RESPAWN_MS - 1000), false);
+    assert.equal(manager.spawnBossIfNeeded(map, 50_000 + BOSS_RESPAWN_MS), true);
+    assert.ok(manager.hasBoss());
   });
 });

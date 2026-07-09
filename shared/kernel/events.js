@@ -50,6 +50,7 @@ export const EVENTS = {
   STASH_STORE: 'stashStore',
   STASH_TAKE: 'stashTake',
   SOCKET_GEM: 'socketGem',
+  OPEN_CHEST: 'openChest',
 };
 
 export const CURSOR_MODE = {

@@ -116,6 +116,10 @@ export class SocketClient {
     this.socket.emit(EVENTS.PICKUP, { lootId });
   }
 
+  sendOpenChest({ tileX, tileY }) {
+    this.socket.emit(EVENTS.OPEN_CHEST, { tileX, tileY });
+  }
+
   sendEquip(inventoryIndex) {
     this.socket.emit(EVENTS.EQUIP, { inventoryIndex });
   }
