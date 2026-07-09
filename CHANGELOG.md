@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.3] - 2026-07-08
+
+### Fixed
+
+- **Online list on disconnect** — disconnected players are removed from the online list immediately
+
 ## [3.6.2] - 2026-07-08
 
 ### Added

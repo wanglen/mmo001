@@ -1,6 +1,5 @@
 import { DOMAIN_EVENTS } from '../../../shared/plugins/domainEvents.js';
 import { EVENTS } from '../../../shared/events.js';
-import { buildOnlineList } from '../../../shared/social.js';
 import { MONSTER_TYPES } from '../../../shared/monsters.js';
 import { formatKillEvent, formatLevelUpEvent } from '../../../shared/worldLog.js';
 import { emitWorldEvent } from './worldLog.js';
@@ -21,7 +20,6 @@ export function registerSocialBusHandlers(bus, ctx) {
     const { io, playerManager, partyManager } = disconnectCtx;
     const affected = partyManager.getAffectedPlayerIds(playerId);
     partyManager.onDisconnect(playerId);
-    io.emit(EVENTS.ONLINE_PLAYERS, buildOnlineList(playerManager.getAllEntities()));
     if (affected.length) {
       emitPartyState(io, partyManager, playerManager, affected.filter((id) => id !== playerId));
     }

@@ -172,7 +172,6 @@ export function onSocialDisconnect(playerId, ctx) {
   const { io, playerManager, partyManager } = ctx;
   const affected = partyManager.getAffectedPlayerIds(playerId);
   partyManager.onDisconnect(playerId);
-  broadcastOnlinePlayers(io, playerManager);
   if (affected.length) {
     emitPartyState(io, partyManager, playerManager, affected.filter((id) => id !== playerId));
   }

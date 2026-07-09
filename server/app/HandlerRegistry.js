@@ -3,6 +3,7 @@ import { createBroadcastAll } from './worldState.js';
 import { createEventBus } from './EventBus.js';
 import { DOMAIN_EVENTS } from '../../shared/plugins/domainEvents.js';
 import { onCoreDisconnect } from '../plugins/core/handlers.js';
+import { broadcastOnlinePlayers } from '../plugins/social/index.js';
 import { WorldStateSyncManager } from './WorldStateSync.js';
 
 /**
@@ -40,6 +41,7 @@ export function registerHandlerRegistry(io, deps) {
       worldStateSync.clear(playerId);
       eventBus.emit(DOMAIN_EVENTS.PLAYER_DISCONNECT, { playerId, ctx });
       await onCoreDisconnect(playerId, ctx);
+      broadcastOnlinePlayers(io, playerManager);
     },
     notifyPlayerJoined: (playerId) => {
       const social = pluginsById.social;
