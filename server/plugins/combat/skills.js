@@ -13,10 +13,18 @@ import {
   getSkill,
   getSkillFxDuration,
   spendSkillMp,
+  spendSkillHp,
+  getSkillHpCost,
 } from '../../../shared/skills.js';
 import { applyStatusEffect, createStatusEffect } from '../../../shared/plugins/combat/statusEffects.js';
 import { applyMonsterDamage } from './combat.js';
 import { isInSafeZone } from '../../../shared/zones.js';
+import { isHostileMonster } from '../../entities/Monster.js';
+import {
+  spawnSummonsFromSkill,
+  healOwnedSummons,
+  sacrificeOwnedSummons,
+} from './summons.js';
 
 export const SKILL_FX_MS = 400;
 
@@ -60,14 +68,30 @@ function ensureSkillState(player) {
   if (!player.skillCooldowns) player.skillCooldowns = {};
 }
 
-function resolveSkillImpact(skill, player, aimX, aimY, hits) {
-  if (skill.aoeShape === 'spin' || skill.aoeShape === 'self_pulse') {
+function resolveSkillImpact(skill, player, aimX, aimY, hits, summonCast = null) {
+  if (skill.type === 'summon' && summonCast) {
+    return {
+      impactX: summonCast.castX,
+      impactY: summonCast.castY,
+      targetX: summonCast.castX,
+      targetY: summonCast.castY,
+      missed: false,
+    };
+  }
+
+  if (
+    skill.aoeShape === 'spin' ||
+    skill.aoeShape === 'self_pulse' ||
+    skill.type === 'summon' ||
+    skill.type === 'summon_heal' ||
+    skill.type === 'sacrifice'
+  ) {
     return {
       impactX: player.x,
       impactY: player.y,
       targetX: player.x,
       targetY: player.y,
-      missed: hits.length === 0,
+      missed: hits.length === 0 && skill.type !== 'summon' && skill.type !== 'summon_heal',
     };
   }
 
@@ -96,7 +120,8 @@ function resolveSkillImpact(skill, player, aimX, aimY, hits) {
 
 function recordSkillCast(player, skill, impact, now) {
   ensureSkillState(player);
-  spendSkillMp(player, skill.mpCost);
+  spendSkillMp(player, skill.mpCost ?? 0);
+  spendSkillHp(player, getSkillHpCost(skill));
   player.skillCooldowns[skill.id] = now;
   player.attacking = true;
   player.moving = false;
@@ -135,18 +160,25 @@ function damageMonsters({
   playerManager,
   eventBus = null,
   now,
+  flatBonusDamage = 0,
 }) {
   const results = [];
   const seen = new Set();
+  const bonusPerHit =
+    flatBonusDamage > 0 && monsters.length > 0
+      ? Math.max(1, Math.floor(flatBonusDamage / monsters.length))
+      : 0;
 
   for (const monster of monsters) {
     if (seen.has(monster.id)) continue;
     seen.add(monster.id);
 
     const live = monsterManager.get(monster.id);
-    if (!live || live.hp <= 0) continue;
+    if (!live || live.hp <= 0 || live.isSummon) continue;
 
-    const { damage, crit } = resolveSkillDamage(skill, combatStats);
+    const resolved = resolveSkillDamage(skill, combatStats);
+    const damage = resolved.damage + bonusPerHit;
+    const crit = resolved.crit;
     const result = applyMonsterDamage({
       monster: live,
       damage,
@@ -208,13 +240,17 @@ export function processSkill({
   const aimX = typeof targetX === 'number' ? targetX : player.aimX;
   const aimY = typeof targetY === 'number' ? targetY : player.aimY;
   const combatStats = getEffectiveCombatStats(player, player.equipment);
-  const monsters = monsterManager.getAllEntities();
+  const hostiles =
+    monsterManager.getHostileEntities?.() ??
+    monsterManager.getAllEntities().filter((m) => isHostileMonster(m));
   let hits = [];
   let projectileImpact = null;
+  let flatBonusDamage = 0;
+  let summonResult = null;
 
   switch (skill.type) {
     case 'melee_aoe': {
-      hits = resolveMeleeHits(skill, player, monsters, aimX, aimY);
+      hits = resolveMeleeHits(skill, player, hostiles, aimX, aimY);
       break;
     }
     case 'dash': {
@@ -222,10 +258,10 @@ export function processSkill({
       const startY = player.y;
       dashToward(map, player, aimX, aimY, skill.dashDistance ?? 96);
       const radius = skill.radius ?? 32;
-      hits = findMonstersInRadius(monsters, player.x, player.y, radius);
+      hits = findMonstersInRadius(hostiles, player.x, player.y, radius);
       if (hits.length === 0) {
         const alongPath = findMonstersInRadius(
-          monsters,
+          hostiles,
           (startX + player.x) / 2,
           (startY + player.y) / 2,
           radius + (skill.dashDistance ?? 96) / 2
@@ -238,7 +274,7 @@ export function processSkill({
       const maxR = skill.range ?? 200;
       const hitR = skill.radius ?? 24;
       projectileImpact = resolveProjectileImpact(
-        monsters,
+        hostiles,
         player.x,
         player.y,
         aimX,
@@ -255,7 +291,7 @@ export function processSkill({
       }
       const cx = skill.range ? aimX : player.x;
       const cy = skill.range ? aimY : player.y;
-      hits = findMonstersInRadius(monsters, cx, cy, skill.radius ?? 40);
+      hits = findMonstersInRadius(hostiles, cx, cy, skill.radius ?? 40);
       break;
     }
     case 'single_target': {
@@ -263,9 +299,9 @@ export function processSkill({
       if (typeof targetId === 'string') {
         monster = monsterManager.get(targetId);
       }
-      if (!monster) {
+      if (!monster || monster.isSummon) {
         monster = findMonsterAtGroundPoint(
-          monsters,
+          hostiles,
           player.x,
           player.y,
           aimX,
@@ -274,13 +310,40 @@ export function processSkill({
           SKILL_AIM_RADIUS
         );
       }
-      if (!monster || monster.hp <= 0) {
+      if (!monster || monster.hp <= 0 || monster.isSummon) {
         return { ok: false, reason: 'no_target' };
       }
       if (!isInRange(player.x, player.y, monster.x, monster.y, skill.range ?? 160)) {
         return { ok: false, reason: 'out_of_range' };
       }
       hits = [monster];
+      break;
+    }
+    case 'summon': {
+      summonResult = spawnSummonsFromSkill({
+        player,
+        skill,
+        monsterManager,
+        map,
+        aimX,
+        aimY,
+        now,
+      });
+      if (!summonResult.ok) return summonResult;
+      break;
+    }
+    case 'summon_heal': {
+      const healed = healOwnedSummons({ player, skill, monsterManager, combatStats });
+      if (healed <= 0) return { ok: false, reason: 'no_summons' };
+      break;
+    }
+    case 'sacrifice': {
+      const sacrificed = sacrificeOwnedSummons({ player, skill, monsterManager });
+      if (sacrificed.sacrificed.length === 0) {
+        return { ok: false, reason: 'no_summons' };
+      }
+      flatBonusDamage = sacrificed.bonusDamage;
+      hits = findMonstersInRadius(hostiles, player.x, player.y, skill.radius ?? 96);
       break;
     }
     default:
@@ -295,7 +358,7 @@ export function processSkill({
         targetY: projectileImpact.impactY,
         missed: projectileImpact.missed,
       }
-    : resolveSkillImpact(skill, player, aimX, aimY, hits);
+    : resolveSkillImpact(skill, player, aimX, aimY, hits, summonResult);
   recordSkillCast(player, skill, impact, now);
 
   const damageResults = damageMonsters({
@@ -309,6 +372,7 @@ export function processSkill({
     playerManager,
     eventBus,
     now,
+    flatBonusDamage,
   });
 
   if (skill.selfHeal && player.hp > 0) {
@@ -320,8 +384,10 @@ export function processSkill({
     ok: true,
     skillId: skill.id,
     hits: damageResults,
-    mpSpent: skill.mpCost,
+    mpSpent: skill.mpCost ?? 0,
+    hpSpent: getSkillHpCost(skill),
     missed: impact.missed,
+    summons: summonResult?.summons?.map((s) => s.id) ?? [],
   };
 }
 

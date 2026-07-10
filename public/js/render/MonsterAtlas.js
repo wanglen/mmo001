@@ -193,6 +193,64 @@ function drawDungeonLord(ctx, px, py, body, dark, walkFrame) {
   }
 }
 
+function drawBloodThrall(ctx, px, py, body, dark, walkFrame) {
+  ctx.fillStyle = dark;
+  ctx.beginPath();
+  ctx.ellipse(px + 8, py + 12, 5, 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = body;
+  ctx.fillRect(px + 5, py + 3, 6, 7);
+  ctx.fillStyle = '#1a0508';
+  ctx.fillRect(px + 6, py + 5, 1, 2);
+  ctx.fillRect(px + 9, py + 5, 1, 2);
+  ctx.fillStyle = '#f5b7b1';
+  ctx.fillRect(px + 7, py + 8, 2, 1);
+
+  ctx.fillStyle = dark;
+  if (walkFrame === 0) {
+    ctx.fillRect(px + 5, py + 10, 2, 4);
+    ctx.fillRect(px + 9, py + 11, 2, 3);
+  } else {
+    ctx.fillRect(px + 5, py + 11, 2, 3);
+    ctx.fillRect(px + 9, py + 10, 2, 4);
+  }
+}
+
+function drawBloodShade(ctx, px, py, body, dark, walkFrame) {
+  const bob = walkFrame === 0 ? 0 : 1;
+  ctx.fillStyle = 'rgba(120, 20, 30, 0.45)';
+  ctx.beginPath();
+  ctx.ellipse(px + 8, py + 12, 4, 1.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = body;
+  ctx.beginPath();
+  ctx.moveTo(px + 8, py + 1 + bob);
+  ctx.lineTo(px + 12, py + 8 + bob);
+  ctx.lineTo(px + 8, py + 13 + bob);
+  ctx.lineTo(px + 4, py + 8 + bob);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = '#1a0508';
+  ctx.fillRect(px + 6, py + 5 + bob, 1, 2);
+  ctx.fillRect(px + 9, py + 5 + bob, 1, 2);
+}
+
+function drawBloodWeak(ctx, px, py, body, dark, walkFrame) {
+  const bob = walkFrame === 0 ? 0 : 1;
+  ctx.fillStyle = body;
+  ctx.beginPath();
+  ctx.arc(px + 8, py + 7 + bob, 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = dark;
+  ctx.fillRect(px + 6, py + 6 + bob, 1, 1);
+  ctx.fillRect(px + 9, py + 6 + bob, 1, 1);
+  ctx.fillStyle = '#f1948a';
+  ctx.fillRect(px + 7, py + 9 + bob, 2, 1);
+}
+
 const DRAWERS = {
   goblin: drawGoblin,
   skeleton: drawSkeleton,
@@ -201,6 +259,9 @@ const DRAWERS = {
   wraith: drawWraith,
   scorpion: drawScorpion,
   ghoul: drawGhoul,
+  blood_thrall: drawBloodThrall,
+  blood_shade: drawBloodShade,
+  blood_weak: drawBloodWeak,
   [BOSS_TYPE]: drawDungeonLord,
 };
 
@@ -210,14 +271,14 @@ export class MonsterAtlas {
     this.cache = new Map();
   }
 
-  get(type, moving, walkFrame) {
+  get(type, moving, walkFrame, colorOverride = null) {
     const col = resolveMonsterWalkFrame(moving, walkFrame);
-    const key = `${type}:${col}`;
+    const key = `${type}:${col}:${colorOverride ?? ''}`;
     if (this.cache.has(key)) return this.cache.get(key);
 
-    const def = MONSTER_TYPES[type] ?? MONSTER_TYPES.goblin;
+    const def = MONSTER_TYPES[type];
     const drawer = DRAWERS[type] ?? DRAWERS.goblin;
-    const body = def.color;
+    const body = colorOverride || def?.color || '#8b1a2b';
     const dark = shade(body, -45);
 
     const canvas = document.createElement('canvas');

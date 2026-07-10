@@ -11,9 +11,18 @@ import {
 } from './questCatalog.js';
 
 const QUEST_OBJECTIVE_TYPE_SET = new Set(QUEST_OBJECTIVE_TYPES);
-const SKILL_TYPES = new Set(['melee_aoe', 'dash', 'projectile', 'ground_aoe', 'single_target']);
+const SKILL_TYPES = new Set([
+  'melee_aoe',
+  'dash',
+  'projectile',
+  'ground_aoe',
+  'single_target',
+  'summon',
+  'sacrifice',
+  'summon_heal',
+]);
 const AOE_SHAPES = new Set(['arc', 'spin', 'self_pulse']);
-const DAMAGE_STATS = new Set(['str', 'dex', 'int']);
+const DAMAGE_STATS = new Set(['str', 'dex', 'int', 'vit']);
 const QUEST_NPC_SET = new Set(QUEST_NPC_IDS);
 const FETCH_ITEM_SET = new Set(QUEST_FETCH_ITEM_KEYS);
 const REWARD_TEMPLATE_SET = new Set(QUEST_REWARD_TEMPLATE_KEYS);
@@ -205,6 +214,11 @@ export function validateSkills(pack) {
     if (!DAMAGE_STATS.has(skill.damageStat)) errors.push(`${prefix}: invalid damageStat`);
     if (!Array.isArray(skill.classes) || skill.classes.length === 0) {
       errors.push(`${prefix}: classes required`);
+    }
+    if (skill.description != null) {
+      if (typeof skill.description !== 'string' || !skill.description.trim()) {
+        errors.push(`${prefix}: description must be a non-empty string`);
+      }
     }
   }
 

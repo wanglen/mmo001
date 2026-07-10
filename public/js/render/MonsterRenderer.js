@@ -44,7 +44,12 @@ export class MonsterRenderer {
       const { barYOffset, nameplateCenterOffset } = getEntityOverheadOffsets(half, zoom);
       const flashing = hitFlashes.has(monster.id);
       const flip = facing === 'left';
-      const sheet = this.atlas.get(monster.type, monster.moving, this.walkFrame);
+      const sheet = this.atlas.get(
+        monster.type,
+        monster.moving,
+        this.walkFrame,
+        monster.isSummon ? monster.color : null
+      );
 
       this.drawGroundShadow(ctx, screen.x, screen.y, half);
 
@@ -63,6 +68,16 @@ export class MonsterRenderer {
         ctx.drawImage(sheet, 0, 0, sheet.width, sheet.height, screen.x - half, screen.y - half, size, size);
       }
       ctx.restore();
+
+      if (monster.isSummon && !flashing) {
+        ctx.save();
+        ctx.globalAlpha = 0.28;
+        ctx.fillStyle = '#e74c3c';
+        ctx.beginPath();
+        ctx.ellipse(screen.x, screen.y + half * 0.35, half * 0.85, half * 0.28, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
 
       if (flashing) {
         ctx.save();
@@ -90,7 +105,7 @@ export class MonsterRenderer {
         barYOffset
       );
 
-      if (isBoss || isElite || monster.id === hoveredMonsterId) {
+      if (isBoss || isElite || monster.isSummon || monster.id === hoveredMonsterId) {
         this.drawNameplate(
           ctx,
           screen.x,
@@ -98,7 +113,8 @@ export class MonsterRenderer {
           monster.label,
           zoom,
           isBoss,
-          isElite
+          isElite,
+          monster.isSummon
         );
       }
     }
@@ -115,8 +131,8 @@ export class MonsterRenderer {
     ctx.fill();
   }
 
-  drawNameplate(ctx, x, y, name, zoom, isBoss = false, isElite = false) {
-    const fontSize = Math.max(10, (isBoss ? 12 : isElite ? 11.5 : 11) * zoom);
+  drawNameplate(ctx, x, y, name, zoom, isBoss = false, isElite = false, isSummon = false) {
+    const fontSize = Math.max(10, (isBoss ? 12 : isElite || isSummon ? 11.5 : 11) * zoom);
     ctx.font = `${isBoss || isElite ? 700 : 400} ${fontSize}px system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -130,12 +146,14 @@ export class MonsterRenderer {
       ? 'rgba(80, 12, 12, 0.85)'
       : isElite
         ? 'rgba(72, 48, 8, 0.82)'
-        : 'rgba(40, 10, 10, 0.72)';
+        : isSummon
+          ? 'rgba(60, 12, 20, 0.82)'
+          : 'rgba(40, 10, 10, 0.72)';
     ctx.beginPath();
     ctx.roundRect(left, top, width, height, 4 * zoom);
     ctx.fill();
 
-    ctx.fillStyle = isBoss ? '#ffd4a8' : isElite ? '#ffe08a' : '#f5d0c5';
+    ctx.fillStyle = isBoss ? '#ffd4a8' : isElite ? '#ffe08a' : isSummon ? '#f5b7b1' : '#f5d0c5';
     ctx.fillText(name, x, y);
   }
 }

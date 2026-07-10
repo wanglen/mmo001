@@ -4,8 +4,11 @@
     "cleave": {
       "id": "cleave",
       "name": "Cleave",
+      "description": "Slash enemies in a forward arc.",
       "icon": "⚔",
-      "classes": ["warrior"],
+      "classes": [
+        "warrior"
+      ],
       "mpCost": 8,
       "cooldownMs": 2000,
       "type": "melee_aoe",
@@ -18,8 +21,11 @@
     "charge": {
       "id": "charge",
       "name": "Charge",
+      "description": "Dash into foes and stun on impact.",
       "icon": "💨",
-      "classes": ["warrior"],
+      "classes": [
+        "warrior"
+      ],
       "mpCost": 12,
       "cooldownMs": 3500,
       "type": "dash",
@@ -33,8 +39,11 @@
     "whirlwind": {
       "id": "whirlwind",
       "name": "Whirlwind",
+      "description": "Spin and hit all enemies around you.",
       "icon": "🌀",
-      "classes": ["warrior"],
+      "classes": [
+        "warrior"
+      ],
       "mpCost": 20,
       "cooldownMs": 5000,
       "type": "melee_aoe",
@@ -46,8 +55,11 @@
     "shield_bash": {
       "id": "shield_bash",
       "name": "Shield Bash",
+      "description": "Bash one target, stunning them briefly.",
       "icon": "🛡",
-      "classes": ["warrior"],
+      "classes": [
+        "warrior"
+      ],
       "mpCost": 10,
       "cooldownMs": 2500,
       "type": "single_target",
@@ -60,8 +72,11 @@
     "iron_will": {
       "id": "iron_will",
       "name": "Iron Will",
+      "description": "Pulse that slows foes and heals you.",
       "icon": "✦",
-      "classes": ["warrior"],
+      "classes": [
+        "warrior"
+      ],
       "mpCost": 14,
       "cooldownMs": 5500,
       "type": "melee_aoe",
@@ -76,8 +91,11 @@
     "fireball": {
       "id": "fireball",
       "name": "Fireball",
+      "description": "Hurl a fire projectile at range.",
       "icon": "🔥",
-      "classes": ["mage"],
+      "classes": [
+        "mage"
+      ],
       "mpCost": 10,
       "cooldownMs": 1500,
       "type": "projectile",
@@ -89,8 +107,11 @@
     "icebolt": {
       "id": "icebolt",
       "name": "Icebolt",
+      "description": "Launch a cold bolt at a distant foe.",
       "icon": "❄",
-      "classes": ["mage"],
+      "classes": [
+        "mage"
+      ],
       "mpCost": 8,
       "cooldownMs": 1200,
       "type": "projectile",
@@ -102,8 +123,11 @@
     "meteor": {
       "id": "meteor",
       "name": "Meteor",
+      "description": "Call a meteor onto the targeted ground.",
       "icon": "☄",
-      "classes": ["mage"],
+      "classes": [
+        "mage"
+      ],
       "mpCost": 24,
       "cooldownMs": 5500,
       "type": "ground_aoe",
@@ -115,8 +139,11 @@
     "frost_nova": {
       "id": "frost_nova",
       "name": "Frost Nova",
+      "description": "Burst of frost that damages nearby enemies.",
       "icon": "💠",
-      "classes": ["mage"],
+      "classes": [
+        "mage"
+      ],
       "mpCost": 16,
       "cooldownMs": 4000,
       "type": "melee_aoe",
@@ -128,8 +155,11 @@
     "chain_spark": {
       "id": "chain_spark",
       "name": "Chain Spark",
+      "description": "Strike an area with chaining lightning.",
       "icon": "⚡",
-      "classes": ["mage"],
+      "classes": [
+        "mage"
+      ],
       "mpCost": 14,
       "cooldownMs": 3000,
       "type": "ground_aoe",
@@ -141,8 +171,11 @@
     "arrow_shot": {
       "id": "arrow_shot",
       "name": "Arrow Shot",
+      "description": "Fire a precise arrow at one target.",
       "icon": "🏹",
-      "classes": ["ranger"],
+      "classes": [
+        "ranger"
+      ],
       "mpCost": 6,
       "cooldownMs": 1000,
       "type": "single_target",
@@ -153,21 +186,27 @@
     "multishot": {
       "id": "multishot",
       "name": "Multishot",
+      "description": "Spray arrows across a ground area.",
       "icon": "✦",
-      "classes": ["ranger"],
+      "classes": [
+        "ranger"
+      ],
       "mpCost": 12,
       "cooldownMs": 2800,
       "type": "ground_aoe",
       "range": 160,
       "radius": 40,
       "damageStat": "dex",
-      "damageMult": 1.0
+      "damageMult": 1
     },
     "poison_arrow": {
       "id": "poison_arrow",
       "name": "Poison Arrow",
+      "description": "Shoot an arrow that poisons the target.",
       "icon": "☠",
-      "classes": ["ranger"],
+      "classes": [
+        "ranger"
+      ],
       "mpCost": 10,
       "cooldownMs": 2000,
       "type": "single_target",
@@ -180,8 +219,11 @@
     "piercing_shot": {
       "id": "piercing_shot",
       "name": "Piercing Shot",
+      "description": "Drive a high-damage bolt through the air.",
       "icon": "➤",
-      "classes": ["ranger"],
+      "classes": [
+        "ranger"
+      ],
       "mpCost": 16,
       "cooldownMs": 4000,
       "type": "projectile",
@@ -189,33 +231,306 @@
       "radius": 20,
       "damageStat": "dex",
       "damageMult": 1.7
+    },
+    "blood_raise": {
+      "id": "blood_raise",
+      "name": "Blood Raise",
+      "description": "Spend HP to raise a thrall at your cursor.",
+      "icon": "🩸",
+      "classes": [
+        "necromancer"
+      ],
+      "mpCost": 0,
+      "hpCost": 18,
+      "cooldownMs": 4000,
+      "type": "summon",
+      "summonType": "blood_thrall",
+      "summonCount": 1,
+      "damageStat": "vit",
+      "damageMult": 0
+    },
+    "sanguine_bolt": {
+      "id": "sanguine_bolt",
+      "name": "Sanguine Bolt",
+      "description": "Spend HP to fire a blood projectile.",
+      "icon": "💉",
+      "classes": [
+        "necromancer"
+      ],
+      "mpCost": 0,
+      "hpCost": 10,
+      "cooldownMs": 1800,
+      "type": "projectile",
+      "range": 190,
+      "radius": 22,
+      "damageStat": "vit",
+      "damageMult": 1.15
+    },
+    "raise_shade": {
+      "id": "raise_shade",
+      "name": "Raise Shade",
+      "description": "Spend HP to summon a swift blood shade.",
+      "icon": "🕯",
+      "classes": [
+        "necromancer"
+      ],
+      "mpCost": 0,
+      "hpCost": 24,
+      "cooldownMs": 5500,
+      "type": "summon",
+      "summonType": "blood_shade",
+      "summonCount": 1,
+      "damageStat": "vit",
+      "damageMult": 0
+    },
+    "blood_pact": {
+      "id": "blood_pact",
+      "name": "Blood Pact",
+      "description": "Spend HP to heal nearby thralls.",
+      "icon": "🫀",
+      "classes": [
+        "necromancer"
+      ],
+      "mpCost": 0,
+      "hpCost": 16,
+      "cooldownMs": 6000,
+      "type": "summon_heal",
+      "radius": 160,
+      "healMult": 2.2,
+      "damageStat": "vit",
+      "damageMult": 0
+    },
+    "exsanguinate": {
+      "id": "exsanguinate",
+      "name": "Exsanguinate",
+      "description": "Sacrifice thralls to blast nearby foes.",
+      "icon": "💀",
+      "classes": [
+        "necromancer"
+      ],
+      "mpCost": 0,
+      "hpCost": 12,
+      "cooldownMs": 7000,
+      "type": "sacrifice",
+      "radius": 96,
+      "sacrificeDamageMult": 1.35,
+      "damageStat": "vit",
+      "damageMult": 0.4
+    },
+    "crimson_veil": {
+      "id": "crimson_veil",
+      "name": "Crimson Veil",
+      "description": "Spend HP for a slowing pulse and self-heal.",
+      "icon": "🩸",
+      "classes": [
+        "necromancer"
+      ],
+      "mpCost": 0,
+      "hpCost": 22,
+      "cooldownMs": 8000,
+      "type": "melee_aoe",
+      "aoeShape": "self_pulse",
+      "radius": 52,
+      "onHitStatus": "slow",
+      "statusDurationMs": 2500,
+      "selfHeal": 36,
+      "damageStat": "vit",
+      "damageMult": 0.7
+    },
+    "hemorrhage_host": {
+      "id": "hemorrhage_host",
+      "name": "Hemorrhage Host",
+      "description": "Spend HP to raise several short-lived wisps.",
+      "icon": "🩸",
+      "classes": [
+        "necromancer"
+      ],
+      "mpCost": 0,
+      "hpCost": 40,
+      "cooldownMs": 12000,
+      "type": "summon",
+      "summonType": "blood_weak",
+      "summonCount": 3,
+      "damageStat": "vit",
+      "damageMult": 0
     }
   },
   "classSkillBars": {
-    "warrior": ["cleave", "charge", null, null, null, null, null, null],
-    "mage": ["fireball", "icebolt", null, null, null, null, null, null],
-    "ranger": ["arrow_shot", "multishot", null, null, null, null, null, null]
+    "warrior": [
+      "cleave",
+      "charge",
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "mage": [
+      "fireball",
+      "icebolt",
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ranger": [
+      "arrow_shot",
+      "multishot",
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "necromancer": [
+      "blood_raise",
+      "sanguine_bolt",
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
   },
   "skillTrees": {
     "warrior": {
-      "cleave": { "tier": 1, "cost": 1 },
-      "shield_bash": { "tier": 1, "cost": 1 },
-      "charge": { "tier": 2, "cost": 1, "requires": ["cleave"] },
-      "iron_will": { "tier": 2, "cost": 1, "requires": ["shield_bash"] },
-      "whirlwind": { "tier": 3, "cost": 2, "requires": ["charge"] }
+      "cleave": {
+        "tier": 1,
+        "cost": 1
+      },
+      "shield_bash": {
+        "tier": 1,
+        "cost": 1
+      },
+      "charge": {
+        "tier": 2,
+        "cost": 1,
+        "requires": [
+          "cleave"
+        ]
+      },
+      "iron_will": {
+        "tier": 2,
+        "cost": 1,
+        "requires": [
+          "shield_bash"
+        ]
+      },
+      "whirlwind": {
+        "tier": 3,
+        "cost": 2,
+        "requires": [
+          "charge"
+        ]
+      }
     },
     "mage": {
-      "fireball": { "tier": 1, "cost": 1 },
-      "icebolt": { "tier": 1, "cost": 1 },
-      "chain_spark": { "tier": 2, "cost": 1, "requires": ["fireball"] },
-      "frost_nova": { "tier": 2, "cost": 1, "requires": ["icebolt"] },
-      "meteor": { "tier": 3, "cost": 2, "requires": ["fireball"] }
+      "fireball": {
+        "tier": 1,
+        "cost": 1
+      },
+      "icebolt": {
+        "tier": 1,
+        "cost": 1
+      },
+      "chain_spark": {
+        "tier": 2,
+        "cost": 1,
+        "requires": [
+          "fireball"
+        ]
+      },
+      "frost_nova": {
+        "tier": 2,
+        "cost": 1,
+        "requires": [
+          "icebolt"
+        ]
+      },
+      "meteor": {
+        "tier": 3,
+        "cost": 2,
+        "requires": [
+          "fireball"
+        ]
+      }
     },
     "ranger": {
-      "arrow_shot": { "tier": 1, "cost": 1 },
-      "multishot": { "tier": 2, "cost": 1, "requires": ["arrow_shot"] },
-      "poison_arrow": { "tier": 2, "cost": 1, "requires": ["arrow_shot"] },
-      "piercing_shot": { "tier": 3, "cost": 2, "requires": ["multishot"] }
+      "arrow_shot": {
+        "tier": 1,
+        "cost": 1
+      },
+      "multishot": {
+        "tier": 2,
+        "cost": 1,
+        "requires": [
+          "arrow_shot"
+        ]
+      },
+      "poison_arrow": {
+        "tier": 2,
+        "cost": 1,
+        "requires": [
+          "arrow_shot"
+        ]
+      },
+      "piercing_shot": {
+        "tier": 3,
+        "cost": 2,
+        "requires": [
+          "multishot"
+        ]
+      }
+    },
+    "necromancer": {
+      "blood_raise": {
+        "tier": 1,
+        "cost": 1
+      },
+      "sanguine_bolt": {
+        "tier": 1,
+        "cost": 1
+      },
+      "raise_shade": {
+        "tier": 2,
+        "cost": 1,
+        "requires": [
+          "blood_raise"
+        ]
+      },
+      "blood_pact": {
+        "tier": 2,
+        "cost": 1,
+        "requires": [
+          "blood_raise"
+        ]
+      },
+      "exsanguinate": {
+        "tier": 2,
+        "cost": 1,
+        "requires": [
+          "sanguine_bolt"
+        ]
+      },
+      "crimson_veil": {
+        "tier": 3,
+        "cost": 1,
+        "requires": [
+          "blood_pact"
+        ]
+      },
+      "hemorrhage_host": {
+        "tier": 3,
+        "cost": 2,
+        "requires": [
+          "raise_shade"
+        ]
+      }
     }
   },
   "builds": {
@@ -223,36 +538,80 @@
       "berserker": {
         "name": "Berserker",
         "description": "Cleave cone, Charge stun-dash, and Whirlwind 360° spin.",
-        "skills": ["cleave", "charge", "whirlwind"]
+        "skills": [
+          "cleave",
+          "charge",
+          "whirlwind"
+        ]
       },
       "guardian": {
         "name": "Guardian",
         "description": "Shield Bash stun, Iron Will slow pulse + heal, and Charge.",
-        "skills": ["shield_bash", "iron_will", "charge"]
+        "skills": [
+          "shield_bash",
+          "iron_will",
+          "charge"
+        ]
       }
     },
     "mage": {
       "pyromancer": {
         "name": "Pyromancer",
         "description": "Fireball, Chain Spark, and Meteor for burst damage.",
-        "skills": ["fireball", "chain_spark", "meteor"]
+        "skills": [
+          "fireball",
+          "chain_spark",
+          "meteor"
+        ]
       },
       "cryomancer": {
         "name": "Cryomancer",
         "description": "Icebolt and Frost Nova for close-range control.",
-        "skills": ["icebolt", "frost_nova"]
+        "skills": [
+          "icebolt",
+          "frost_nova"
+        ]
       }
     },
     "ranger": {
       "marksman": {
         "name": "Marksman",
         "description": "Arrow Shot, Multishot, and Piercing Shot.",
-        "skills": ["arrow_shot", "multishot", "piercing_shot"]
+        "skills": [
+          "arrow_shot",
+          "multishot",
+          "piercing_shot"
+        ]
       },
       "hunter": {
         "name": "Hunter",
         "description": "Poison Arrow and Multishot for sustained damage.",
-        "skills": ["arrow_shot", "poison_arrow", "multishot"]
+        "skills": [
+          "arrow_shot",
+          "poison_arrow",
+          "multishot"
+        ]
+      }
+    },
+    "necromancer": {
+      "blood_lord": {
+        "name": "Blood Lord",
+        "description": "Raise thralls, Sanguine Bolt, and Exsanguinate for burst.",
+        "skills": [
+          "blood_raise",
+          "sanguine_bolt",
+          "exsanguinate"
+        ]
+      },
+      "hemomancer": {
+        "name": "Hemomancer",
+        "description": "Army of wisps, Blood Pact sustain, and Crimson Veil.",
+        "skills": [
+          "blood_raise",
+          "hemorrhage_host",
+          "blood_pact",
+          "crimson_veil"
+        ]
       }
     }
   }

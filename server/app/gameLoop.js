@@ -13,7 +13,14 @@ const RESPAWN_CHECK_MS = 15000;
 /**
  * Fixed-rate server simulation loop (20 Hz) with per-tick world broadcast.
  */
-export function startGameLoop({ world, playerManager, characterStore, broadcast, eventBus = null }) {
+export function startGameLoop({
+  world,
+  playerManager,
+  characterStore,
+  broadcast,
+  eventBus = null,
+  partyManager = null,
+}) {
   let lastRespawnCheck = 0;
   let tick = 0;
 
@@ -27,8 +34,13 @@ export function startGameLoop({ world, playerManager, characterStore, broadcast,
 
     for (const mapId of world.mapIdsWithPlayers(players)) {
       const mapPlayers = players.filter((player) => (player.mapId ?? MAP_ID.TOWN) === mapId);
-      const { map, monsterManager } = world.getContext(mapId);
-      monsterManager.tick(map, mapPlayers, now);
+      const { map, monsterManager, lootManager } = world.getContext(mapId);
+      monsterManager.tick(map, mapPlayers, now, {
+        lootManager,
+        partyManager,
+        playerManager,
+        eventBus,
+      });
     }
 
     for (const player of players) {

@@ -3,6 +3,7 @@ export const MP_REGEN_PER_SEC = {
   warrior: 1,
   mage: 3.5,
   ranger: 1.75,
+  necromancer: 0.5,
 };
 
 /** No MP regen for this long after attacking, casting, or taking damage. */

@@ -7,6 +7,7 @@ import {
   canUseSkill,
   clampToSkillRange,
 } from '/shared/skills.js';
+import { getSummonCastRange } from '/shared/summons.js';
 import { CONSUMABLE_KIND, canQuickUsePotion } from '/shared/consumables.js';
 import { CAMERA_ZOOM_STEP } from '../../config.js';
 import { MOVE_INTERVAL } from '../core/CoreInput.js';
@@ -123,7 +124,7 @@ export function handleSkills(game) {
   if (!skillDef) return;
 
   const monsters = game.worldState.monsters ?? [];
-  const shot = buildSkillShot(skillDef, px, py, aim, monsters);
+  const shot = buildSkillShot(skillDef, px, py, aim, monsters, serverPlayer.level ?? 1);
 
   game.fxBuffer.addSkillFx({
     skillId: skill.id,
@@ -155,7 +156,18 @@ export function handleSkills(game) {
  * Client-side skill impact point for VFX preview (mirrors server aim clamping).
  * @param {import('/shared/plugins/combat/skills.js').SkillDef} skillDef
  */
-function buildSkillShot(skillDef, px, py, aim, monsters) {
+function buildSkillShot(skillDef, px, py, aim, monsters, level = 1) {
+  if (skillDef.type === 'summon') {
+    const clamped = clampToSkillRange(px, py, aim.x, aim.y, getSummonCastRange(level));
+    return {
+      impactX: clamped.x,
+      impactY: clamped.y,
+      targetX: clamped.x,
+      targetY: clamped.y,
+      missed: false,
+    };
+  }
+
   if (skillDef.type === 'projectile') {
     return resolveProjectileImpact(
       monsters,

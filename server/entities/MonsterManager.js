@@ -1,4 +1,4 @@
-import { createMonster } from './Monster.js';
+import { createMonster, isHostileMonster } from './Monster.js';
 import { MONSTER_TYPES, SPAWN_COUNT, spawnCountForMap, pickSpawnMonsterType } from '../../shared/monsters.js';
 import { rollEliteModifier, applyEliteModifier } from '../../shared/plugins/combat/eliteModifiers.js';
 import {
@@ -27,7 +27,16 @@ import {
 } from '../../shared/dungeon.js';
 import { MAP_ID } from '../../shared/worldMaps.js';
 import { resolveMonsterScaleLevel } from '../../shared/plugins/combat/monsterScaling.js';
-import { resolveMonsterTarget, monsterAttackPlayer } from '../plugins/combat/monsterCombat.js';
+import {
+  resolveMonsterTarget,
+  resolveSummonTarget,
+  monsterAttackPlayer,
+  monsterAttackSummon,
+  summonAttackMonster,
+  provokeMonster,
+} from '../plugins/combat/monsterCombat.js';
+import { applyMonsterDamage } from '../plugins/combat/combat.js';
+import { isPlayerAlive } from '../../shared/playerLife.js';
 
 const DIRECTION_DELTA = {
   up: { x: 0, y: -1 },
@@ -238,7 +247,9 @@ export class MonsterManager {
     this.lastSpawnPlayers = playersOnMap;
     const scaleLevel = resolveMonsterScaleLevel(map, playersOnMap);
     const goal = resolveSpawnTarget(map, target);
-    const current = this.getAllEntities().filter((monster) => !monster.isBoss).length;
+    const current = this.getAllEntities().filter(
+      (monster) => !monster.isBoss && !monster.isSummon
+    ).length;
     if (current >= goal) {
       this.spawnBossIfNeeded(map, now, scaleLevel);
       return 0;
@@ -271,18 +282,35 @@ export class MonsterManager {
     return Array.from(this.monsters.values()).filter((m) => m.hp > 0);
   }
 
+  /** Living hostiles only (excludes player thralls). */
+  getHostileEntities() {
+    return this.getAllEntities().filter((m) => isHostileMonster(m));
+  }
+
   remove(id) {
     this.monsters.delete(id);
   }
 
-  tick(map, players, now = Date.now()) {
+  tick(map, players, now = Date.now(), combatCtx = null) {
+    const hostiles = this.getHostileEntities();
+    const summons = this.getAllEntities().filter((m) => m.isSummon);
+    const expired = [];
+
     for (const monster of this.monsters.values()) {
       if (monster.hp <= 0) continue;
+
+      if (monster.isSummon && monster.expiresAt && now >= monster.expiresAt) {
+        expired.push(monster.id);
+        continue;
+      }
 
       const dotDamage = tickStatusEffects(monster, now);
       if (dotDamage > 0) {
         monster.hp = Math.max(0, monster.hp - dotDamage);
-        if (monster.hp <= 0) continue;
+        if (monster.hp <= 0) {
+          if (monster.isSummon) expired.push(monster.id);
+          continue;
+        }
       }
 
       if (isStunned(monster, now)) {
@@ -293,41 +321,114 @@ export class MonsterManager {
       const speedMult = getMovementSpeedMultiplier(monster, now);
       const effectiveSpeed = monster.baseSpeed * speedMult;
 
-      const target = resolveMonsterTarget(monster, players, map);
+      if (monster.isSummon) {
+        this.#tickSummon(monster, players, hostiles, map, now, effectiveSpeed, combatCtx);
+        continue;
+      }
+
+      const target = resolveMonsterTarget(monster, players, map, summons);
 
       if (!target) {
         monster.moving = false;
         monster.targetPlayerId = null;
+        monster.targetMonsterId = null;
         continue;
       }
 
-      monster.targetPlayerId = target.id;
-
-      if (isInRange(monster.x, monster.y, target.x, target.y, monster.attackRange)) {
-        monster.moving = false;
-        monsterAttackPlayer(monster, target, map, now);
-        continue;
-      }
-
-      const direction = pickDirection(monster.x, monster.y, target.x, target.y);
-      if (!direction) continue;
-
-      const delta = DIRECTION_DELTA[direction];
-      const nextX = monster.x + delta.x * effectiveSpeed;
-      const nextY = monster.y + delta.y * effectiveSpeed;
-
-      if (canMoveTo(map, nextX, nextY)) {
-        const { x: tileX, y: tileY } = pixelToTile(nextX, nextY);
-        if (isTileInAnySafeZone(map, tileX, tileY)) {
-          monster.moving = false;
-          continue;
-        }
-        monster.x = nextX;
-        monster.y = nextY;
-        monster.moving = true;
+      const entity = target.entity;
+      if (target.kind === 'player') {
+        monster.targetPlayerId = entity.id;
+        monster.targetMonsterId = null;
       } else {
-        monster.moving = false;
+        monster.targetMonsterId = entity.id;
       }
+
+      if (isInRange(monster.x, monster.y, entity.x, entity.y, monster.attackRange)) {
+        monster.moving = false;
+        if (target.kind === 'summon') {
+          monsterAttackSummon(monster, entity, this, now);
+        } else {
+          monsterAttackPlayer(monster, entity, map, now);
+        }
+        continue;
+      }
+
+      this.#moveToward(monster, entity.x, entity.y, effectiveSpeed, map);
+    }
+
+    for (const id of expired) {
+      this.remove(id);
+    }
+  }
+
+  #tickSummon(summon, players, hostiles, map, now, effectiveSpeed, combatCtx) {
+    const owner = players.find((p) => p.id === summon.ownerId);
+    if (!owner || !isPlayerAlive(owner)) {
+      this.remove(summon.id);
+      return;
+    }
+
+    const target = resolveSummonTarget(summon, owner, hostiles);
+    if (!target) {
+      const distOwner = Math.hypot(summon.x - owner.x, summon.y - owner.y);
+      if (distOwner > 48) {
+        this.#moveToward(summon, owner.x, owner.y, effectiveSpeed, map, { allowSafe: true });
+      } else {
+        summon.moving = false;
+      }
+      return;
+    }
+
+    summon.targetMonsterId = target.id;
+
+    if (isInRange(summon.x, summon.y, target.x, target.y, summon.attackRange)) {
+      summon.moving = false;
+      const result = summonAttackMonster(summon, target, now);
+      if (result.ok && result.damage > 0) {
+        provokeMonster(target, summon);
+        owner.lastCombatTargetId = target.id;
+      }
+      if (result.ok && result.killed && combatCtx) {
+        applyMonsterDamage({
+          monster: target,
+          damage: 0,
+          player: owner,
+          monsterManager: this,
+          lootManager: combatCtx.lootManager,
+          partyManager: combatCtx.partyManager,
+          playerManager: combatCtx.playerManager,
+          eventBus: combatCtx.eventBus,
+          now,
+        });
+      }
+      return;
+    }
+
+    this.#moveToward(summon, target.x, target.y, effectiveSpeed, map);
+  }
+
+  #moveToward(monster, targetX, targetY, effectiveSpeed, map, { allowSafe = false } = {}) {
+    const direction = pickDirection(monster.x, monster.y, targetX, targetY);
+    if (!direction) {
+      monster.moving = false;
+      return;
+    }
+
+    const delta = DIRECTION_DELTA[direction];
+    const nextX = monster.x + delta.x * effectiveSpeed;
+    const nextY = monster.y + delta.y * effectiveSpeed;
+
+    if (canMoveTo(map, nextX, nextY)) {
+      const { x: tileX, y: tileY } = pixelToTile(nextX, nextY);
+      if (!allowSafe && isTileInAnySafeZone(map, tileX, tileY)) {
+        monster.moving = false;
+        return;
+      }
+      monster.x = nextX;
+      monster.y = nextY;
+      monster.moving = true;
+    } else {
+      monster.moving = false;
     }
   }
 }

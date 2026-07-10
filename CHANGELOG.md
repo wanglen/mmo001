@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.0] - 2026-07-10
+
+### Added
+
+- **Blood Necromancer** — new class fueled by HP (VIT-scaled); Blood Raise / Raise Shade / Hemorrhage Host thralls with level-scaled slot caps (FIFO replace), Sanguine Bolt, Blood Pact, Exsanguinate, and Crimson Veil
+- Thrall AI assists the owner's last combat target, then nearest hostiles; hostiles aggro and attack thralls; summon kills grant owner XP/loot; thralls despawn on portal, town recall, death, disconnect, or duration expiry
+- Raise skills spawn at the cursor within a level-scaled cast range; skill bar / skill tree show HP costs and short skill descriptions; thrall slot HUD (`Thralls n/max`) for necromancers
+- **Blood Siphon** — necromancer passive: on kill credit, heal if within 160px of the slain monster (`VIT×0.4 + level×0.5`, min 3)
+
 ## [4.0.0] - 2026-07-10
 
 ### Added

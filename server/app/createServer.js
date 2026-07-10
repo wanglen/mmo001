@@ -134,6 +134,7 @@ export async function createServerApp(options = {}) {
     characterStore,
     broadcast: broadcastAll,
     eventBus,
+    partyManager,
   });
 
   return {

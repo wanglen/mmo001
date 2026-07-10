@@ -72,7 +72,7 @@ export function findMonsterAt(monsters, x, y, radius = MONSTER_HIT_RADIUS) {
   let bestDist = radius;
 
   for (const monster of monsters) {
-    if (monster.hp <= 0) continue;
+    if (monster.hp <= 0 || monster.isSummon) continue;
     const d = distance(x, y, monster.x, monster.y);
     if (d <= bestDist) {
       best = monster;
@@ -88,7 +88,7 @@ export function findNearestMonsterInRange(player, monsters, range = ATTACK_RANGE
   let bestDist = range;
 
   for (const monster of monsters) {
-    if (monster.hp <= 0) continue;
+    if (monster.hp <= 0 || monster.isSummon) continue;
     const d = distance(player.x, player.y, monster.x, monster.y);
     if (d <= bestDist) {
       best = monster;

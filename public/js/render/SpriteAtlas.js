@@ -144,12 +144,57 @@ function drawRangerFrame(ctx, px, py, body, dark, light, accent, direction, anim
   }
 }
 
+function drawNecromancerFrame(ctx, px, py, body, dark, light, accent, direction, animCol) {
+  ctx.fillStyle = dark;
+  ctx.fillRect(px + 2, py, 6, 2);
+  ctx.fillRect(px + 1, py + 2, 8, 1);
+
+  ctx.fillStyle = body;
+  ctx.fillRect(px + 1, py + 3, 8, 7);
+  ctx.fillStyle = light;
+  ctx.fillRect(px + 2, py + 4, 2, 3);
+  ctx.fillStyle = accent;
+  ctx.fillRect(px + 3, py + 6, 4, 1);
+
+  // Blood vial / ritual dagger
+  if (direction === 'left') {
+    ctx.fillStyle = accent;
+    ctx.fillRect(px - 2, py + 4, 2, 5);
+    ctx.fillStyle = '#f5b7b1';
+    ctx.fillRect(px - 2, py + 3, 2, 1);
+    if (animCol === ANIMATION.ATTACK) {
+      ctx.fillStyle = '#c0392b';
+      ctx.fillRect(px - 5, py + 5, 3, 2);
+    }
+  } else if (direction === 'right') {
+    ctx.fillStyle = accent;
+    ctx.fillRect(px + 10, py + 4, 2, 5);
+    ctx.fillStyle = '#f5b7b1';
+    ctx.fillRect(px + 10, py + 3, 2, 1);
+    if (animCol === ANIMATION.ATTACK) {
+      ctx.fillStyle = '#c0392b';
+      ctx.fillRect(px + 12, py + 5, 3, 2);
+    }
+  } else if (direction === 'down') {
+    ctx.fillStyle = accent;
+    ctx.fillRect(px + 4, py + 9, 2, 3);
+  } else {
+    ctx.fillStyle = accent;
+    ctx.fillRect(px + 4, py - 1, 2, 3);
+  }
+}
+
 function drawCharacterFrame(ctx, ox, oy, characterClass, color, accent, direction, animCol) {
   const body = color;
   const dark = shade(color, -35);
   const light = shade(color, 45);
   const skin = '#f0d5b8';
-  const hair = characterClass === 'mage' ? '#5d4037' : '#2c1810';
+  const hair =
+    characterClass === 'mage'
+      ? '#5d4037'
+      : characterClass === 'necromancer'
+        ? '#1a0a0c'
+        : '#2c1810';
 
   ctx.clearRect(ox, oy, SPRITE_FRAME_SIZE, SPRITE_FRAME_SIZE);
 
@@ -179,6 +224,9 @@ function drawCharacterFrame(ctx, ox, oy, characterClass, color, accent, directio
   } else if (characterClass === 'mage') {
     drawMageFrame(ctx, px, py, body, dark, light, accent, direction, animCol);
     drawHead(ctx, px, py, skin, hair);
+  } else if (characterClass === 'necromancer') {
+    drawNecromancerFrame(ctx, px, py, body, dark, light, accent, direction, animCol);
+    drawHead(ctx, px, py, '#e8c4b8', hair);
   } else {
     drawRangerFrame(ctx, px, py, body, dark, light, accent, direction, animCol);
     drawHead(ctx, px, py, skin, '#3e2723');
@@ -189,6 +237,7 @@ const CLASS_ACCENTS = {
   warrior: '#bdc3c7',
   mage: '#af7ac5',
   ranger: '#f4d03f',
+  necromancer: '#e74c3c',
 };
 
 /**

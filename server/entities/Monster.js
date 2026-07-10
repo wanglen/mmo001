@@ -35,6 +35,8 @@ export class Monster {
     this.targetPlayerId = null;
     this.provoked = false;
     this.lastAttackAt = 0;
+    this.isSummon = false;
+    this.ownerId = null;
   }
 
   toJSON() {
@@ -53,10 +55,18 @@ export class Monster {
       level: this.level,
       eliteModifier: this.eliteModifier,
       bossPhase: this.isBoss ? getBossPhase(this) : undefined,
+      isSummon: this.isSummon || undefined,
+      ownerId: this.ownerId || undefined,
+      expiresAt: this.expiresAt || undefined,
     };
   }
 }
 
 export function createMonster(type, x, y, scaleLevel = 1) {
   return new Monster({ type, x, y, scaleLevel });
+}
+
+/** Hostile world mob (not a player thrall). */
+export function isHostileMonster(monster) {
+  return !!monster && !monster.isSummon && monster.hp > 0;
 }

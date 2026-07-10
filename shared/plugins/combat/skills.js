@@ -6,15 +6,17 @@ export const SKILL_SLOT_COUNT = skillsData.skillSlotCount;
 /** Scales skill damage down so early skills do not one-shot common mobs. */
 export const SKILL_DAMAGE_SCALAR = 0.72;
 
-/** @typedef {'melee_aoe' | 'dash' | 'projectile' | 'ground_aoe' | 'single_target'} SkillType */
+/** @typedef {'melee_aoe' | 'dash' | 'projectile' | 'ground_aoe' | 'single_target' | 'summon' | 'sacrifice' | 'summon_heal'} SkillType */
 
 /**
  * @typedef {object} SkillDef
  * @property {string} id
  * @property {string} name
+ * @property {string} [description]
  * @property {string} icon
  * @property {string[]} classes
  * @property {number} mpCost
+ * @property {number} [hpCost]
  * @property {number} cooldownMs
  * @property {SkillType} type
  * @property {number} [range]
@@ -25,7 +27,11 @@ export const SKILL_DAMAGE_SCALAR = 0.72;
  * @property {string} [onHitStatus]
  * @property {number} [statusDurationMs]
  * @property {number} [selfHeal]
- * @property {'str' | 'dex' | 'int'} damageStat
+ * @property {string} [summonType]
+ * @property {number} [summonCount]
+ * @property {number} [healMult]
+ * @property {number} [sacrificeDamageMult]
+ * @property {'str' | 'dex' | 'int' | 'vit'} damageStat
  * @property {number} damageMult
  */
 
@@ -74,12 +80,56 @@ export function getAvailableMp(player) {
 }
 
 /**
+ * Spendable HP for blood skills — always leave at least 1 HP.
+ * @param {object} player
+ */
+export function getAvailableHpForSkills(player) {
+  const hp = Number(player?.hp);
+  if (!Number.isFinite(hp)) return 0;
+  return Math.max(0, Math.floor(hp) - 1);
+}
+
+/**
+ * @param {SkillDef | null | undefined} skill
+ * @returns {number}
+ */
+export function getSkillHpCost(skill) {
+  const cost = Number(skill?.hpCost);
+  if (!Number.isFinite(cost) || cost <= 0) return 0;
+  return Math.floor(cost);
+}
+
+/**
  * @param {object} player
  * @param {number} mpCost
  */
 export function spendSkillMp(player, mpCost) {
   const available = getAvailableMp(player);
   player.mp = Math.max(0, available - mpCost);
+}
+
+/**
+ * Spend HP for a skill cost, never dropping below 1.
+ * @param {object} player
+ * @param {number} hpCost
+ */
+export function spendSkillHp(player, hpCost) {
+  const cost = Math.max(0, Math.floor(Number(hpCost) || 0));
+  if (cost <= 0) return 0;
+  const before = Math.max(0, Math.floor(Number(player.hp) || 0));
+  player.hp = Math.max(1, before - cost);
+  return before - player.hp;
+}
+
+/**
+ * Resource label for skill bar / tooltips.
+ * @param {SkillDef} skill
+ * @returns {{ amount: number, unit: 'HP' | 'MP' }}
+ */
+export function getSkillResourceCost(skill) {
+  const hpCost = getSkillHpCost(skill);
+  if (hpCost > 0) return { amount: hpCost, unit: 'HP' };
+  return { amount: skill?.mpCost ?? 0, unit: 'MP' };
 }
 
 /**
@@ -120,7 +170,13 @@ export function canUseSkill(player, skillId, now = Date.now()) {
     return { ok: false, reason: 'not_unlocked' };
   }
 
-  if (getAvailableMp(player) < skill.mpCost) return { ok: false, reason: 'no_mp' };
+  const hpCost = getSkillHpCost(skill);
+  if (hpCost > 0 && getAvailableHpForSkills(player) < hpCost) {
+    return { ok: false, reason: 'no_hp' };
+  }
+  if ((skill.mpCost ?? 0) > 0 && getAvailableMp(player) < skill.mpCost) {
+    return { ok: false, reason: 'no_mp' };
+  }
 
   if (getSkillCooldownRemainingMs(player, skillId, now) > 0) {
     return { ok: false, reason: 'cooldown' };
@@ -418,6 +474,11 @@ export function getSkillFxDuration(skill, fromX, fromY, toX, toY) {
   if (skill.id === 'iron_will') return 480;
   if (skill.id === 'cleave') return 280;
   if (skill.id === 'shield_bash') return 300;
+  if (skill.id === 'crimson_veil') return 480;
+  if (skill.id === 'sanguine_bolt') return Math.min(650, Math.max(280, dist * 2));
+  if (skill.type === 'summon' || skill.type === 'summon_heal' || skill.type === 'sacrifice') {
+    return 420;
+  }
   if (skill.type === 'melee_aoe') return 320;
   if (skill.type === 'dash') return 380;
 

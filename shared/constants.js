@@ -24,6 +24,7 @@ export const CHARACTER_CLASSES = {
   warrior: { label: 'Warrior', color: '#c0392b' },
   mage: { label: 'Mage', color: '#2980b9' },
   ranger: { label: 'Ranger', color: '#27ae60' },
+  necromancer: { label: 'Blood Necromancer', color: '#6c1f2b' },
 };
 
 export const DIRECTIONS = ['up', 'down', 'left', 'right'];

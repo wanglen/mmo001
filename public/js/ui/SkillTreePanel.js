@@ -1,4 +1,4 @@
-import { SKILLS } from '/shared/skills.js';
+import { SKILLS, getSkillResourceCost } from '/shared/skills.js';
 import { SKILL_HOTKEY_COUNT } from './SkillBar.js';
 
 export class SkillTreePanel {
@@ -255,6 +255,7 @@ export class SkillTreePanel {
 
     const isUnlocked = unlocked.has(skillId);
     const canLearn = this.canLearnLocally(skillId, node, unlocked, player);
+    const resource = getSkillResourceCost(skill);
     const reqText =
       (node.requires ?? []).length > 0
         ? `Requires: ${node.requires.map((id) => SKILLS[id]?.name ?? id).join(', ')}`
@@ -266,7 +267,12 @@ export class SkillTreePanel {
         <span class="skilltree-node-icon">${skill.icon}</span>
         <div class="skilltree-node-body">
           <span class="skilltree-node-name">${skill.name}</span>
-          <span class="skilltree-node-meta">${node.cost ?? 1} pt · ${skill.mpCost} MP</span>
+          ${
+            skill.description
+              ? `<span class="skilltree-node-desc">${skill.description}</span>`
+              : ''
+          }
+          <span class="skilltree-node-meta">${node.cost ?? 1} pt · ${resource.amount} ${resource.unit}</span>
           ${reqText ? `<span class="skilltree-node-req">${reqText}</span>` : ''}
         </div>
         ${

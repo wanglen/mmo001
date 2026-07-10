@@ -1,6 +1,6 @@
 {
   "name": "mmo001",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "Simple MMORPG MVP",
   "type": "module",
   "engines": {

@@ -1,11 +1,12 @@
 # MMO001
 
-A browser-based MMORPG built with **HTML Canvas** and **Node.js**. Diablo-like action RPG with real-time multiplayer — currently at **v4.0.0**.
+A browser-based MMORPG built with **HTML Canvas** and **Node.js**. Diablo-like action RPG with real-time multiplayer — currently at **v4.1.0**.
 
 ## Features (current)
 
 - Procedural map generation with grass, water, and forest clusters
-- Character selection (Warrior, Mage, Ranger) — up to **8 characters per account**
+- Character selection (Warrior, Mage, Ranger, Blood Necromancer) — up to **8 characters per account**
+- Blood Necromancer spends **HP** (not mana) to raise timed thralls at the cursor (level-scaled cast range + slot cap), bolt, pact, sacrifice, and veil skills; **Blood Siphon** returns life on nearby kills
 - **Accounts:** register / sign in with username and password before character select
 - Server-authoritative movement with collision detection and move-rate validation
 - Animated sprite sheets per class (idle, walk, attack) with class silhouettes, overhead HP bar, and nameplate

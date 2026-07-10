@@ -19,6 +19,7 @@ import {
 } from '../../app/handlerUtils.js';
 import { evictCharacterSessions } from './session.js';
 import { emitPlayerTeleported } from './bus.js';
+import { removeOwnedSummonsAcrossWorld } from '../combat/summons.js';
 
 export const CORE_EVENTS = [
   EVENTS.CREATE_CHARACTER,
@@ -294,11 +295,15 @@ export function registerCoreHandlers(socket, ctx) {
 
 /** @param {string} playerId @param {import('../../../shared/plugins/types.js').ServerContext} ctx */
 export async function onCoreDisconnect(playerId, ctx) {
-  const player = ctx.playerManager.remove(playerId);
+  const player = ctx.playerManager.get(playerId);
+  if (player && ctx.world) {
+    removeOwnedSummonsAcrossWorld(ctx.world, playerId);
+  }
+  const removed = ctx.playerManager.remove(playerId);
   logGameEvent('player_disconnect', {
     playerId,
-    name: player?.name ?? null,
+    name: removed?.name ?? player?.name ?? null,
   });
-  await persistPlayer(ctx.characterStore, player);
-  if (player) ctx.broadcastAll();
+  await persistPlayer(ctx.characterStore, removed ?? player);
+  if (removed || player) ctx.broadcastAll();
 }

@@ -14,6 +14,7 @@ import { getEffectiveCombatStats } from '../../../shared/inventory.js';
 import { pushDamageFx, pushHitFlash } from './combatFx.js';
 import { provokeMonster } from './monsterCombat.js';
 import { DOMAIN_EVENTS } from '../../../shared/plugins/domainEvents.js';
+import { tryBloodSiphon } from '../../../shared/plugins/combat/bloodSiphon.js';
 
 export function applyMonsterDamage({
   monster,
@@ -34,10 +35,25 @@ export function applyMonsterDamage({
   let xpRecipientIds = [];
   let xpByRecipient = [];
 
+  if (monster.isSummon) {
+    if (killed) monsterManager.remove(monster.id);
+    else if (damage > 0) {
+      pushDamageFx({ x: monster.x, y: monster.y, damage, now, crit });
+      pushHitFlash({ monsterId: monster.id, now });
+    }
+    return { damage, killed, xp: null, xpRecipientIds: [], lootDrop: null };
+  }
+
+  if (player?.id) {
+    player.lastCombatTargetId = monster.id;
+  }
+
   provokeMonster(monster, player);
 
-  pushDamageFx({ x: monster.x, y: monster.y, damage, now, crit });
-  pushHitFlash({ monsterId: monster.id, now });
+  if (damage > 0) {
+    pushDamageFx({ x: monster.x, y: monster.y, damage, now, crit });
+    pushHitFlash({ monsterId: monster.id, now });
+  }
 
   if (killed) {
     const allPlayers = playerManager?.getAllEntities?.() ?? [player];
@@ -55,6 +71,8 @@ export function applyMonsterDamage({
       });
     }
 
+    const siphonHeal = tryBloodSiphon(player, monster);
+
     monsterManager.remove(monster.id);
 
     eventBus?.emit(DOMAIN_EVENTS.MONSTER_KILLED, {
@@ -65,6 +83,7 @@ export function applyMonsterDamage({
       allPlayers,
       lootManager,
       xpByRecipient,
+      siphonHeal,
       now,
     });
   }
@@ -96,7 +115,7 @@ export function processAttack({
   }
 
   const monster = monsterManager.get(targetId);
-  if (!monster || monster.hp <= 0) {
+  if (!monster || monster.hp <= 0 || monster.isSummon) {
     return { ok: false, reason: 'invalid_target' };
   }
 

@@ -1134,11 +1134,23 @@ html, body {
   font-weight: 600;
 }
 
+.skilltree-node-desc {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: #b8c4ce;
+}
+
 .skilltree-node-meta,
 .skilltree-node-req {
   display: block;
   font-size: 0.75rem;
   color: #95a5a6;
+}
+
+.skilltree-node-meta {
+  margin-top: 0.2rem;
 }
 
 .skilltree-node-badge {
@@ -1793,6 +1805,30 @@ html, body {
   content: ' MP';
   font-size: 0.85em;
   opacity: 0.75;
+}
+
+.skill-mp.skill-mp--hp {
+  color: #e57373;
+}
+
+.skill-mp.skill-mp--hp::after {
+  content: ' HP';
+}
+
+.skill-bar-thralls {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  padding: 3px 10px;
+  border-radius: 4px;
+  background: rgba(40, 8, 12, 0.82);
+  color: #f5b7b1;
+  font-size: clamp(10px, 1.1vmin, 12px);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .skill-cooldown-text {

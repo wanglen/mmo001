@@ -4,6 +4,7 @@ import {
   provokeMonster,
   resolveMonsterTarget,
   monsterAttackPlayer,
+  monsterAttackSummon,
 } from '../../../server/systems/monsterCombat.js';
 import { MONSTER_ATTACK_COOLDOWN_MS } from '../../../shared/combat.js';
 import { createTownZone } from '../../../shared/zones.js';
@@ -27,9 +28,23 @@ function createMonster(overrides = {}) {
     attackRange: 36,
     speed: 2,
     targetPlayerId: null,
+    targetMonsterId: null,
     provoked: false,
     lastAttackAt: 0,
     moving: false,
+    ...overrides,
+  };
+}
+
+function createSummon(overrides = {}) {
+  return {
+    id: 's1',
+    x: 120,
+    y: 100,
+    hp: 30,
+    maxHp: 30,
+    isSummon: true,
+    ownerId: 'p1',
     ...overrides,
   };
 }
@@ -40,6 +55,16 @@ describe('monsterCombat', () => {
     const player = createPlayer('p1', 100, 100);
     provokeMonster(monster, player);
     assert.equal(monster.targetPlayerId, 'p1');
+    assert.equal(monster.targetMonsterId, null);
+    assert.equal(monster.provoked, true);
+  });
+
+  it('provokeMonster locks onto thralls that hit it', () => {
+    const monster = createMonster();
+    const summon = createSummon({ id: 's9', ownerId: 'p2' });
+    provokeMonster(monster, summon);
+    assert.equal(monster.targetMonsterId, 's9');
+    assert.equal(monster.targetPlayerId, 'p2');
     assert.equal(monster.provoked, true);
   });
 
@@ -49,7 +74,18 @@ describe('monsterCombat', () => {
     provokeMonster(monster, player);
 
     const target = resolveMonsterTarget(monster, [player]);
-    assert.equal(target?.id, 'p1');
+    assert.equal(target?.kind, 'player');
+    assert.equal(target?.entity?.id, 'p1');
+  });
+
+  it('resolveMonsterTarget prefers nearby thralls over distant players', () => {
+    const monster = createMonster({ x: 100, y: 100, aggroRange: 200 });
+    const player = createPlayer('p1', 250, 100);
+    const summon = createSummon({ id: 's1', x: 130, y: 100 });
+
+    const target = resolveMonsterTarget(monster, [player], null, [summon]);
+    assert.equal(target?.kind, 'summon');
+    assert.equal(target?.entity?.id, 's1');
   });
 
   it('resolveMonsterTarget ignores dead players', () => {
@@ -61,7 +97,8 @@ describe('monsterCombat', () => {
 
     const target = resolveMonsterTarget(monster, [dead, alive]);
 
-    assert.equal(target?.id, 'alive');
+    assert.equal(target?.kind, 'player');
+    assert.equal(target?.entity?.id, 'alive');
   });
 
   it('resolveMonsterTarget ignores players in town zone', () => {
@@ -101,6 +138,18 @@ describe('monsterCombat', () => {
       assert.ok(result.damage >= 1);
       assert.ok(player.hp < hpBefore);
     }
+  });
+
+  it('monsterAttackSummon damages and can kill thralls', () => {
+    const monster = createMonster({ x: 100, y: 100, lastAttackAt: 0, damage: 12 });
+    const summon = createSummon({ x: 120, y: 100, hp: 10 });
+    const removed = [];
+    const manager = { remove: (id) => removed.push(id) };
+
+    const result = monsterAttackSummon(monster, summon, manager, 5000);
+    assert.equal(result.ok, true);
+    assert.equal(result.killed, true);
+    assert.deepEqual(removed, ['s1']);
   });
 
   it('monsterAttackPlayer kills player at zero hp', () => {

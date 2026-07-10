@@ -37,6 +37,10 @@ describe('skills', () => {
     const mageBar = getSkillBar('mage');
     assert.equal(mageBar[0]?.id, 'fireball');
     assert.equal(mageBar[1]?.id, 'icebolt');
+
+    const necroBar = getSkillBar('necromancer');
+    assert.equal(necroBar[0]?.id, 'blood_raise');
+    assert.equal(necroBar[1]?.id, 'sanguine_bolt');
   });
 
   it('getSkillIdAtSlot maps hotkey slots', () => {

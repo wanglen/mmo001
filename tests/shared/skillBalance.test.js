@@ -43,7 +43,7 @@ function dps(min, max, cooldownMs) {
 describe('skillBalance', () => {
   it('level-1 tier-1 skills do not one-shot goblins at max damage', () => {
     const goblinHp = 40;
-    const tier1 = ['cleave', 'fireball', 'arrow_shot'];
+    const tier1 = ['cleave', 'fireball', 'arrow_shot', 'sanguine_bolt'];
 
     for (const skillId of tier1) {
       const skill = SKILLS[skillId];

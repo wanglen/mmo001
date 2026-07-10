@@ -6,6 +6,7 @@ import {
 } from '../../../shared/townHub.js';
 import { refreshPlayerDerivedStats } from '../../../shared/inventory.js';
 import { emitPlayerTeleported } from './bus.js';
+import { removeOwnedSummonsAcrossWorld } from '../combat/summons.js';
 
 export function restoreVitalityInTown(player, map) {
   if (!isTownHubMap(map) || player.dead) return false;
@@ -77,6 +78,8 @@ export function teleportToTown({ world, player, eventBus = null }) {
   const targetMap = world.getMap(TOWN_RECALL_TARGET_MAP_ID);
   if (!targetMap) return { ok: false, reason: 'missing_town' };
 
+  removeOwnedSummonsAcrossWorld(world, player.id);
+
   const spawnPos = tileToPixel(targetMap.spawn.x, targetMap.spawn.y);
   player.mapId = TOWN_RECALL_TARGET_MAP_ID;
   player.x = spawnPos.x;
@@ -85,6 +88,7 @@ export function teleportToTown({ world, player, eventBus = null }) {
   player.attacking = false;
   player.townRecallCasting = false;
   player.townRecallCastMs = 0;
+  player.lastCombatTargetId = null;
 
   emitPlayerTeleported(eventBus, player, player.mapId, 'town_recall');
 

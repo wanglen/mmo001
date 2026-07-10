@@ -1,6 +1,7 @@
 import { tileToPixel } from '../../map/collision.js';
 import { isInPortalRange } from '../../../shared/portals.js';
 import { MAP_ID } from '../../../shared/worldMaps.js';
+import { removeOwnedSummons, removeOwnedSummonsAcrossWorld } from '../combat/summons.js';
 
 /**
  * Move a player to another instanced map through a portal.
@@ -11,7 +12,7 @@ export function usePortal({ world, player, portalId }) {
     return { ok: false, reason: 'invalid_request' };
   }
 
-  const { map } = world.getContextForPlayer(player);
+  const { map, monsterManager } = world.getContextForPlayer(player);
   const portal = map?.portals?.find((entry) => entry.id === portalId);
   if (!portal) return { ok: false, reason: 'invalid_portal' };
   if (!isInPortalRange(player.x, player.y, portal)) {
@@ -21,6 +22,8 @@ export function usePortal({ world, player, portalId }) {
   const targetMap = world.getMap(portal.targetMapId);
   if (!targetMap) return { ok: false, reason: 'invalid_target' };
 
+  removeOwnedSummons(monsterManager, player.id);
+
   const spawnPos = tileToPixel(portal.targetTile.x, portal.targetTile.y);
   player.mapId = portal.targetMapId;
   player.x = spawnPos.x;
@@ -28,6 +31,7 @@ export function usePortal({ world, player, portalId }) {
   player.moving = false;
   player.attacking = false;
   player.attackTargetId = null;
+  player.lastCombatTargetId = null;
 
   return { ok: true, mapId: player.mapId };
 }
@@ -36,10 +40,12 @@ export function usePortal({ world, player, portalId }) {
 export function respawnToTown({ world, player }) {
   const town = world.getMap(MAP_ID.TOWN);
   if (!town) return { ok: false, reason: 'missing_town' };
+  removeOwnedSummonsAcrossWorld(world, player.id);
   const spawnPos = tileToPixel(town.spawn.x, town.spawn.y);
   player.mapId = MAP_ID.TOWN;
   player.x = spawnPos.x;
   player.y = spawnPos.y;
   player.moving = false;
+  player.lastCombatTargetId = null;
   return { ok: true, mapId: MAP_ID.TOWN };
 }

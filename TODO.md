@@ -57,7 +57,7 @@ Promoted from [PENDINGS.md](PENDINGS.md) at **v3.9.0**. One item per feature bra
 
 ## Lower priority / larger scope
 
-- [ ] **New classes** — e.g. Paladin, Necromancer (skills.json + sprites + balance pass)
+- [x] **New classes** — Blood Necromancer (HP-cost thralls + blood skills); further classes (e.g. Paladin) still open
 - [ ] **Hand-authored maps** — Tiled import pipeline vs pure procedural only
 - [ ] **Horizontal scaling** — multiple world shards, cross-server chat
 

@@ -147,7 +147,7 @@ export class GameLoop {
       if (!inTown && game.stashVisible) game.setStashVisible(false);
       game.levelUpPanel?.update(state.player);
       game.skillTreePanel?.update(state.player, { townFeaturesEnabled: inTown });
-      game.skillBar?.update(state.player);
+      game.skillBar?.update(state.player, state);
       game.questTracker?.update(state.player);
       game.socialPanel?.setSelf(state.player);
       if (game.vendorPanel?.isVisible()) {

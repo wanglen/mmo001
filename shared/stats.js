@@ -2,6 +2,8 @@ export const BASE_STATS = {
   warrior: { hp: 120, mp: 30, str: 15, dex: 8, int: 5, vit: 12 },
   mage: { hp: 70, mp: 100, str: 5, dex: 8, int: 15, vit: 6 },
   ranger: { hp: 90, mp: 50, str: 8, dex: 15, int: 8, vit: 9 },
+  /** Blood Necromancer — life is the reagent; high VIT/HP, negligible MP/INT. */
+  necromancer: { hp: 130, mp: 20, str: 8, dex: 7, int: 4, vit: 16 },
 };
 
 export const STAT_NAMES = ['hp', 'mp', 'str', 'dex', 'int', 'vit'];
