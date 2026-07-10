@@ -16,13 +16,18 @@ services:
       DEBUG_EVENTS: ${DEBUG_EVENTS:-1}
       DEBUG_LOG_FILE: ${DEBUG_LOG_FILE:-/app/data/debug-events.log}
       DEBUG_LOG_MAX_BYTES: ${DEBUG_LOG_MAX_BYTES:-5242880}
+      DEBUG_LOG_MAX_FILES: ${DEBUG_LOG_MAX_FILES:-5}
       OLLAMA_ENABLED: ${OLLAMA_ENABLED:-1}
-      OLLAMA_URL: ${OLLAMA_URL:-http://127.0.0.1:11434}
+      # Host Ollama (not 127.0.0.1 — that is the container loopback). Override if needed.
+      OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-mmo001-quests}
       QUEST_GEN_COOLDOWN_MS: ${QUEST_GEN_COOLDOWN_MS:-60000}
       QUEST_GEN_MAX_ACTIVE: ${QUEST_GEN_MAX_ACTIVE:-3}
       QUEST_GEN_LOG: ${QUEST_GEN_LOG:-1}
       QUEST_GEN_LOG_FILE: ${QUEST_GEN_LOG_FILE:-/app/data/quest-generation.log}
+    extra_hosts:
+      # Linux Docker: resolve host.docker.internal to the host gateway
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./data:/app/data
     restart: unless-stopped

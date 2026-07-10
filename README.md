@@ -78,7 +78,7 @@ cp .env.example .env
 | `DEBUG_LOG_MAX_BYTES` | Rotate when the active log exceeds this size (default `5242880`, 5 MiB) |
 | `DEBUG_LOG_MAX_FILES` | Archived logs to keep: `log.1` … `log.N` (default `5`) |
 | `OLLAMA_ENABLED` | Enable per-player quest generation (default on; set `0` to disable) |
-| `OLLAMA_URL` | Ollama base URL (default `http://127.0.0.1:11434`) |
+| `OLLAMA_URL` | Ollama base URL (default `http://127.0.0.1:11434` for local Node; Compose defaults to `http://host.docker.internal:11434`) |
 | `OLLAMA_MODEL` | Model name (default `mmo001-quests`) |
 | `QUEST_GEN_COOLDOWN_MS` | Cooldown between generate requests (default `60000`) |
 | `QUEST_GEN_MAX_ACTIVE` | Max concurrent active generated quests (default `3`) |
@@ -123,6 +123,8 @@ docker compose up --build
 ```
 
 Debug logging is **on by default** in Docker (`DEBUG_EVENTS=1`). Disable with `DEBUG_EVENTS=0 docker compose up`.
+
+Quest generation expects **Ollama on the host**. Compose reaches it via `host.docker.internal:11434` (override with `OLLAMA_URL` if needed). Run `./scripts/ollama-setup-quest-model.sh` (or `./scripts/update-server.sh`) on the host before relying on **Request a task**.
 
 Open [http://localhost:3000](http://localhost:3000). Stop with `Ctrl+C`, or run detached:
 
