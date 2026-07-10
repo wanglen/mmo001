@@ -39,6 +39,22 @@ describe('createPlayerFromSave', () => {
     assert.equal(player.y, 100);
   });
 
+  it('falls back to login map when saved mapId is invalid', () => {
+    const player = createPlayerFromSave({
+      id: 'p1',
+      name: 'Hero',
+      characterClass: 'warrior',
+      spawn,
+      map,
+      saved: { ...saved, mapId: 'unknown-zone' },
+      mapId: MAP_ID.TOWN,
+    });
+
+    assert.equal(player.mapId, MAP_ID.TOWN);
+    assert.equal(player.x, 100);
+    assert.equal(player.y, 100);
+  });
+
   it('forceSpawn places player at town spawn on connect', () => {
     const player = createPlayerFromSave({
       id: 'p1',

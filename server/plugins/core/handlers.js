@@ -9,7 +9,7 @@ import { respawnPlayer, syncDeathState } from './playerDeath.js';
 import { createNewCharacterData } from '../../persistence/CharacterStore.js';
 import { usePortal } from './zoneTransition.js';
 import { startTownRecall, interruptTownRecall } from './townHub.js';
-import { DEFAULT_MAP_ID, MAP_ID } from '../../../shared/worldMaps.js';
+import { DEFAULT_MAP_ID, MAP_ID, sanitizeMapId } from '../../../shared/worldMaps.js';
 import {
   getLivingPlayer,
   getPlayerContext,
@@ -126,6 +126,8 @@ export function registerCoreHandlers(socket, ctx) {
     const characterClass = saved.characterClass;
     const town = world.getMap(MAP_ID.TOWN) ?? world.getMap(DEFAULT_MAP_ID);
     const townMapId = town?.mapId ?? MAP_ID.TOWN;
+    const loginMapId = sanitizeMapId(saved.mapId, townMapId);
+    const loginMap = world.getMap(loginMapId) ?? town;
 
     await evictCharacterSessions(ctx, {
       playerName,
@@ -136,15 +138,15 @@ export function registerCoreHandlers(socket, ctx) {
       id: socket.id,
       name: playerName,
       characterClass,
-      spawn: town.spawn,
-      map: town,
+      spawn: loginMap.spawn,
+      map: loginMap,
       saved,
-      mapId: townMapId,
-      forceSpawn: true,
+      mapId: loginMapId,
+      forceSpawn: false,
     });
 
     player.accountId = accountId;
-    logGameEvent('player_join', { playerId: socket.id, name: playerName, mapId: townMapId });
+    logGameEvent('player_join', { playerId: socket.id, name: playerName, mapId: player.mapId });
 
     player.aimX = player.x + 1;
     player.aimY = player.y;

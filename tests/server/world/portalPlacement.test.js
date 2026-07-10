@@ -75,5 +75,10 @@ describe('portalPlacement', () => {
     assert.ok(wilderness.forestGateTile);
     assert.ok(wilderness.desertGateTile);
     assert.notDeepEqual(wilderness.forestGateTile, wilderness.desertGateTile);
+
+    const travelGates = wilderness.zones?.filter((zone) => zone.id === 'travel-gate') ?? [];
+    assert.equal(travelGates.length, 2);
+    assert.ok(travelGates.some((zone) => zone.label === 'Dark Forest'));
+    assert.ok(travelGates.some((zone) => zone.label === 'Scorched Desert'));
   });
 });

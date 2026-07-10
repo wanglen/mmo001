@@ -1,5 +1,6 @@
 import { isTileInZone, ZONE_ID } from './zones.js';
 import { isTownHubMap } from './townHub.js';
+import { TILE_SIZE } from './constants.js';
 
 /** How many tiles around the player are permanently revealed while exploring. */
 export const FOG_REVEAL_RADIUS_TILES = 10;
@@ -69,6 +70,9 @@ export function revealTownZones(revealed, map) {
   }
 
   for (const zone of map.zones ?? []) {
+    if (zone.gateTile) {
+      revealTilesInRadius(revealed, zone.gateTile.x, zone.gateTile.y, 4);
+    }
     if (zone.id !== ZONE_ID.DUNGEON) continue;
     for (let dy = -zone.radius; dy <= zone.radius; dy++) {
       for (let dx = -zone.radius; dx <= zone.radius; dx++) {
@@ -78,6 +82,14 @@ export function revealTownZones(revealed, map) {
           revealed.add(tileKey(tx, ty));
         }
       }
+    }
+  }
+
+  if (!isTownHubMap(map)) {
+    for (const portal of map.portals ?? []) {
+      const tileX = portal.tile?.x ?? Math.floor(portal.x / TILE_SIZE);
+      const tileY = portal.tile?.y ?? Math.floor(portal.y / TILE_SIZE);
+      revealTilesInRadius(revealed, tileX, tileY, 3);
     }
   }
 }

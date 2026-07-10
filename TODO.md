@@ -6,8 +6,8 @@ Promoted from [PENDINGS.md](PENDINGS.md) at **v3.9.0**. One item per feature bra
 
 ## World & exploration
 
-- [ ] **Map-bound quest objectives** — kills/fetch only count in the target zone (`requiredMapId` on objectives); Forest Patrol skeletons in wilderness would not progress the quest
-- [ ] **Restore last position on login** — today saves `mapId/x/y` but always spawns town; option: resume where you logged out (with safe fallback if map invalid)
+- [x] **Map-bound quest objectives** — kills/fetch only count in the target zone (`requiredMapId` on objectives); Forest Patrol skeletons in wilderness would not progress the quest
+- [x] **Restore last position on login** — today saves `mapId/x/y` but always spawns town; option: resume where you logged out (with safe fallback if map invalid)
 - [ ] **Zone outposts** — small safe-ish hubs or NPCs in Dark Forest / Scorched Desert (guide, turn-in, or mini-vendor) instead of town-only quest flow
 - [ ] **Biome spawn tables** — weight skeletons in forest, bats in desert, goblins in wilderness; optional new types later (wraith, scorpion)
 - [ ] **Per-party dungeon instancing** — separate monster/boss/chest state per party instead of one shared server dungeon
@@ -85,11 +85,10 @@ Promoted from [PENDINGS.md](PENDINGS.md) at **v3.9.0**. One item per feature bra
 
 ## Next tasks (recommended order)
 
-1. Map-bound quest objectives
-2. Biome spawn tables
-3. Dungeon & boss quest line
-4. Restore last position on login
-5. CI pipeline (GitHub Actions)
+1. Biome spawn tables
+2. Dungeon & boss quest line
+3. Zone outposts
+4. CI pipeline (GitHub Actions)
 
 ---
 

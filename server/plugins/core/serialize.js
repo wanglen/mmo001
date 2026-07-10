@@ -9,12 +9,13 @@ import { playerMapId } from '../../app/handlerUtils.js';
 import { filterEntitiesForViewer } from '../../app/interest.js';
 
 function serializePortals(portals = []) {
-  return portals.map(({ id, label, x, y, targetMapId }) => ({
+  return portals.map(({ id, label, x, y, targetMapId, tile }) => ({
     id,
     label,
     x,
     y,
     targetMapId,
+    ...(tile ? { tile: { x: tile.x, y: tile.y } } : {}),
   }));
 }
 

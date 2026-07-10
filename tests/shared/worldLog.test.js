@@ -1,5 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { MAP_ID } from '../../shared/worldMaps.js';
 import {
   WORLD_EVENT_TYPE,
   formatKillEvent,
@@ -46,6 +47,7 @@ describe('worldLog', () => {
 
   it('getQuestKillNotifications reports progress before kill increment', () => {
     const player = {
+      mapId: MAP_ID.WILDERNESS,
       questState: {
         active: {
           'goblin-menace': { progress: { kill: { goblin: 1 } } },
@@ -61,6 +63,7 @@ describe('worldLog', () => {
 
   it('getQuestKillNotifications reports ready on final kill', () => {
     const player = {
+      mapId: MAP_ID.WILDERNESS,
       questState: {
         active: {
           'goblin-menace': { progress: { kill: { goblin: 2 } } },

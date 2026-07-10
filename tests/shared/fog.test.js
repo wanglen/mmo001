@@ -58,4 +58,28 @@ describe('fog', () => {
     assert.ok(revealed.has(tileKey(14, 10)));
     assert.ok(!revealed.has(tileKey(0, 0)));
   });
+
+  it('revealTownZones pre-reveals wilderness travel gate tiles', () => {
+    const revealed = new Set();
+    const map = {
+      mapId: 'wilderness',
+      width: 120,
+      height: 90,
+      zones: [
+        {
+          id: 'travel-gate',
+          label: 'Scorched Desert',
+          gateTile: { x: 100, y: 12 },
+          center: { x: 100, y: 12 },
+          radius: 0,
+        },
+      ],
+      portals: [
+        { id: 'wilderness-desert', x: 100 * 32 + 16, y: 12 * 32 + 16, tile: { x: 100, y: 12 } },
+      ],
+    };
+    revealTownZones(revealed, map);
+    assert.ok(revealed.has(tileKey(100, 12)));
+    assert.ok(revealed.has(tileKey(103, 12)));
+  });
 });

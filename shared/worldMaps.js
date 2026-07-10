@@ -57,3 +57,11 @@ export function getMapBiomeMeta(mapId) {
   if (!mapId) return null;
   return MAP_BIOME_META[mapId] ?? null;
 }
+
+/**
+ * @param {string | null | undefined} mapId
+ * @param {string} [fallback]
+ */
+export function sanitizeMapId(mapId, fallback = DEFAULT_MAP_ID) {
+  return WORLD_MAP_IDS.includes(mapId) ? mapId : fallback;
+}

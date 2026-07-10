@@ -14,6 +14,10 @@ function isDungeonZone(zone) {
   return zone?.id === ZONE_ID.DUNGEON;
 }
 
+function isTravelGateZone(zone) {
+  return zone?.id === ZONE_ID.TRAVEL_GATE;
+}
+
 function isBossRoomZone(zone) {
   return zone?.id === BOSS_ROOM_ZONE_ID;
 }
@@ -101,7 +105,9 @@ function decorationAt(zone, col, row) {
 
   const gate = zone.gateTile;
   if (!gate) return null;
-  if (col === gate.x && row === gate.y) return 'arch';
+  if (col === gate.x && row === gate.y) {
+    return zone.id === ZONE_ID.TRAVEL_GATE ? 'sign' : 'arch';
+  }
   return null;
 }
 
@@ -147,7 +153,7 @@ function drawZoneOverlay(ctx, zone, map, camera, tileSize, startCol, startRow, e
 export class DungeonRenderer {
   draw(ctx, map, camera, tileSize, startCol, startRow, endCol, endRow) {
     for (const zone of map.zones ?? []) {
-      if (!isDungeonZone(zone) && !isBossRoomZone(zone)) continue;
+      if (!isDungeonZone(zone) && !isBossRoomZone(zone) && !isTravelGateZone(zone)) continue;
       drawZoneOverlay(ctx, zone, map, camera, tileSize, startCol, startRow, endCol, endRow);
     }
   }

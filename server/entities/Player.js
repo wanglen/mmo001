@@ -3,7 +3,7 @@ import { createPlayerStats } from '../../shared/stats.js';
 import { createEmptyInventory, createEmptyEquipment, refreshPlayerDerivedStats } from '../../shared/inventory.js';
 import { createEmptyResistances } from '../../shared/plugins/combat/damageTypes.js';
 import { restoreItems } from '../persistence/CharacterStore.js';
-import { DEFAULT_MAP_ID } from '../../shared/worldMaps.js';
+import { DEFAULT_MAP_ID, sanitizeMapId } from '../../shared/worldMaps.js';
 import { normalizeQuestState } from '../../shared/quests.js';
 import { createEmptyStash } from '../../shared/stash.js';
 import {
@@ -74,7 +74,7 @@ export function createPlayerFromSave({
   mapId = DEFAULT_MAP_ID,
   forceSpawn = false,
 }) {
-  const resolvedMapId = forceSpawn ? mapId : (saved.mapId ?? mapId);
+  const resolvedMapId = forceSpawn ? mapId : sanitizeMapId(saved.mapId, mapId);
   const spawnPos = tileToPixel(spawn.x, spawn.y);
   let x;
   let y;

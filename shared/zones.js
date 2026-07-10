@@ -8,6 +8,7 @@ export const ZONE_ID = {
   TOWN: 'town',
   WILDERNESS: 'wilderness',
   DUNGEON: 'dungeon',
+  TRAVEL_GATE: 'travel-gate',
 };
 
 export const ZONE_META = {
@@ -89,6 +90,22 @@ export function createDungeonZone(center, radius, options = {}) {
     zone.gateTile = { x: options.gateTile.x, y: options.gateTile.y };
   }
   return zone;
+}
+
+/**
+ * Single-tile wilderness gate marker (forest/desert portals) with arch art.
+ * @param {{ x: number, y: number }} gateTile
+ * @param {string} label
+ */
+export function createTravelGateZone(gateTile, label) {
+  return {
+    id: ZONE_ID.TRAVEL_GATE,
+    label,
+    safe: false,
+    center: { x: gateTile.x, y: gateTile.y },
+    radius: 0,
+    gateTile: { x: gateTile.x, y: gateTile.y },
+  };
 }
 
 /** Chebyshev distance — square zone aligned to the tile grid. */

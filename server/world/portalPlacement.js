@@ -166,6 +166,7 @@ export function pickWildernessPortalGate(map, options = {}) {
   }
 
   clearTile(map.tiles, best.x, best.y, w, h);
+  clearArea(map.tiles, best.x, best.y, 2);
   carveGatePath(map, best);
   return best;
 }

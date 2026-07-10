@@ -5,7 +5,9 @@
     "giverNpcId": "guide-eldon",
     "turnInNpcId": "guide-eldon",
     "prerequisites": [],
-    "objectives": [{ "type": "kill", "monsterType": "goblin", "count": 3 }],
+    "objectives": [
+      { "type": "kill", "monsterType": "goblin", "count": 3, "requiredMapId": "wilderness" }
+    ],
     "rewards": { "xp": 40, "gold": 25 },
     "dialogue": {
       "offer": [
@@ -64,7 +66,9 @@
     "giverNpcId": "guide-eldon",
     "turnInNpcId": "guide-eldon",
     "prerequisites": ["report-to-eldon"],
-    "objectives": [{ "type": "kill", "monsterType": "skeleton", "count": 5 }],
+    "objectives": [
+      { "type": "kill", "monsterType": "skeleton", "count": 5, "requiredMapId": "forest" }
+    ],
     "rewards": { "xp": 60, "gold": 40 },
     "dialogue": {
       "offer": [
@@ -82,7 +86,9 @@
     "giverNpcId": "guide-eldon",
     "turnInNpcId": "guide-eldon",
     "prerequisites": ["forest-patrol"],
-    "objectives": [{ "type": "kill", "monsterType": "bat", "count": 5 }],
+    "objectives": [
+      { "type": "kill", "monsterType": "bat", "count": 5, "requiredMapId": "desert" }
+    ],
     "rewards": { "xp": 70, "gold": 50 },
     "dialogue": {
       "offer": [

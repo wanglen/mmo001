@@ -1,5 +1,5 @@
 import { MONSTER_TYPES } from './monsters.js';
-import { getQuestDef } from './quests.js';
+import { getQuestDef, killObjectiveMatchesMap } from './quests.js';
 import { formatPickupMessage } from './lootRules.js';
 
 export const WORLD_EVENT_TYPE = {
@@ -107,6 +107,7 @@ export function getQuestKillNotifications(player, monsterType) {
     const entry = active[questId];
     for (const objective of quest.objectives ?? []) {
       if (objective.type !== 'kill' || objective.monsterType !== monsterType) continue;
+      if (!killObjectiveMatchesMap(objective, player.mapId)) continue;
 
       const current = entry?.progress?.kill?.[monsterType] ?? 0;
       const max = objective.count ?? 1;

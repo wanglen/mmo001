@@ -1,4 +1,5 @@
 import questsData from './content/quests.json' with { type: 'json' };
+import { MAP_LABELS } from './worldMaps.js';
 
 export const QUEST_OBJECTIVE = {
   KILL: 'kill',
@@ -6,7 +7,7 @@ export const QUEST_OBJECTIVE = {
   TALK: 'talk',
 };
 
-/** @typedef {{ type: string, monsterType?: string, count?: number, itemKey?: string, npcId?: string }} QuestObjective */
+/** @typedef {{ type: string, monsterType?: string, count?: number, itemKey?: string, npcId?: string, requiredMapId?: string }} QuestObjective */
 /** @typedef {{ xp?: number, gold?: number, items?: { templateKey: string, rarity?: string }[] }} QuestRewards */
 
 export const QUESTS = questsData;
@@ -73,6 +74,12 @@ function talkProgress(entry, npcId) {
   return !!entry?.progress?.talk?.[npcId];
 }
 
+/** Kill credit only when objective has no map filter or player is on that map. */
+export function killObjectiveMatchesMap(objective, mapId) {
+  if (!objective?.requiredMapId) return true;
+  return objective.requiredMapId === mapId;
+}
+
 export function isObjectiveMet(objective, entry, inventory) {
   if (objective.type === QUEST_OBJECTIVE.KILL) {
     return killProgress(entry, objective.monsterType) >= (objective.count ?? 1);
@@ -92,7 +99,7 @@ export function isQuestReady(quest, state, inventory) {
   return quest.objectives.every((objective) => isObjectiveMet(objective, entry, inventory));
 }
 
-export function recordQuestKill(state, monsterType) {
+export function recordQuestKill(state, monsterType, mapId) {
   for (const questId of Object.keys(state.active)) {
     const quest = getQuestDef(questId);
     if (!quest) continue;
@@ -100,6 +107,7 @@ export function recordQuestKill(state, monsterType) {
     const entry = state.active[questId];
     for (const objective of quest.objectives) {
       if (objective.type !== QUEST_OBJECTIVE.KILL || objective.monsterType !== monsterType) continue;
+      if (!killObjectiveMatchesMap(objective, mapId)) continue;
       entry.progress.kill = entry.progress.kill ?? {};
       const current = entry.progress.kill[monsterType] ?? 0;
       entry.progress.kill[monsterType] = Math.min(objective.count ?? 1, current + 1);
@@ -205,7 +213,11 @@ export function formatQuestProgress(quest, state, inventory) {
     .map((objective) => {
       if (objective.type === QUEST_OBJECTIVE.KILL) {
         const current = killProgress(entry, objective.monsterType);
-        return `Kill ${objective.monsterType}: ${current}/${objective.count}`;
+        const zone =
+          objective.requiredMapId != null
+            ? ` in ${MAP_LABELS[objective.requiredMapId] ?? objective.requiredMapId}`
+            : '';
+        return `Kill ${objective.monsterType}${zone}: ${current}/${objective.count}`;
       }
       if (objective.type === QUEST_OBJECTIVE.FETCH) {
         const current = countItemsByTemplate(inventory, objective.itemKey);

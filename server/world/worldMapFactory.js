@@ -1,7 +1,8 @@
 import { generateDungeonLayout } from '../map/DungeonGenerator.js';
 import { generateMap } from '../map/MapGenerator.js';
-import { MAP_ID, WORLD_MAP_SIZES } from '../../shared/worldMaps.js';
+import { MAP_ID, WORLD_MAP_SIZES, MAP_LABELS } from '../../shared/worldMaps.js';
 import { createPortal } from '../../shared/portals.js';
+import { createTravelGateZone } from '../../shared/zones.js';
 import { buildTownNpcs } from './townNpcs.js';
 import { npcToJSON } from '../../shared/npcs.js';
 import {
@@ -147,4 +148,10 @@ export function attachWorldPortals(town, wilderness, dungeon, forest, desert) {
   wilderness.dungeonGateTile = dungeonGate;
   wilderness.forestGateTile = forestGate;
   wilderness.desertGateTile = desertGate;
+
+  wilderness.zones = [
+    ...(wilderness.zones ?? []),
+    createTravelGateZone(forestGate, MAP_LABELS[MAP_ID.FOREST]),
+    createTravelGateZone(desertGate, MAP_LABELS[MAP_ID.DESERT]),
+  ];
 }

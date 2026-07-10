@@ -8,6 +8,7 @@ import {
   turnInQuestForPlayer,
 } from '../../../server/systems/quests.js';
 import { createPotion, POTION_TEMPLATES } from '../../../shared/items.js';
+import { MAP_ID } from '../../../shared/worldMaps.js';
 
 describe('server quests', () => {
   const spawn = { x: 5, y: 5 };
@@ -20,7 +21,13 @@ describe('server quests', () => {
   });
 
   it('onMonsterKillQuests and turnInQuestForPlayer grant rewards', () => {
-    const player = createPlayer({ id: 'p1', name: 'Hero', characterClass: 'warrior', spawn });
+    const player = createPlayer({
+      id: 'p1',
+      name: 'Hero',
+      characterClass: 'warrior',
+      spawn,
+      mapId: MAP_ID.WILDERNESS,
+    });
     player.questState = createEmptyQuestState();
     acceptQuestForPlayer(player, 'goblin-menace', 'guide-eldon');
 

@@ -43,7 +43,7 @@ function createRewardItem(spec) {
 
 export function onMonsterKillQuests(player, monsterType) {
   const state = ensureQuestState(player);
-  recordQuestKill(state, monsterType);
+  recordQuestKill(state, monsterType, player.mapId);
 }
 
 export function interactWithNpc(player, npcs, npcId) {

@@ -5,6 +5,7 @@ import { DOMAIN_EVENTS } from '../../../../shared/plugins/domainEvents.js';
 import { registerQuestBusHandlers } from '../../../../server/plugins/quests/bus.js';
 import { createPlayer } from '../../../../server/players/Player.js';
 import { acceptQuestForPlayer } from '../../../../server/systems/quests.js';
+import { MAP_ID } from '../../../../shared/worldMaps.js';
 
 describe('quest bus handlers', () => {
   it('updates kill quest progress on monster:killed without socket', () => {
@@ -16,6 +17,7 @@ describe('quest bus handlers', () => {
       name: 'Hero',
       characterClass: 'warrior',
       spawn: { x: 5, y: 5 },
+      mapId: MAP_ID.WILDERNESS,
     });
     acceptQuestForPlayer(player, 'goblin-menace', 'guide-eldon');
 

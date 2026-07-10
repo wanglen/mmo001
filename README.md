@@ -16,7 +16,7 @@ A browser-based MMORPG built with **HTML Canvas** and **Node.js**. Diablo-like a
 - Loot: per-item pixel icons on ground (rarity glow) and in inventory; click to pick up; chat message on successful pickup; potions usable from bag
 - Inventory: 10×4 grid, 7 equip slots, stat bonuses from gear (server-side); **Sort** button (type/rarity); floating tooltips with equip comparison; potions stack up to 20 per slot; right-click for equip/use/stash/destroy/socket
 - Leveling: XP curve, +5 stat points per level-up, allocation UI (reopen with C), JSON character save; quest rewards grant XP, gold, and items
-- Login spawn: characters always enter at **town spawn** when you connect (inventory, quests, and progress are restored from save)
+- Login spawn: characters resume at **last saved map and position** on connect (invalid map or blocked tiles fall back to that map's spawn); respawn after death still returns to town
 - **Economy:** gold from quests and monster kills; vendor NPC Brok in town (buy/sell; **grouped potion stacks** with quantity picker when selling); player trade via online list (⇄)
 - **Loot rules:** party-shared pickup lock for 30s after a kill, then free-for-all
 - Skills: skill tree per class (**K**), hotbar keys 1–7 (player-assigned), HP/MP potions 8/9, cooldowns, server-authoritative damage
