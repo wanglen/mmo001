@@ -13,6 +13,7 @@ export class DialoguePanel {
     this.onAccept = null;
     this.onTurnIn = null;
     this.onGenerate = null;
+    this.onGeneratingChange = null;
     this.currentNpc = null;
     this.activeInteraction = null;
     this.playerSnapshot = null;
@@ -26,6 +27,7 @@ export class DialoguePanel {
     this.acceptBtn = rootEl?.querySelector('[data-dialogue-accept]');
     this.turnInBtn = rootEl?.querySelector('[data-dialogue-turn-in]');
     this.generateBtn = rootEl?.querySelector('[data-dialogue-generate]');
+    this.thinkingEl = rootEl?.querySelector('[data-dialogue-thinking]');
 
     this.nextBtn?.addEventListener('click', () => this.advance());
     this.closeBtn?.addEventListener('click', () => this.hide());
@@ -44,9 +46,10 @@ export class DialoguePanel {
     this.onAccept = handlers.onAccept ?? null;
     this.onTurnIn = handlers.onTurnIn ?? null;
     this.onGenerate = handlers.onGenerate ?? null;
+    this.onGeneratingChange = handlers.onGeneratingChange ?? null;
     this.currentNpc = npc;
     this.playerSnapshot = player ?? null;
-    this.generating = false;
+    this.setGenerating(false);
 
     this.refreshContent(player);
     this.root.classList.remove('hidden');
@@ -103,12 +106,12 @@ export class DialoguePanel {
     this.currentNpc = null;
     this.activeInteraction = null;
     this.playerSnapshot = null;
-    this.generating = false;
-    this.updateQuestActions();
+    this.setGenerating(false);
     if (this.onClose) this.onClose();
   }
 
   advance() {
+    if (this.generating) return;
     if (this.lineIndex < this.lines.length - 1) {
       this.lineIndex += 1;
       this.renderLine();
@@ -131,22 +134,29 @@ export class DialoguePanel {
 
   handleGenerate() {
     if (!this.onGenerate || !this.currentNpc || this.generating) return;
-    this.generating = true;
-    this.updateQuestActions();
-    if (this.textEl) {
-      this.textEl.textContent = 'Thinking of a task for you… (may take up to a couple of minutes on CPU)';
-    }
+    this.setGenerating(true);
     this.onGenerate(this.currentNpc.id);
   }
 
   setGenerating(generating) {
     this.generating = !!generating;
+    this.thinkingEl?.classList.toggle('hidden', !this.generating);
+    this.root?.classList.toggle('dialogue-panel--thinking', this.generating);
+    if (this.textEl) {
+      this.textEl.classList.toggle('dialogue-text--muted', this.generating);
+      if (this.generating) {
+        this.textEl.textContent = '';
+      }
+    }
+    if (this.nextBtn) this.nextBtn.disabled = this.generating;
+    if (this.closeBtn) this.closeBtn.disabled = this.generating;
     this.updateQuestActions();
+    this.onGeneratingChange?.(this.generating, this.currentNpc?.id ?? null);
   }
 
   updateQuestActions() {
-    const showAccept = !!this.activeInteraction?.canAccept;
-    const showTurnIn = !!this.activeInteraction?.canTurnIn;
+    const showAccept = !!this.activeInteraction?.canAccept && !this.generating;
+    const showTurnIn = !!this.activeInteraction?.canTurnIn && !this.generating;
     const canRequest =
       !!this.onGenerate &&
       !!this.currentNpc &&

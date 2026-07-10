@@ -81,6 +81,7 @@ export class Game {
     this.attackTargetId = null;
     this.lootTargetId = null;
     this.npcTargetId = null;
+    this.thinkingNpcId = null;
     this.portalTargetId = null;
     this.chestTarget = null;
     this.pendingPickup = null;
@@ -185,6 +186,9 @@ export class Game {
       onAccept: (questId) => this.socketClient.sendQuestAccept(questId, npc.id),
       onTurnIn: (questId) => this.socketClient.sendQuestTurnIn(questId, npc.id),
       onGenerate: (npcId) => this.socketClient.sendQuestGenerate(npcId),
+      onGeneratingChange: (generating, npcId) => {
+        this.thinkingNpcId = generating ? npcId : null;
+      },
     };
   }
 
@@ -194,6 +198,7 @@ export class Game {
   }
 
   onQuestGenerated(payload) {
+    this.thinkingNpcId = null;
     this.dialoguePanel?.setGenerating(false);
     if (!payload?.ok) return;
     if (!this.dialoguePanel?.isVisible()) return;

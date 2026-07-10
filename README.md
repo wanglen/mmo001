@@ -81,7 +81,7 @@ cp .env.example .env
 | `OLLAMA_URL` | Ollama base URL (default `http://127.0.0.1:11434` for local Node; Compose defaults to `http://host.docker.internal:11434`) |
 | `OLLAMA_MODEL` | Model name (default `mmo001-quests`) |
 | `OLLAMA_TIMEOUT_MS` | LLM request timeout (default `180000` — CPU hosts often need 45–120s) |
-| `QUEST_GEN_COOLDOWN_MS` | Cooldown between generate requests (default `60000`) |
+| `QUEST_GEN_COOLDOWN_MS` | Cooldown between generate requests (default `15000`) |
 | `QUEST_GEN_MAX_ACTIVE` | Max concurrent active generated quests (default `3`) |
 | `QUEST_GEN_LOG` | Write quest generation attempts to a dedicated log (default on; set `0` to disable) |
 | `QUEST_GEN_LOG_FILE` | Path for quest generation JSON log (default `data/quest-generation.log`) |

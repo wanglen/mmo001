@@ -260,6 +260,7 @@ export class GameLoop {
         hoveredMonsterId,
         fogOfWar: this.fogOfWar,
         particleSystem: game.particleSystem,
+        thinkingNpcId: game.thinkingNpcId,
       });
     }
 

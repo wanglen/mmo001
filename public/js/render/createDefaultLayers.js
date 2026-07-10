@@ -89,7 +89,10 @@ export function createDefaultLayers(deps) {
       id: 'npcs',
       order: 60,
       draw(ctx, frame, camera) {
-        npcRenderer.draw(ctx, frame.npcs, camera);
+        npcRenderer.draw(ctx, frame.npcs, camera, {
+          thinkingNpcId: frame.thinkingNpcId,
+          rafTimestamp: frame.rafTimestamp,
+        });
       },
     },
     {

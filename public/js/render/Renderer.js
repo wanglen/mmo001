@@ -75,7 +75,7 @@ export class Renderer {
     const { map, players, monsters = [], loot = [], npcs = [], skillFx = [], combatFx = [] } =
       worldState;
     const portals = map?.portals ?? [];
-    const { moveTarget = null, hoveredMonsterId = null, fogOfWar = null, particleSystem = null } =
+    const { moveTarget = null, hoveredMonsterId = null, fogOfWar = null, particleSystem = null, thinkingNpcId = null } =
       overlays;
     const revealed = fogOfWar?.revealed ?? null;
     const visibleMonsters = filterRevealedPositions(revealed, monsters, TILE_SIZE);
@@ -113,6 +113,7 @@ export class Renderer {
       fogOfWar,
       revealed,
       particleSystem,
+      thinkingNpcId,
       rafTimestamp,
       now,
       version: worldState.version,
