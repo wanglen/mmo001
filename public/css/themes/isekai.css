@@ -1,0 +1,67 @@
+html[data-ui-theme="isekai"] {
+  --ui-page-bg: #1a1f2b;
+  --ui-canvas-clear: #12161f;
+  --ui-text: #f4f7ff;
+  --ui-text-muted: #c5cde0;
+  --ui-panel-bg: rgba(255, 255, 255, 0.12);
+  --ui-panel-solid: #151a26;
+  --ui-surface: rgba(0, 0, 0, 0.35);
+  --ui-border: rgba(255, 255, 255, 0.35);
+  --ui-border-strong: #67e8f9;
+  --ui-outline: transparent;
+  --ui-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  --ui-overlay: rgba(12, 16, 28, 0.72);
+  --ui-accent: #22d3ee;
+  --ui-accent-hover: #a78bfa;
+  --ui-accent-ink: #0b1020;
+  --ui-secondary: rgba(255, 255, 255, 0.06);
+  --ui-secondary-ink: #e2e8f0;
+  --ui-secondary-border: rgba(255, 255, 255, 0.3);
+  --ui-danger: #fb7185;
+  --ui-danger-hover: #f43f5e;
+  --ui-gold: #f0abfc;
+  --ui-sky: #22d3ee;
+  --ui-life: #fb7185;
+  --ui-mana: #22d3ee;
+  --ui-field-bg: rgba(0, 0, 0, 0.25);
+  --ui-field-border: rgba(255, 255, 255, 0.25);
+  --ui-slot-bg: rgba(0, 0, 0, 0.22);
+  --ui-slot-border: rgba(255, 255, 255, 0.28);
+  --ui-slot-ink: #a5f3fc;
+  --ui-brand: #67e8f9;
+  --ui-brand-tracking: 0.02em;
+  --ui-brand-transform: none;
+  --ui-radius-panel: 14px;
+  --ui-radius-control: 8px;
+  --ui-radius-btn: 999px;
+  --ui-panel-clip: none;
+  --ui-btn-primary-bg: linear-gradient(90deg, #22d3ee, #a78bfa);
+  --ui-btn-primary-border: 1px solid transparent;
+  --ui-xp-fill: linear-gradient(90deg, #22d3ee, #f0abfc);
+  --font-ui: "M PLUS Rounded 1c", system-ui, sans-serif;
+  --font-display: "M PLUS Rounded 1c", system-ui, sans-serif;
+  --font-accent: "M PLUS Rounded 1c", system-ui, sans-serif;
+}
+
+html[data-ui-theme="isekai"] .panel h1,
+html[data-ui-theme="isekai"] .auth-panel h1,
+html[data-ui-theme="isekai"] .character-panel h1 {
+  background: linear-gradient(90deg, #5eead4, #67e8f9, #f0abfc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Floating detail popups must stay opaque over inventory/world */
+html[data-ui-theme="isekai"] .item-tooltip,
+html[data-ui-theme="isekai"] .inv-context-menu,
+html[data-ui-theme="isekai"] .inventory-panel,
+html[data-ui-theme="isekai"] .stash-panel,
+html[data-ui-theme="isekai"] .vendor-panel,
+html[data-ui-theme="isekai"] .trade-panel,
+html[data-ui-theme="isekai"] .confirm-panel,
+html[data-ui-theme="isekai"] .settings-panel-inner {
+  background: var(--ui-panel-solid);
+  backdrop-filter: none;
+}

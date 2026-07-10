@@ -209,6 +209,7 @@ Tests use Node.js built-in test runner. See [`tests/README.md`](tests/README.md)
 ### Controls
 
 - **Audio** — zone background music (CC0 loops from OpenGameArt; see `public/assets/audio/MUSIC_CREDITS.md`) and procedural SFX after your first click or keypress; adjust volumes in **Settings** (**O**)
+- **UI style** — four anime chrome themes (Soft JRPG, Shonen, Dark fantasy, Clean isekai) under **Settings → Appearance**; preference saved locally
 
 - **Click** — move (8-way pathfinding with diagonals), pick up loot, attack/chase enemy, talk to NPCs, or use portals; cursor icon reflects the action (sword, hand, speech bubble, etc.)
 - **Mouse** — aim / facing direction (character faces cursor)

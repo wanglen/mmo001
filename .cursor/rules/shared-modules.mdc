@@ -21,6 +21,7 @@ shared/
 ├── kernel/events.js      # canonical EVENTS
 ├── plugins/              # domain logic (combat/, core/anticheat, render/particles, world/delta+chunks)
 ├── audioSettings.js      # client audio prefs, music mood by map
+├── uiThemeSettings.js    # client UI theme ids, localStorage, canvas palettes
 ├── worldMaps.js          # MAP_ID, zone display names
 ├── content/              # quests.json, skills.json, vendors.json
 │   └── validateContent.js

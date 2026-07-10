@@ -8,9 +8,9 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #1a1a2e;
-  font-family: system-ui, -apple-system, sans-serif;
-  color: #eee;
+  background: var(--ui-page-bg);
+  font-family: var(--font-ui);
+  color: var(--ui-text);
 }
 
 #game-canvas {
@@ -64,7 +64,7 @@ html, body {
   height: 36px;
   margin: 0 auto 1rem;
   border: 3px solid rgba(120, 150, 200, 0.25);
-  border-top-color: #8eb4ff;
+  border-top-color: var(--ui-accent);
   border-radius: 50%;
   animation: map-loading-spin 0.85s linear infinite;
 }
@@ -84,7 +84,7 @@ html, body {
 .map-loading-hint {
   font-size: 0.9rem;
   letter-spacing: 0.04em;
-  color: #9ab0d0;
+  color: var(--ui-text-muted);
 }
 
 .settings-backdrop {
@@ -98,6 +98,69 @@ html, body {
 
 .settings-backdrop.hidden {
   display: none;
+}
+
+.settings-note {
+  font-size: 0.82rem;
+  color: var(--ui-text-muted);
+  margin: 0 0 0.75rem;
+}
+
+.ui-theme-grid {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.ui-theme-opt {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.55rem;
+  align-items: start;
+  text-align: left;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--ui-border);
+  background: var(--ui-surface);
+  color: var(--ui-text);
+  cursor: pointer;
+  font: inherit;
+  border-radius: var(--ui-radius-control);
+}
+
+.ui-theme-opt:hover {
+  border-color: var(--ui-border-strong);
+}
+
+.ui-theme-opt[aria-checked='true'] {
+  border-color: var(--ui-border-strong);
+  box-shadow: inset 0 0 0 1px var(--ui-border-strong);
+}
+
+.ui-theme-swatches {
+  display: flex;
+  gap: 0.2rem;
+  padding-top: 0.15rem;
+}
+
+.ui-theme-swatches i {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-style: normal;
+}
+
+.ui-theme-copy strong {
+  display: block;
+  font-size: 0.88rem;
+  font-family: var(--font-display);
+}
+
+.ui-theme-copy span {
+  display: block;
+  margin-top: 0.12rem;
+  font-size: 0.72rem;
+  color: var(--ui-text-muted);
 }
 
 .settings-panel {
@@ -132,7 +195,7 @@ html, body {
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #8a9bb8;
+  color: var(--ui-text-muted);
   margin-bottom: 0.65rem;
 }
 
@@ -160,8 +223,9 @@ html, body {
 }
 
 .settings-note {
-  font-size: 0.88rem;
-  color: #9ab0c8;
+  font-size: 0.82rem;
+  color: var(--ui-text-muted);
+  margin: 0 0 0.75rem;
   line-height: 1.45;
 }
 
@@ -204,22 +268,25 @@ html, body {
 }
 
 .dialogue-panel-inner {
-  background: rgba(22, 33, 62, 0.95);
-  border: 2px solid #0f3460;
-  border-radius: 10px;
+  background: var(--ui-panel-bg);
+  border: 2px solid var(--ui-border);
+  border-radius: var(--ui-radius-panel, 10px);
   padding: 1rem 1.1rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--ui-shadow);
+  color: var(--ui-text);
+  font-family: var(--font-ui);
+  clip-path: var(--ui-panel-clip);
 }
 
 .dialogue-name {
   font-weight: 600;
-  color: #87ceeb;
+  color: var(--ui-sky);
   margin-bottom: 0.5rem;
 }
 
 .dialogue-quest-title {
   font-size: 0.85rem;
-  color: #f1c40f;
+  color: var(--ui-gold);
   margin: -0.25rem 0 0.45rem;
 }
 
@@ -256,7 +323,7 @@ html, body {
   width: 0.35rem;
   height: 0.35rem;
   border-radius: 50%;
-  background: #87ceeb;
+  background: var(--ui-sky);
   opacity: 0.35;
   animation: dialogue-thinking-bounce 1.1s ease-in-out infinite;
 }
@@ -292,10 +359,14 @@ html, body {
   top: 304px;
   width: 220px;
   z-index: 10;
-  background: rgba(0, 0, 0, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
+  background: var(--ui-panel-bg);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-panel, 8px);
   padding: 0.55rem 0.65rem;
+  color: var(--ui-text);
+  box-shadow: var(--ui-shadow);
+  font-family: var(--font-ui);
+  clip-path: var(--ui-panel-clip);
 }
 
 .quest-tracker.hidden {
@@ -307,8 +378,9 @@ html, body {
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #c8d0dc;
+  color: var(--ui-text-muted);
   margin-bottom: 0.35rem;
+  font-family: var(--font-accent);
 }
 
 .quest-tracker-list {
@@ -323,7 +395,7 @@ html, body {
 .quest-tracker-item {
   font-size: 0.78rem;
   line-height: 1.3;
-  color: #e8edf5;
+  color: var(--ui-text);
 }
 
 .quest-tracker-item--ready .quest-tracker-title {
@@ -386,9 +458,9 @@ html, body {
   width: min(880px, 88vw);
   height: min(560px, calc(100vh - 110px));
   overflow: hidden;
-  background: linear-gradient(165deg, rgba(26, 38, 68, 0.98), rgba(18, 28, 52, 0.97));
-  border: 2px solid #1a4a7a;
-  border-radius: 14px;
+  background: var(--ui-panel-bg);
+  border: 2px solid var(--ui-border);
+  border-radius: var(--ui-radius-panel, 14px);
   padding: clamp(14px, 1.6vmin, 20px);
   z-index: 15;
   font-size: clamp(12px, 1.35vmin, 15px);
@@ -396,7 +468,10 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: clamp(8px, 1vmin, 12px);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--ui-shadow);
+  color: var(--ui-text);
+  font-family: var(--font-ui);
+  clip-path: var(--ui-panel-clip);
 }
 
 .inventory-panel.hidden {
@@ -506,7 +581,7 @@ html, body {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #7a8fa8;
+  color: var(--ui-text-muted);
   text-align: center;
 }
 
@@ -564,7 +639,7 @@ html, body {
   width: var(--inv-equip-size);
   height: var(--inv-equip-size);
   background: rgba(14, 18, 32, 0.9);
-  border: 2px solid #2a3a52;
+  border: 2px solid var(--ui-slot-border);
   border-radius: 6px;
   color: var(--slot-icon-color, #4a5a6a);
   cursor: pointer;
@@ -584,7 +659,7 @@ html, body {
   min-height: 0;
   aspect-ratio: 1;
   background: rgba(14, 18, 32, 0.9);
-  border: 2px solid #2a3a52;
+  border: 2px solid var(--ui-slot-border);
   border-radius: 5px;
   color: var(--slot-icon-color, #4a5a6a);
   font-size: clamp(8px, 1vmin, 10px);
@@ -655,7 +730,7 @@ html, body {
   overflow-x: hidden;
   padding: 12px 14px;
   background: linear-gradient(165deg, rgba(18, 28, 52, 0.98), rgba(10, 16, 32, 0.98));
-  border: 2px solid #1a4a7a;
+  border: 2px solid var(--ui-border);
   border-radius: 10px;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55);
   pointer-events: none;
@@ -776,11 +851,11 @@ html, body {
 }
 
 .item-stat-label {
-  color: #bdc3c7;
+  color: var(--ui-text-muted);
 }
 
 .item-stat-value {
-  color: #5dade2;
+  color: var(--ui-sky);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -795,7 +870,7 @@ html, body {
 }
 
 .item-stat-delta--down {
-  color: #e74c3c;
+  color: var(--ui-life);
 }
 
 .item-inspect-compare-header {
@@ -808,13 +883,15 @@ html, body {
 
 .inv-context-menu {
   position: fixed;
-  z-index: 20;
+  z-index: 26;
   min-width: 120px;
-  background: rgba(22, 33, 62, 0.98);
-  border: 1px solid #0f3460;
-  border-radius: 6px;
+  background: var(--ui-panel-solid);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-control, 6px);
   padding: 4px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--ui-shadow), 0 8px 24px rgba(0, 0, 0, 0.55);
+  color: var(--ui-text);
+  font-family: var(--font-ui);
 }
 
 .inv-context-menu__item {
@@ -823,23 +900,24 @@ html, body {
   border: none;
   border-radius: 4px;
   background: transparent;
-  color: #ddd;
+  color: var(--ui-text);
   font-size: 12px;
   text-align: left;
   padding: 6px 10px;
   cursor: pointer;
+  font-family: inherit;
 }
 
 .inv-context-menu__item:hover {
-  background: rgba(41, 128, 185, 0.25);
+  background: color-mix(in srgb, var(--ui-sky) 28%, transparent);
 }
 
 .inv-context-menu__item--danger {
-  color: #f1948a;
+  color: var(--ui-danger);
 }
 
 .inv-context-menu__item--danger:hover {
-  background: rgba(146, 43, 33, 0.35);
+  background: color-mix(in srgb, var(--ui-danger) 28%, transparent);
 }
 
 .item-inspect-no-stats {
@@ -887,7 +965,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--ui-panel-bg);
   z-index: 25;
 }
 
@@ -896,8 +974,8 @@ html, body {
 }
 
 .levelup-inner {
-  background: #16213e;
-  border: 2px solid #f1c40f;
+  background: var(--ui-panel-solid);
+  border: 2px solid var(--ui-gold);
   border-radius: 12px;
   padding: 1.5rem;
   min-width: 280px;
@@ -906,7 +984,7 @@ html, body {
 }
 
 .levelup-title {
-  color: #f1c40f;
+  color: var(--ui-gold);
   margin-bottom: 0.5rem;
 }
 
@@ -917,7 +995,7 @@ html, body {
 
 .levelup-summary {
   font-size: 0.9rem;
-  color: #bdc3c7;
+  color: var(--ui-text-muted);
   margin-bottom: 0.75rem;
 }
 
@@ -935,7 +1013,7 @@ html, body {
 
 .levelup-stat-readout {
   background: rgba(0, 0, 0, 0.25);
-  border: 1px solid #0f3460;
+  border: 1px solid var(--ui-border);
   border-radius: 6px;
   padding: 0.4rem 0.25rem;
 }
@@ -951,7 +1029,7 @@ html, body {
   display: block;
   font-size: 1.15rem;
   font-weight: 700;
-  color: #f1c40f;
+  color: var(--ui-gold);
 }
 
 .levelup-stats {
@@ -963,7 +1041,7 @@ html, body {
 
 .levelup-stat-btn {
   padding: 0.6rem;
-  background: #0f3460;
+  background: var(--ui-border);
   border: 1px solid #2980b9;
   border-radius: 6px;
   color: #fff;
@@ -990,7 +1068,7 @@ html, body {
 .levelup-close {
   width: 100%;
   padding: 0.65rem;
-  background: #e94560;
+  background: var(--ui-accent);
   border: none;
   border-radius: 8px;
   color: #fff;
@@ -1004,7 +1082,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--ui-panel-bg);
   z-index: 25;
   padding: 1rem;
   box-sizing: border-box;
@@ -1016,7 +1094,7 @@ html, body {
 
 .skilltree-inner {
   background: linear-gradient(165deg, rgba(26, 38, 68, 0.98), rgba(18, 28, 52, 0.98));
-  border: 2px solid #1a4a7a;
+  border: 2px solid var(--ui-border);
   border-radius: 12px;
   padding: 1.25rem 1.5rem;
   width: min(640px, 96vw);
@@ -1027,7 +1105,7 @@ html, body {
 
 .skilltree-title {
   margin: 0 0 0.35rem;
-  color: #5dade2;
+  color: var(--ui-sky);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-size: 1.1rem;
@@ -1036,13 +1114,13 @@ html, body {
 .skilltree-summary,
 .skilltree-points {
   margin: 0 0 0.5rem;
-  color: #bdc3c7;
+  color: var(--ui-text-muted);
   font-size: 0.9rem;
 }
 
 .skilltree-status {
   margin: 0 0 0.5rem;
-  color: #5dade2;
+  color: var(--ui-sky);
   font-size: 0.85rem;
 }
 
@@ -1055,7 +1133,7 @@ html, body {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #7a8fa8;
+  color: var(--ui-text-muted);
 }
 
 .skilltree-build-list {
@@ -1078,7 +1156,7 @@ html, body {
 
 .skilltree-build-name {
   display: block;
-  color: #f1c40f;
+  color: var(--ui-gold);
   font-weight: 700;
   font-size: 0.9rem;
 }
@@ -1175,7 +1253,7 @@ html, body {
 }
 
 .skilltree-learn-btn:hover {
-  background: #3498db;
+  background: var(--ui-mana);
 }
 
 .skilltree-bar {
@@ -1190,7 +1268,7 @@ html, body {
   align-items: center;
   gap: 0.15rem;
   padding: 0.4rem 0.25rem;
-  border: 2px solid #2a3a52;
+  border: 2px solid var(--ui-slot-border);
   border-radius: 8px;
   background: rgba(8, 12, 24, 0.55);
   color: #ddd;
@@ -1199,7 +1277,7 @@ html, body {
 }
 
 .skilltree-bar-slot--selected {
-  border-color: #f1c40f;
+  border-color: var(--ui-gold);
   box-shadow: 0 0 8px rgba(241, 196, 15, 0.25);
 }
 
@@ -1264,7 +1342,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.75);
+  background: var(--ui-overlay);
   z-index: 10;
 }
 
@@ -1273,12 +1351,26 @@ html, body {
 }
 
 .panel {
-  background: #16213e;
-  border: 2px solid #0f3460;
-  border-radius: 12px;
+  background: var(--ui-panel-bg);
+  border: 2px solid var(--ui-border);
+  border-radius: var(--ui-radius-panel, 12px);
   padding: 2rem;
   min-width: 320px;
   text-align: center;
+  color: var(--ui-text);
+  box-shadow: var(--ui-shadow);
+  clip-path: var(--ui-panel-clip);
+  outline: 1px solid var(--ui-outline);
+  outline-offset: 2px;
+  font-family: var(--font-ui);
+}
+
+.panel h1,
+.panel h2 {
+  font-family: var(--font-display);
+  color: var(--ui-brand);
+  letter-spacing: var(--ui-brand-tracking);
+  text-transform: var(--ui-brand-transform);
 }
 
 .panel h1 {
@@ -1294,7 +1386,7 @@ html, body {
 }
 
 .class-card {
-  background: #0f3460;
+  background: var(--ui-border);
   border: 2px solid transparent;
   border-radius: 8px;
   padding: 1rem;
@@ -1308,7 +1400,7 @@ html, body {
 }
 
 .class-card.selected {
-  border-color: #e94560;
+  border-color: var(--ui-accent);
 }
 
 .class-preview {
@@ -1334,23 +1426,20 @@ html, body {
   width: 100%;
   margin-top: 0.4rem;
   padding: 0.5rem;
-  border: 1px solid #0f3460;
-  border-radius: 6px;
-  background: #1a1a2e;
-  color: #eee;
+  border: 1px solid var(--ui-field-border);
+  border-radius: var(--ui-radius-control);
+  background: var(--ui-field-bg);
+  color: var(--ui-text);
   font-size: 1rem;
+  font-family: var(--font-ui);
 }
 
 #start-btn {
   width: 100%;
   padding: 0.75rem;
-  background: #e94560;
-  color: white;
-  border: none;
-  border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: filter 0.15s, background 0.15s;
 }
 
 #start-btn:disabled {
@@ -1359,7 +1448,7 @@ html, body {
 }
 
 #start-btn:not(:disabled):hover {
-  background: #c73652;
+  background: var(--ui-accent-hover);
 }
 
 .character-panel {
@@ -1393,11 +1482,11 @@ html, body {
   margin: 0 0 1rem;
   font-size: 1.1rem;
   font-weight: 600;
-  color: #ccc;
+  color: var(--ui-text-muted);
 }
 
 .character-error {
-  color: #e74c3c;
+  color: var(--ui-life);
   font-size: 0.9rem;
   margin: 0 0 0.75rem;
   min-height: 1.2em;
@@ -1422,10 +1511,10 @@ html, body {
   gap: 0.75rem;
   width: 100%;
   padding: 0.65rem 0.75rem;
-  background: #0f3460;
+  background: var(--ui-border);
   border: 2px solid transparent;
   border-radius: 8px;
-  color: #eee;
+  color: var(--ui-text);
   cursor: pointer;
   text-align: left;
 }
@@ -1435,7 +1524,7 @@ html, body {
 }
 
 .character-row.selected {
-  border-color: #e94560;
+  border-color: var(--ui-accent);
 }
 
 .character-row-swatch {
@@ -1489,28 +1578,43 @@ html, body {
 
 #play-btn,
 #create-submit-btn {
-  background: #e94560;
+  background: var(--ui-accent);
   color: white;
 }
 
 #play-btn:not(:disabled):hover,
 #create-submit-btn:not(:disabled):hover {
-  background: #c73652;
+  background: var(--ui-accent-hover);
+}
+
+
+button.btn-primary,
+#start-btn,
+#create-submit-btn,
+#auth-login-btn,
+#auth-register-btn,
+#respawn-btn,
+.character-actions button:not(.btn-secondary) {
+  background: var(--ui-btn-primary-bg);
+  color: var(--ui-accent-ink);
+  border: var(--ui-btn-primary-border);
+  border-radius: var(--ui-radius-btn);
+  font-family: var(--font-display);
 }
 
 .btn-secondary {
-  background: #0f3460;
-  color: #eee;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--ui-secondary);
+  color: var(--ui-secondary-ink);
+  border: 1px solid var(--ui-secondary-border);
 }
 
 .btn-danger {
-  background: #7b241c;
+  background: var(--ui-danger);
   color: #fff;
 }
 
 .btn-danger:not(:disabled):hover {
-  background: #922b21;
+  background: var(--ui-danger-hover);
 }
 
 .hidden {
@@ -1523,12 +1627,12 @@ html, body {
 }
 
 .death-panel h1 {
-  color: #e74c3c;
+  color: var(--ui-life);
   margin-bottom: 0.75rem;
 }
 
 .death-panel p {
-  color: #ccc;
+  color: var(--ui-text-muted);
   font-size: 0.95rem;
   margin-bottom: 1.25rem;
   line-height: 1.4;
@@ -1537,7 +1641,7 @@ html, body {
 #respawn-btn {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: #e94560;
+  background: var(--ui-accent);
   color: white;
   border: none;
   border-radius: 8px;
@@ -1552,7 +1656,7 @@ html, body {
 }
 
 .disconnect-panel h1 {
-  color: #e74c3c;
+  color: var(--ui-life);
   margin-bottom: 0.75rem;
 }
 
@@ -1600,7 +1704,7 @@ html, body {
 }
 
 .confirm-actions [data-confirm-ok] {
-  background: #e94560;
+  background: var(--ui-accent);
   color: #fff;
 }
 
@@ -1609,11 +1713,11 @@ html, body {
 }
 
 .confirm-actions [data-confirm-ok]:hover {
-  background: #c73652;
+  background: var(--ui-accent-hover);
 }
 
 .confirm-actions [data-confirm-ok].btn-danger:hover {
-  background: #922b21;
+  background: var(--ui-danger-hover);
 }
 
 .confirm-actions .btn-secondary:hover {
@@ -1625,7 +1729,7 @@ html, body {
 }
 
 #respawn-btn:hover {
-  background: #c73652;
+  background: var(--ui-accent-hover);
 }
 
 .skill-bar {
@@ -1637,13 +1741,16 @@ html, body {
   align-items: center;
   gap: clamp(10px, 1.2vmin, 14px);
   padding: clamp(8px, 1.1vmin, 12px) clamp(12px, 1.6vmin, 18px);
-  background: linear-gradient(165deg, #1a2644 0%, #121c34 100%);
-  border: 2px solid #1a4a7a;
-  border-radius: 12px;
+  background: var(--ui-panel-bg);
+  border: 2px solid var(--ui-border);
+  border-radius: var(--ui-radius-panel, 12px);
   z-index: 20;
   pointer-events: none;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--ui-shadow);
   isolation: isolate;
+  clip-path: var(--ui-panel-clip);
+  color: var(--ui-text);
+  font-family: var(--font-ui);
 }
 
 .skill-bar-skills,
@@ -1671,23 +1778,25 @@ html, body {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #7a8fa8;
-  background: rgba(18, 28, 52, 0.98);
+  color: var(--ui-text-muted);
+  background: var(--ui-panel-solid);
+  font-family: var(--font-accent);
 }
 
 .skill-slot {
   position: relative;
   width: clamp(50px, 5.8vmin, 68px);
   height: clamp(50px, 5.8vmin, 68px);
-  background: rgba(14, 18, 32, 0.92);
-  border: 2px solid #2a3a52;
-  border-radius: 8px;
+  background: var(--ui-slot-bg);
+  border: 2px solid var(--ui-slot-border);
+  border-radius: var(--ui-radius-control);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   transition: border-color 0.12s ease, box-shadow 0.12s ease;
+  color: var(--ui-slot-ink);
 }
 
 .skill-slot.empty {
@@ -1796,7 +1905,7 @@ html, body {
   display: block;
   font-size: clamp(8px, 0.95vmin, 10px);
   font-weight: 600;
-  color: #87ceeb;
+  color: var(--ui-sky);
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -1851,7 +1960,7 @@ html, body {
   left: 0;
   right: 0;
   height: 0%;
-  background: rgba(0, 0, 0, 0.72);
+  background: var(--ui-panel-solid);
   pointer-events: none;
   z-index: 1;
 }
@@ -1863,7 +1972,7 @@ html, body {
   width: 220px;
   max-height: 280px;
   z-index: 10;
-  background: rgba(0, 0, 0, 0.58);
+  background: var(--ui-panel-bg);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   padding: 0.55rem 0.65rem;
@@ -2309,7 +2418,7 @@ html, body {
   font-size: 0.74rem;
   line-height: 1.35;
   color: #e8edf5;
-  background: rgba(0, 0, 0, 0.72);
+  background: var(--ui-panel-solid);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 8px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
@@ -2370,12 +2479,16 @@ html, body {
   bottom: var(--hud-chat-bottom, 150px);
   width: min(var(--hud-chat-width, 220px), calc(100vw - 32px));
   z-index: 10;
-  background: rgba(0, 0, 0, 0.62);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
+  background: var(--ui-panel-bg);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-panel, 8px);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  color: var(--ui-text);
+  box-shadow: var(--ui-shadow);
+  font-family: var(--font-ui);
+  clip-path: var(--ui-panel-clip);
 }
 
 .chat-panel.hidden {
@@ -2383,8 +2496,8 @@ html, body {
 }
 
 .chat-panel--focused {
-  border-color: rgba(120, 180, 255, 0.45);
-  box-shadow: 0 0 0 1px rgba(120, 180, 255, 0.25);
+  border-color: var(--ui-border-strong);
+  box-shadow: 0 0 0 1px var(--ui-border-strong);
 }
 
 .chat-log {
@@ -2393,7 +2506,7 @@ html, body {
   padding: 0.45rem 0.55rem;
   font-size: 0.74rem;
   line-height: 1.35;
-  color: #e8edf5;
+  color: var(--ui-text);
 }
 
 .chat-line {
@@ -2448,3 +2561,72 @@ html, body {
   border-color: rgba(120, 180, 255, 0.55);
 }
 
+
+
+/* ui-theme transitions */
+.panel,
+.skill-bar,
+.skill-slot,
+.inventory-panel,
+.chat-panel,
+.quest-tracker,
+.settings-panel-inner,
+.dialogue-panel,
+.vendor-panel,
+.trade-panel,
+.world-event-toasts .toast {
+  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+html[data-ui-theme="shonen"] .skill-slot:not(.empty) {
+  transform: skewX(-4deg);
+}
+
+html[data-ui-theme="isekai"] .skill-bar,
+html[data-ui-theme="isekai"] .chat-panel,
+html[data-ui-theme="isekai"] .quest-tracker {
+  backdrop-filter: blur(10px);
+}
+
+
+/* themed management panels */
+.vendor-panel,
+.trade-panel,
+.social-panel,
+.skill-tree-panel,
+.level-up-panel,
+.map-loading-panel,
+.death-panel,
+.disconnect-panel,
+.confirm-panel {
+  background: var(--ui-panel-bg);
+  border-color: var(--ui-border);
+  color: var(--ui-text);
+  box-shadow: var(--ui-shadow);
+  font-family: var(--font-ui);
+  clip-path: var(--ui-panel-clip);
+}
+
+/* Tooltips always use solid fill so text stays readable over inventory */
+.item-tooltip {
+  background: var(--ui-panel-solid);
+  border-color: var(--ui-border);
+  color: var(--ui-text);
+  box-shadow: var(--ui-shadow), 0 12px 36px rgba(0, 0, 0, 0.55);
+  font-family: var(--font-ui);
+  clip-path: none;
+}
+
+.vendor-panel h2,
+.trade-panel h2,
+.social-panel-title,
+.skill-tree-panel h2,
+.level-up-panel h2,
+.item-tooltip-name {
+  font-family: var(--font-display);
+  color: var(--ui-brand);
+}
+
+.level-up-flash {
+  background: color-mix(in srgb, var(--ui-gold) 35%, transparent);
+}

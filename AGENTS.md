@@ -1,6 +1,6 @@
 # Agent Instructions — MMO001
 
-Diablo-like MMORPG (Canvas + Node.js + Socket.IO). **v4.1.0** — work from [TODO.md](TODO.md) (promoted from PENDINGS).
+Diablo-like MMORPG (Canvas + Node.js + Socket.IO). **v4.2.0** — work from [TODO.md](TODO.md) (promoted from PENDINGS).
 
 ## Start here
 

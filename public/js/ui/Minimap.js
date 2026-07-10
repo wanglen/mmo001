@@ -9,24 +9,39 @@ import {
   minimapTileRect,
 } from '/shared/minimap.js';
 import { parseTileKey, tileKey } from '/shared/fog.js';
+import {
+  DEFAULT_UI_THEME,
+  getUiThemeColors,
+  isUiThemeId,
+} from '/shared/uiThemeSettings.js';
 import { TILE_SIZE } from '../config.js';
 
-const PANEL_BG = 'rgba(0, 0, 0, 0.62)';
 const UNEXPLORED = '#141820';
 const PORTAL_COLOR = '#7b68ee';
 const PLAYER_COLOR = '#ffffff';
 const PLAYER_OUTLINE = '#1a1a1a';
 
+function themeColors() {
+  const raw =
+    typeof document !== 'undefined' ? document.documentElement.getAttribute('data-ui-theme') : null;
+  return getUiThemeColors(isUiThemeId(raw) ? raw : DEFAULT_UI_THEME);
+}
+
 export class Minimap {
   draw(ctx, map, player, fogOfWar, canvasWidth) {
     if (!map?.tiles || !player) return;
 
+    const colors = themeColors();
     const revealed = fogOfWar?.revealed;
     const rect = minimapScreenRect(canvasWidth, map.width, map.height, MINIMAP_MARGIN);
     const { scale } = minimapDimensions(map.width, map.height, MINIMAP_MAX_WIDTH, MINIMAP_MAX_HEIGHT);
 
-    ctx.fillStyle = PANEL_BG;
+    ctx.fillStyle = colors.minimapFill;
     ctx.fillRect(rect.x - 4, rect.y - 4, rect.width + 8, rect.height + 8);
+
+    ctx.strokeStyle = colors.minimapStroke;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(rect.x - 4.5, rect.y - 4.5, rect.width + 9, rect.height + 9);
 
     ctx.fillStyle = UNEXPLORED;
     ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
@@ -117,7 +132,7 @@ export class Minimap {
     ctx.arc(point.x, point.y, dotR, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+    ctx.strokeStyle = colors.minimapStroke;
     ctx.lineWidth = 1;
     ctx.strokeRect(rect.x + 0.5, rect.y + 0.5, rect.width - 1, rect.height - 1);
   }

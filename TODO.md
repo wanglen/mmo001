@@ -40,6 +40,12 @@ Promoted from [PENDINGS.md](PENDINGS.md) at **v3.9.0**. One item per feature bra
 
 ## UI / HUD
 
+- [x] **UI theme tokens** — CSS design tokens + four anime theme packs (`jrpg`, `shonen`, `darkfan`, `isekai`); wire core panels to `var(--…)`
+- [x] **UI theme settings** — Settings → Appearance → UI style; persist in `localStorage` (`shared/uiThemeSettings.js`)
+- [x] **UI theme auth + HUD chrome** — tokenize auth, character select, skill bar, chat, quest tracker, loading/death
+- [x] **UI theme panels** — inventory, stash, vendor, trade, skill tree, dialogue, social, tooltips
+- [x] **UI theme canvas HUD** — PlayerHud / Minimap / HpBar read shared theme palette
+- [x] **UI theme polish** — motion accents, README/CHANGELOG, align style board
 - [ ] **Graphics options** — UI scale, reduce particles, optional fullscreen
 - [ ] **Full quest log panel** — browse active + completed quests (tracker is minimal today)
 - [ ] **Damage / loot filter** — hide ground labels below rarity threshold

@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# Stage changes, commit, merge to main when needed, and push origin/main.
+# Stage changes, commit, merge to develop when needed, and push origin/develop.
 #
-# On main: test → commit → push main.
-# On another branch: test → commit → checkout main → merge branch → push main.
+# On develop: test → commit → push develop.
+# On main:    test → commit → push main (releases / hotfixes only).
+# On another branch: test → commit → checkout develop → merge branch → push develop.
 #
 # Usage:
 #   ./scripts/commit-and-push.sh "Add feature X"
@@ -19,6 +20,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+INTEGRATION_BRANCH="develop"
 RUN_TESTS="${RUN_TESTS:-1}"
 SKIP_TESTS="${SKIP_TESTS:-0}"
 
@@ -63,15 +65,15 @@ git add -A
 log "Creating commit on $BRANCH..."
 git commit -m "$MSG"
 
-if [[ "$BRANCH" != "main" ]]; then
+if [[ "$BRANCH" != "$INTEGRATION_BRANCH" && "$BRANCH" != "main" ]]; then
   FEATURE_BRANCH="$BRANCH"
-  log "Checking out main..."
-  git checkout main
-  log "Updating main from origin..."
-  git pull --ff-only origin main
-  log "Merging $FEATURE_BRANCH into main..."
+  log "Checking out $INTEGRATION_BRANCH..."
+  git checkout "$INTEGRATION_BRANCH"
+  log "Updating $INTEGRATION_BRANCH from origin..."
+  git pull --ff-only "origin" "$INTEGRATION_BRANCH"
+  log "Merging $FEATURE_BRANCH into $INTEGRATION_BRANCH..."
   git merge "$FEATURE_BRANCH"
-  BRANCH="main"
+  BRANCH="$INTEGRATION_BRANCH"
 fi
 
 log "Pushing to origin/$BRANCH..."

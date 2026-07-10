@@ -1,4 +1,9 @@
 import { DEFAULT_AUDIO_SETTINGS } from '/shared/audioSettings.js';
+import {
+  UI_THEME_OPTIONS,
+  applyUiTheme,
+  loadUiTheme,
+} from '/shared/uiThemeSettings.js';
 
 /** Reference list of default controls (rebinding not yet supported). */
 export const DEFAULT_KEYBIND_REFERENCE = [
@@ -28,6 +33,19 @@ export class SettingsPanel {
   }
 
   build() {
+    const themeCards = UI_THEME_OPTIONS.map(
+      (opt) => `
+      <button type="button" class="ui-theme-opt" role="radio" data-ui-theme="${opt.id}" aria-checked="false">
+        <span class="ui-theme-swatches" aria-hidden="true">
+          ${opt.swatches.map((c) => `<i style="background:${c}"></i>`).join('')}
+        </span>
+        <span class="ui-theme-copy">
+          <strong>${opt.label}</strong>
+          <span>${opt.description}</span>
+        </span>
+      </button>`
+    ).join('');
+
     this.root.innerHTML = `
       <div class="settings-panel-inner panel">
         <h2>Settings</h2>
@@ -47,8 +65,12 @@ export class SettingsPanel {
           </label>
         </section>
         <section class="settings-section">
-          <h3>Graphics</h3>
-          <p class="settings-note">Scroll wheel zooms the camera. Additional graphics options coming soon.</p>
+          <h3>Appearance</h3>
+          <p class="settings-note">UI style changes panel chrome. World art stays the same.</p>
+          <div class="ui-theme-grid" role="radiogroup" aria-label="UI style" data-ui-theme-grid>
+            ${themeCards}
+          </div>
+          <p class="settings-note">Scroll wheel zooms the camera.</p>
         </section>
         <section class="settings-section">
           <h3>Controls</h3>
@@ -76,6 +98,13 @@ export class SettingsPanel {
       this.onClose?.();
       this.hide();
     });
+
+    this.root.querySelector('[data-ui-theme-grid]')?.addEventListener('click', (event) => {
+      const btn = event.target.closest('[data-ui-theme]');
+      if (!btn) return;
+      applyUiTheme(btn.getAttribute('data-ui-theme'));
+      this.syncThemeUi();
+    });
   }
 
   /** @type {(() => void) | null} */
@@ -85,6 +114,7 @@ export class SettingsPanel {
   bind(audio) {
     this.audio = audio;
     this.syncFromAudio();
+    this.syncThemeUi();
   }
 
   syncFromAudio() {
@@ -104,12 +134,20 @@ export class SettingsPanel {
     });
   }
 
+  syncThemeUi() {
+    const current = loadUiTheme(typeof localStorage !== 'undefined' ? localStorage : null);
+    this.root?.querySelectorAll('[data-ui-theme]').forEach((btn) => {
+      btn.setAttribute('aria-checked', String(btn.getAttribute('data-ui-theme') === current));
+    });
+  }
+
   isVisible() {
     return !!this.root && !this.root.classList.contains('hidden');
   }
 
   show() {
     this.syncFromAudio();
+    this.syncThemeUi();
     this.root?.classList.remove('hidden');
   }
 

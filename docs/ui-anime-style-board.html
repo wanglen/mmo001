@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en" data-ui-theme="darkfan">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MMO001 — UI theme picker (proposal)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cormorant+Garamond:wght@500;600&family=Exo+2:wght@500;700&family=M+PLUS+Rounded+1c:wght@500;700;800&family=Shippori+Mincho:wght@500;700&family=Zen+Kurenaido&display=swap" rel="stylesheet" />
+  <style>
+    /* —— Page chrome (not part of game themes) —— */
+    :root {
+      --page-bg: #12141a;
+      --page-ink: #e8ecf4;
+      --muted: #9aa3b5;
+      --line: #2a3140;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(1200px 600px at 20% -10%, #1c2436 0%, transparent 55%),
+        var(--page-bg);
+      color: var(--page-ink);
+      font-family: "Exo 2", system-ui, sans-serif;
+      line-height: 1.45;
+      padding: 2rem 1.25rem 4rem;
+    }
+
+    .wrap { max-width: 920px; margin: 0 auto; }
+
+    h1 {
+      font-family: "Cinzel", serif;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      letter-spacing: 0.04em;
+    }
+
+    .lead {
+      margin-top: 0.55rem;
+      color: var(--muted);
+      max-width: 62ch;
+      font-size: 0.95rem;
+    }
+
+    /* —— Theme picker (proposed Settings control) —— */
+    .picker {
+      margin: 1.35rem 0 1rem;
+      padding: 1rem 1.1rem;
+      border: 1px solid var(--line);
+      background: #171b24;
+    }
+
+    .picker h2 {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .theme-grid {
+      display: grid;
+      gap: 0.55rem;
+      grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 720px) {
+      .theme-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .theme-opt {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.65rem;
+      align-items: start;
+      text-align: left;
+      padding: 0.7rem 0.75rem;
+      border: 1px solid var(--line);
+      background: #12161f;
+      color: inherit;
+      cursor: pointer;
+      font: inherit;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .theme-opt:hover { border-color: #4a5568; }
+    .theme-opt[aria-checked="true"] {
+      border-color: #c9d4ea;
+      background: #1c2433;
+      box-shadow: inset 0 0 0 1px rgba(201, 212, 234, 0.25);
+    }
+
+    .theme-opt .swatches {
+      display: flex;
+      gap: 0.22rem;
+      padding-top: 0.15rem;
+    }
+
+    .theme-opt .swatches i {
+      width: 0.85rem;
+      height: 0.85rem;
+      border-radius: 2px;
+      border: 1px solid rgba(255,255,255,0.18);
+      font-style: normal;
+    }
+
+    .theme-opt strong {
+      display: block;
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .theme-opt span {
+      display: block;
+      margin-top: 0.15rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .hint {
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .hint code { color: #c9d4ea; }
+
+    /* —— Live preview stage —— */
+    .preview-label {
+      margin: 1.25rem 0 0.5rem;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    .stage {
+      position: relative;
+      min-height: 480px;
+      padding: 1rem;
+      border: 1px solid var(--line);
+      overflow: hidden;
+      background-color: var(--theme-stage, #141820);
+      background-image:
+        linear-gradient(180deg, rgba(0,0,0,0.12), rgba(0,0,0,0.35)),
+        repeating-linear-gradient(
+          -12deg,
+          transparent,
+          transparent 10px,
+          rgba(255,255,255,0.015) 10px,
+          rgba(255,255,255,0.015) 11px
+        );
+      transition: background-color 0.25s;
+    }
+
+    .stage::before {
+      content: "IN-GAME PREVIEW";
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: rgba(255,255,255,0.1);
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      pointer-events: none;
+    }
+
+    .auth-card,
+    .inv-card,
+    .hud-band,
+    .quest-chip,
+    .minimap,
+    .skills,
+    .chat-box {
+      position: relative;
+      z-index: 1;
+      transition: background 0.25s, color 0.25s, border-color 0.25s, box-shadow 0.25s, border-radius 0.25s;
+    }
+
+    .auth-card {
+      width: min(260px, 72%);
+      margin: 0.5rem auto 0.9rem;
+      padding: 1rem 1.1rem 1.1rem;
+      text-align: center;
+      background: var(--panel-bg);
+      color: var(--panel-ink);
+      border: var(--panel-border);
+      border-radius: var(--panel-radius, 0);
+      box-shadow: var(--panel-shadow);
+      font-family: var(--font-ui);
+      clip-path: var(--panel-clip, none);
+      outline: var(--panel-outline, none);
+      outline-offset: 2px;
+    }
+
+    .auth-card .brand {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      margin-bottom: 0.15rem;
+      color: var(--brand);
+      letter-spacing: var(--brand-tracking, 0.04em);
+      text-transform: var(--brand-transform, none);
+      font-weight: 700;
+      background: var(--brand-gradient, none);
+      -webkit-background-clip: var(--brand-clip, border-box);
+      background-clip: var(--brand-clip, border-box);
+    }
+
+    .auth-card .sub {
+      font-size: 0.72rem;
+      opacity: 0.78;
+      margin-bottom: 0.8rem;
+      font-family: var(--font-accent, var(--font-ui));
+    }
+
+    .field {
+      height: 1.6rem;
+      margin-bottom: 0.4rem;
+      background: var(--field-bg);
+      border: 1px solid var(--field-border);
+      border-radius: var(--control-radius, 0);
+    }
+
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+      margin-top: 0.55rem;
+    }
+
+    .btn {
+      height: 1.75rem;
+      display: grid;
+      place-items: center;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-family: var(--font-display);
+      border-radius: var(--btn-radius, var(--control-radius, 0));
+      cursor: default;
+    }
+
+    .btn.primary {
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-ink);
+      border: var(--btn-primary-border);
+    }
+
+    .btn.ghost {
+      background: var(--btn-ghost-bg);
+      color: var(--btn-ghost-ink);
+      border: var(--btn-ghost-border);
+    }
+
+    .hud-band {
+      position: absolute;
+      left: 0.85rem;
+      right: 0.85rem;
+      bottom: 0.85rem;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 0.55rem;
+      align-items: end;
+    }
+
+    .orbs { display: flex; gap: 0.4rem; align-items: end; }
+
+    .orb {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      border: 2px solid var(--orb-ring);
+      background: var(--orb-bg);
+      box-shadow: var(--orb-shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .orb::after {
+      content: "";
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 62%;
+      opacity: 0.88;
+      background: currentColor;
+    }
+
+    .orb.life { color: var(--life); }
+    .orb.mana { color: var(--mana); }
+
+    .skills {
+      display: flex;
+      justify-content: center;
+      gap: 0.3rem;
+      padding: 0.4rem 0.5rem;
+      background: var(--panel-bg);
+      color: var(--panel-ink);
+      border: var(--panel-border);
+      border-radius: var(--panel-radius, 0);
+      box-shadow: var(--panel-shadow);
+      clip-path: var(--panel-clip, none);
+      outline: var(--panel-outline, none);
+      outline-offset: 2px;
+    }
+
+    .slot {
+      width: 1.9rem;
+      height: 1.9rem;
+      display: grid;
+      place-items: center;
+      font-size: 0.58rem;
+      background: var(--slot-bg);
+      border: 1px solid var(--slot-border);
+      color: var(--slot-ink);
+      border-radius: var(--control-radius, 0);
+      transform: var(--slot-skew, none);
+      font-family: var(--font-ui);
+    }
+
+    .xp {
+      height: 0.3rem;
+      margin-top: 0.35rem;
+      background: var(--field-bg);
+      border: 1px solid var(--field-border);
+      border-radius: var(--xp-radius, 0);
+      overflow: hidden;
+    }
+
+    .xp > i {
+      display: block;
+      height: 100%;
+      width: 68%;
+      background: var(--xp-fill);
+      border-radius: inherit;
+      font-style: normal;
+    }
+
+    .chat-box {
+      width: 8rem;
+      height: 3.5rem;
+      padding: 0.35rem;
+      font-size: 0.58rem;
+      line-height: 1.3;
+      background: var(--panel-bg);
+      color: var(--panel-ink);
+      border: var(--panel-border);
+      border-radius: var(--panel-radius, 0);
+      box-shadow: var(--panel-shadow);
+      font-family: var(--font-accent, var(--font-ui));
+      clip-path: var(--panel-clip, none);
+      outline: var(--panel-outline, none);
+      outline-offset: 2px;
+    }
+
+    .inv-card {
+      position: absolute;
+      top: 3.8rem;
+      right: 0.9rem;
+      width: 8.2rem;
+      padding: 0.5rem;
+      background: var(--panel-bg);
+      color: var(--panel-ink);
+      border: var(--panel-border);
+      border-radius: var(--panel-radius, 0);
+      box-shadow: var(--panel-shadow);
+      font-family: var(--font-ui);
+      clip-path: var(--panel-clip, none);
+      outline: var(--panel-outline, none);
+      outline-offset: 2px;
+    }
+
+    .inv-card .title {
+      font-size: 0.62rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 0.35rem;
+      font-family: var(--font-accent, var(--font-ui));
+      color: var(--brand);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.22rem;
+    }
+
+    .grid b {
+      aspect-ratio: 1;
+      background: var(--slot-bg);
+      border: 1px solid var(--slot-border);
+      border-radius: var(--control-radius, 0);
+      font-weight: 400;
+    }
+
+    .grid b.hi { border-color: var(--accent); box-shadow: inset 0 0 8px color-mix(in srgb, var(--accent) 30%, transparent); }
+    .grid b.hi2 { border-color: var(--life); }
+
+    .quest-chip {
+      position: absolute;
+      top: 0.9rem;
+      right: 0.9rem;
+      width: 8.2rem;
+      padding: 0.4rem 0.5rem;
+      font-size: 0.6rem;
+      background: var(--panel-bg);
+      color: var(--panel-ink);
+      border: var(--panel-border);
+      border-radius: var(--panel-radius, 0);
+      box-shadow: var(--panel-shadow);
+      font-family: var(--font-accent, var(--font-ui));
+      clip-path: var(--panel-clip, none);
+      outline: var(--panel-outline, none);
+      outline-offset: 2px;
+    }
+
+    .minimap {
+      position: absolute;
+      top: 0.9rem;
+      left: 0.9rem;
+      width: 3.5rem;
+      height: 3.5rem;
+      background: var(--minimap-bg);
+      border: 2px solid var(--orb-ring);
+      border-radius: var(--minimap-radius, 0);
+      box-shadow: var(--minimap-shadow, none);
+      clip-path: var(--minimap-clip, none);
+    }
+
+    /* —— Theme tokens —— */
+    html[data-ui-theme="jrpg"] {
+      --theme-stage: #2a3340;
+      --font-display: "Shippori Mincho", serif;
+      --font-ui: "Cormorant Garamond", serif;
+      --font-accent: "Cormorant Garamond", serif;
+      --panel-bg: linear-gradient(180deg, #f3e7d1 0%, #e6d3b0 100%);
+      --panel-ink: #3a2f24;
+      --panel-border: 2px solid #6b5136;
+      --panel-shadow: 0 0 0 1px #c4a574, 4px 6px 0 rgba(40, 28, 16, 0.25);
+      --panel-radius: 0;
+      --panel-clip: none;
+      --panel-outline: none;
+      --brand: #2f4f4f;
+      --brand-tracking: 0.02em;
+      --brand-transform: none;
+      --brand-gradient: none;
+      --brand-clip: border-box;
+      --field-bg: #fff8ea;
+      --field-border: #8a6a45;
+      --control-radius: 0;
+      --btn-radius: 0;
+      --btn-primary-bg: #2f6f6a;
+      --btn-primary-ink: #f7f1e4;
+      --btn-primary-border: 1px solid #1f4d49;
+      --btn-ghost-bg: #efe0c4;
+      --btn-ghost-ink: #3a2f24;
+      --btn-ghost-border: 1px solid #8a6a45;
+      --orb-ring: #6b5136;
+      --orb-bg: #efe0c4;
+      --orb-shadow: inset 0 0 0 2px #c4a574;
+      --life: #b23b3b;
+      --mana: #2f6f6a;
+      --slot-bg: #fff8ea;
+      --slot-border: #8a6a45;
+      --slot-ink: #5a4632;
+      --slot-skew: none;
+      --xp-fill: #c9a227;
+      --xp-radius: 0;
+      --accent: #2f6f6a;
+      --minimap-bg: #d9e4d4;
+      --minimap-radius: 0;
+      --minimap-shadow: 0 0 0 1px #c4a574;
+      --minimap-clip: none;
+    }
+
+    html[data-ui-theme="shonen"] {
+      --theme-stage: #141820;
+      --font-display: "Exo 2", sans-serif;
+      --font-ui: "Exo 2", sans-serif;
+      --font-accent: "Exo 2", sans-serif;
+      --panel-bg: linear-gradient(160deg, #1a2230 0%, #0f141c 100%);
+      --panel-ink: #f2f5fa;
+      --panel-border: 2px solid #f0c14a;
+      --panel-shadow: 0 0 18px rgba(240, 193, 74, 0.12);
+      --panel-radius: 0;
+      --panel-clip: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+      --panel-outline: none;
+      --brand: #ff4d4d;
+      --brand-tracking: 0.08em;
+      --brand-transform: uppercase;
+      --brand-gradient: none;
+      --brand-clip: border-box;
+      --field-bg: #0b0e14;
+      --field-border: #3d4a63;
+      --control-radius: 0;
+      --btn-radius: 0;
+      --btn-primary-bg: linear-gradient(90deg, #ff4d4d, #ff7a3d);
+      --btn-primary-ink: #140c0c;
+      --btn-primary-border: 1px solid #ffb087;
+      --btn-ghost-bg: transparent;
+      --btn-ghost-ink: #f0c14a;
+      --btn-ghost-border: 1px solid #f0c14a;
+      --orb-ring: #f0c14a;
+      --orb-bg: #0b0e14;
+      --orb-shadow: 0 0 10px rgba(240, 193, 74, 0.25);
+      --life: #ff3b3b;
+      --mana: #3db7ff;
+      --slot-bg: #121826;
+      --slot-border: #f0c14a;
+      --slot-ink: #f0c14a;
+      --slot-skew: skewX(-6deg);
+      --xp-fill: linear-gradient(90deg, #f0c14a, #ffe08a);
+      --xp-radius: 0;
+      --accent: #3db7ff;
+      --minimap-bg: #0b0e14;
+      --minimap-radius: 0;
+      --minimap-shadow: none;
+      --minimap-clip: polygon(8% 0, 100% 0, 100% 92%, 92% 100%, 0 100%, 0 8%);
+    }
+
+    html[data-ui-theme="darkfan"] {
+      --theme-stage: #0c0a0d;
+      --font-display: "Cinzel", serif;
+      --font-ui: "Zen Kurenaido", sans-serif;
+      --font-accent: "Zen Kurenaido", sans-serif;
+      --panel-bg: linear-gradient(180deg, rgba(36, 22, 28, 0.96), rgba(16, 12, 16, 0.98));
+      --panel-ink: #efe6dc;
+      --panel-border: 1px solid #8a6a3d;
+      --panel-shadow: inset 0 0 24px rgba(0,0,0,0.45), 0 8px 24px rgba(0,0,0,0.45);
+      --panel-radius: 0;
+      --panel-clip: none;
+      --panel-outline: 1px solid rgba(138, 42, 48, 0.55);
+      --brand: #d4af37;
+      --brand-tracking: 0.12em;
+      --brand-transform: uppercase;
+      --brand-gradient: none;
+      --brand-clip: border-box;
+      --field-bg: #140f12;
+      --field-border: #5c4630;
+      --control-radius: 0;
+      --btn-radius: 0;
+      --btn-primary-bg: linear-gradient(180deg, #8f2a32, #5c151c);
+      --btn-primary-ink: #f5e6c8;
+      --btn-primary-border: 1px solid #d4af37;
+      --btn-ghost-bg: transparent;
+      --btn-ghost-ink: #d4af37;
+      --btn-ghost-border: 1px solid #8a6a3d;
+      --orb-ring: #d4af37;
+      --orb-bg: radial-gradient(circle at 35% 30%, #2a1a1e, #0a0809);
+      --orb-shadow: none;
+      --life: #b91c2c;
+      --mana: #4a6fa5;
+      --slot-bg: #161014;
+      --slot-border: #8a6a3d;
+      --slot-ink: #d4af37;
+      --slot-skew: none;
+      --xp-fill: linear-gradient(90deg, #8a6a3d, #d4af37);
+      --xp-radius: 0;
+      --accent: #d4af37;
+      --minimap-bg: #120e11;
+      --minimap-radius: 0;
+      --minimap-shadow: inset 0 0 0 1px rgba(185, 28, 44, 0.35);
+      --minimap-clip: none;
+    }
+
+    html[data-ui-theme="isekai"] {
+      --theme-stage: #1a1f2b;
+      --font-display: "M PLUS Rounded 1c", sans-serif;
+      --font-ui: "M PLUS Rounded 1c", sans-serif;
+      --font-accent: "M PLUS Rounded 1c", sans-serif;
+      --panel-bg: rgba(255, 255, 255, 0.08);
+      --panel-ink: #f4f7ff;
+      --panel-border: 1px solid rgba(255, 255, 255, 0.35);
+      --panel-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      --panel-radius: 14px;
+      --panel-clip: none;
+      --panel-outline: none;
+      --brand: transparent;
+      --brand-tracking: 0.02em;
+      --brand-transform: none;
+      --brand-gradient: linear-gradient(90deg, #5eead4, #67e8f9, #f0abfc);
+      --brand-clip: text;
+      --field-bg: rgba(0,0,0,0.25);
+      --field-border: rgba(255,255,255,0.25);
+      --control-radius: 8px;
+      --btn-radius: 999px;
+      --btn-primary-bg: linear-gradient(90deg, #22d3ee, #a78bfa);
+      --btn-primary-ink: #0b1020;
+      --btn-primary-border: 1px solid transparent;
+      --btn-ghost-bg: rgba(255,255,255,0.06);
+      --btn-ghost-ink: #e2e8f0;
+      --btn-ghost-border: 1px solid rgba(255,255,255,0.3);
+      --orb-ring: rgba(255,255,255,0.45);
+      --orb-bg: rgba(0,0,0,0.25);
+      --orb-shadow: 0 0 12px rgba(34, 211, 238, 0.2);
+      --life: #fb7185;
+      --mana: #22d3ee;
+      --slot-bg: rgba(0,0,0,0.22);
+      --slot-border: rgba(255,255,255,0.28);
+      --slot-ink: #a5f3fc;
+      --slot-skew: none;
+      --xp-fill: linear-gradient(90deg, #22d3ee, #f0abfc);
+      --xp-radius: 999px;
+      --accent: #5eead4;
+      --minimap-bg: rgba(255,255,255,0.08);
+      --minimap-radius: 12px;
+      --minimap-shadow: none;
+      --minimap-clip: none;
+    }
+
+    /* isekai brand needs text fill trick */
+    html[data-ui-theme="isekai"] .auth-card .brand {
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+
+    footer {
+      margin-top: 1.5rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>UI theme picker</h1>
+    <p class="lead">
+      Proposal: keep <strong>all four</strong> anime styles and let the player choose in Settings.
+      Click a theme below — the preview updates instantly (same pattern as
+      <code>data-ui-theme</code> on <code>&lt;html&gt;</code>).
+    </p>
+
+    <section class="picker" aria-label="UI style">
+      <h2>Settings → Appearance → UI style</h2>
+      <div class="theme-grid" role="radiogroup" aria-label="UI theme">
+        <button type="button" class="theme-opt" role="radio" data-theme="jrpg" aria-checked="false">
+          <div class="swatches">
+            <i style="background:#f3e7d1"></i>
+            <i style="background:#2f6f6a"></i>
+            <i style="background:#6b5136"></i>
+            <i style="background:#c9a227"></i>
+          </div>
+          <div>
+            <strong>Soft JRPG</strong>
+            <span>Parchment panels, ink outlines, teal accents</span>
+          </div>
+        </button>
+
+        <button type="button" class="theme-opt" role="radio" data-theme="shonen" aria-checked="false">
+          <div class="swatches">
+            <i style="background:#0f141c"></i>
+            <i style="background:#ff4d4d"></i>
+            <i style="background:#f0c14a"></i>
+            <i style="background:#3db7ff"></i>
+          </div>
+          <div>
+            <strong>Shonen action</strong>
+            <span>Angular frames, gold borders, hot CTAs</span>
+          </div>
+        </button>
+
+        <button type="button" class="theme-opt" role="radio" data-theme="darkfan" aria-checked="true">
+          <div class="swatches">
+            <i style="background:#161014"></i>
+            <i style="background:#d4af37"></i>
+            <i style="background:#b91c2c"></i>
+            <i style="background:#8a6a3d"></i>
+          </div>
+          <div>
+            <strong>Dark fantasy anime</strong>
+            <span>Ink blacks, crimson &amp; gold — default (fits ARPG)</span>
+          </div>
+        </button>
+
+        <button type="button" class="theme-opt" role="radio" data-theme="isekai" aria-checked="false">
+          <div class="swatches">
+            <i style="background:#1a1f2b"></i>
+            <i style="background:#22d3ee"></i>
+            <i style="background:#a78bfa"></i>
+            <i style="background:#f0abfc"></i>
+          </div>
+          <div>
+            <strong>Clean isekai</strong>
+            <span>Glass panels, cyan / soft magenta, rounded HUD</span>
+          </div>
+        </button>
+      </div>
+      <p class="hint">
+        Preference would persist in <code>localStorage</code> (like audio settings).
+        Default: <code>darkfan</code>.
+      </p>
+    </section>
+
+    <div class="preview-label">Live preview</div>
+    <div class="stage" id="stage">
+      <div class="minimap"></div>
+      <div class="quest-chip">Quest · Clear the gate</div>
+      <div class="auth-card">
+        <div class="brand">MMO001</div>
+        <div class="sub">Enter the realm</div>
+        <div class="field"></div>
+        <div class="field"></div>
+        <div class="btn-row">
+          <div class="btn primary">Login</div>
+          <div class="btn ghost">Register</div>
+        </div>
+      </div>
+      <div class="inv-card">
+        <div class="title">Inventory</div>
+        <div class="grid">
+          <b class="hi"></b><b></b><b></b><b></b>
+          <b></b><b class="hi2"></b><b></b><b></b>
+        </div>
+      </div>
+      <div class="hud-band">
+        <div class="orbs">
+          <div class="orb life" title="Life"></div>
+          <div class="orb mana" title="Mana"></div>
+        </div>
+        <div>
+          <div class="skills">
+            <div class="slot">1</div><div class="slot">2</div><div class="slot">3</div>
+            <div class="slot">4</div><div class="slot">5</div>
+          </div>
+          <div class="xp"><i></i></div>
+        </div>
+        <div class="chat-box">[Party] Ready?<br />[Zone] Portal open</div>
+      </div>
+    </div>
+
+    <footer>
+      File: <code>docs/ui-anime-style-board.html</code> —
+      shipped themes live in <code>public/css/themes/</code>; change in-game via
+      <strong>Settings → Appearance</strong> (persists as <code>mmo001_ui_theme</code>).
+    </footer>
+  </div>
+
+  <script>
+    const root = document.documentElement;
+    const opts = [...document.querySelectorAll('.theme-opt')];
+    const KEY = 'mmo001_ui_theme_preview';
+
+    function applyTheme(id) {
+      root.setAttribute('data-ui-theme', id);
+      opts.forEach((btn) => {
+        btn.setAttribute('aria-checked', String(btn.dataset.theme === id));
+      });
+      try { localStorage.setItem(KEY, id); } catch (_) {}
+    }
+
+    opts.forEach((btn) => {
+      btn.addEventListener('click', () => applyTheme(btn.dataset.theme));
+    });
+
+    let initial = 'darkfan';
+    try {
+      const saved = localStorage.getItem(KEY);
+      if (saved && opts.some((b) => b.dataset.theme === saved)) initial = saved;
+    } catch (_) {}
+    applyTheme(initial);
+  </script>
+</body>
+</html>

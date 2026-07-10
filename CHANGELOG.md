@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.2.0] - 2026-07-10
+
+### Added
+
+- **Selectable anime UI themes** — Soft JRPG, Shonen action, Dark fantasy anime (default), and Clean isekai; pick in **Settings → Appearance**
+- Theme preference persists in `localStorage` (`mmo001_ui_theme`); CSS token packs under `public/css/themes/` plus canvas HUD palette in `shared/uiThemeSettings.js`
+- Style board sketch: `docs/ui-anime-style-board.html`
+
+### Changed
+
+- DOM panels and canvas HUD (orbs, XP, minimap frame, HP bars) follow the active UI theme
+
 ## [4.1.0] - 2026-07-10
 
 ### Added

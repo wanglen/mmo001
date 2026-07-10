@@ -1,4 +1,5 @@
 import { CHAT_CHANNEL } from '/shared/social.js';
+import { initUiTheme } from '/shared/uiThemeSettings.js';
 import { SocketClient } from '../network/socketClient.js';
 import { AuthManager } from '../auth/AuthManager.js';
 import { PluginHost } from './PluginHost.js';
@@ -9,6 +10,8 @@ import { fetchAppVersion, formatVersionLabel } from '../appVersion.js';
 
 /** Boot the client: register plugins, wire session lifecycle, start game shell. */
 export function bootstrap() {
+  initUiTheme();
+
   const canvas = document.getElementById('game-canvas');
   const authManager = new AuthManager();
   const socketClient = new SocketClient({ token: authManager.getToken() });

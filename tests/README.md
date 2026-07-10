@@ -20,4 +20,4 @@ These cover server-authoritative combat, loot rules, movement, and anti-cheat ch
 | Movement directions & validation | `tests/shared/movement.test.js` |
 | Move rate & loot range anti-cheat | `tests/shared/plugins/core/anticheat.test.js` |
 
-Additional coverage includes pathfinding, collision, inventory, vendor sell, world maps, zones, skills, quests (including generated defs + mocked Ollama), persistence, and world sync.
+Additional coverage includes pathfinding, collision, inventory, vendor sell, world maps, zones, skills, quests (including generated defs + mocked Ollama), persistence, world sync, and UI theme prefs (`tests/shared/uiThemeSettings.test.js`).
