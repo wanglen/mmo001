@@ -27,9 +27,9 @@ export class Monster {
     this.isBoss = !!def.isBoss;
     this.isElite = false;
     this.eliteModifier = null;
-    this.damageType = DAMAGE_TYPE.PHYSICAL;
+    this.damageType = def.damageType ?? DAMAGE_TYPE.PHYSICAL;
     this.resistances = createEmptyResistances();
-    this.onHitStatus = null;
+    this.onHitStatus = def.onHitStatus ?? null;
     this.statusEffects = [];
     this.moving = false;
     this.targetPlayerId = null;

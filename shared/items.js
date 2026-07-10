@@ -69,6 +69,10 @@ const DROP_CHANCE = {
   goblin: 0.35,
   skeleton: 0.45,
   bat: 0.25,
+  wolf: 0.38,
+  wraith: 0.4,
+  scorpion: 0.42,
+  ghoul: 0.48,
 };
 
 let itemIdCounter = 1;

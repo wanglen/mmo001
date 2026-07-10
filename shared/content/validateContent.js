@@ -2,6 +2,7 @@ import questsData from './quests.json' with { type: 'json' };
 import skillsData from './skills.json' with { type: 'json' };
 import vendorsData from './vendors.json' with { type: 'json' };
 import { WORLD_MAP_IDS } from '../worldMaps.js';
+import { REGULAR_MONSTER_TYPES } from '../monsters.js';
 
 const QUEST_OBJECTIVE_TYPES = new Set(['kill', 'fetch', 'talk']);
 const SKILL_TYPES = new Set(['melee_aoe', 'dash', 'projectile', 'ground_aoe', 'single_target']);
@@ -41,6 +42,13 @@ export function validateQuests(quests) {
             !WORLD_MAP_IDS.includes(objective.requiredMapId))
         ) {
           errors.push(`${prefix}.objectives[${index}]: invalid requiredMapId`);
+        }
+        if (
+          objective?.type === 'kill' &&
+          objective.monsterType != null &&
+          !REGULAR_MONSTER_TYPES.includes(objective.monsterType)
+        ) {
+          errors.push(`${prefix}.objectives[${index}]: unknown monsterType`);
         }
       }
     }

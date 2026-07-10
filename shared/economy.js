@@ -25,6 +25,10 @@ export const MONSTER_GOLD = {
   goblin: 2,
   skeleton: 4,
   bat: 1,
+  wolf: 3,
+  wraith: 4,
+  scorpion: 5,
+  ghoul: 6,
   boss: 25,
 };
 

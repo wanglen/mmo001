@@ -11,6 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - README, TODO, AGENTS, and tests docs updated for v3.9.0 (zones, quests, inventory/economy features)
 
+## [3.12.0] - 2026-07-09
+
+### Added
+
+- **New monster types** — wolf (wilderness), wraith (forest, slows on hit), scorpion (desert, poisons on hit), ghoul (dungeon); biome spawn tables updated with zone-specific weights
+- **Biome spawn tables** — wilderness favors goblins/wolves, Dark Forest skeletons/wraiths, Scorched Desert bats/scorpions, dungeon skeletons/ghouls
+
+## [3.11.0] - 2026-07-09
+
+### Added
+
+- **Biome spawn tables** — wilderness favors goblins, Dark Forest favors skeletons, Scorched Desert favors bats; dungeon skews skeleton/goblin mix
+
 ## [3.10.0] - 2026-07-09
 
 ### Added

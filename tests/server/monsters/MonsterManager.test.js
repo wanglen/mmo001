@@ -10,7 +10,7 @@ import { createTownZone, createDungeonZone, isTileInAnySafeZone, totalSpawnTarge
 import { generateDungeonLayout } from '../../../server/map/DungeonGenerator.js';
 import { MAP_ID } from '../../../shared/worldMaps.js';
 import { BOSS_RESPAWN_MS } from '../../../shared/dungeon.js';
-import { MONSTER_TYPES } from '../../../shared/monsters.js';
+import { MONSTER_TYPES, REGULAR_MONSTER_TYPES } from '../../../shared/monsters.js';
 import { createOpenMap } from '../../helpers/fixtures.js';
 
 describe('MonsterManager', () => {
@@ -139,6 +139,36 @@ describe('MonsterManager', () => {
     for (const monster of manager.getAll()) {
       assert.equal(monster.level, 9);
       assert.ok(monster.maxHp > MONSTER_TYPES[monster.type].hp);
+    }
+  });
+
+  it('spawnOnMap uses zone-specific monster types per biome', () => {
+    for (const [mapId, allowedExclusive, forbidden] of [
+      [MAP_ID.FOREST, ['wraith'], ['scorpion', 'ghoul', 'wolf']],
+      [MAP_ID.DESERT, ['scorpion'], ['wraith', 'ghoul', 'wolf']],
+      [MAP_ID.WILDERNESS, ['wolf'], ['wraith', 'scorpion', 'ghoul']],
+      [MAP_ID.DUNGEON, ['ghoul'], ['wraith', 'scorpion', 'wolf']],
+    ]) {
+      const map = {
+        ...createOpenMap(24, 24),
+        mapId,
+        spawn: { x: 12, y: 12 },
+      };
+      const manager = new MonsterManager();
+      manager.spawnOnMap(map, 50);
+
+      const counts = Object.fromEntries(REGULAR_MONSTER_TYPES.map((type) => [type, 0]));
+      for (const monster of manager.getAll()) {
+        counts[monster.type]++;
+      }
+
+      assert.ok(
+        allowedExclusive.some((type) => counts[type] > 0),
+        `${mapId} should spawn ${allowedExclusive.join('/')}, got ${JSON.stringify(counts)}`
+      );
+      for (const type of forbidden) {
+        assert.equal(counts[type], 0, `${mapId} should not spawn ${type}`);
+      }
     }
   });
 });

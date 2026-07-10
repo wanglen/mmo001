@@ -1,5 +1,5 @@
 import { createMonster } from './Monster.js';
-import { MONSTER_TYPES, SPAWN_COUNT, spawnCountForMap } from '../../shared/monsters.js';
+import { MONSTER_TYPES, SPAWN_COUNT, spawnCountForMap, pickSpawnMonsterType } from '../../shared/monsters.js';
 import { rollEliteModifier, applyEliteModifier } from '../../shared/plugins/combat/eliteModifiers.js';
 import {
   getMovementSpeedMultiplier,
@@ -25,6 +25,7 @@ import {
   isInstancedDungeonMap,
   canRespawnBoss,
 } from '../../shared/dungeon.js';
+import { MAP_ID } from '../../shared/worldMaps.js';
 import { resolveMonsterScaleLevel } from '../../shared/plugins/combat/monsterScaling.js';
 import { resolveMonsterTarget, monsterAttackPlayer } from '../plugins/combat/monsterCombat.js';
 
@@ -37,7 +38,9 @@ const DIRECTION_DELTA = {
 
 const MIN_SPAWN_TILES_FROM_PLAYER = 5;
 
-const REGULAR_MONSTER_TYPES = Object.keys(MONSTER_TYPES).filter((type) => !MONSTER_TYPES[type].isBoss);
+function resolveMapId(map) {
+  return map?.mapId ?? MAP_ID.WILDERNESS;
+}
 
 function resolveSpawnTarget(map, count = SPAWN_COUNT) {
   if (isInstancedDungeonMap(map)) return dungeonMobCount(count);
@@ -134,7 +137,7 @@ function filterSpawnCandidates(map, connected) {
   return candidates;
 }
 
-function placeMonstersOnTiles(manager, tiles, count, types, startIndex = 0, scaleLevel = 1) {
+function placeMonstersOnTiles(manager, tiles, count, mapId, scaleLevel = 1) {
   if (count <= 0 || tiles.length === 0) return 0;
 
   const shuffled = shuffle(tiles);
@@ -143,7 +146,7 @@ function placeMonstersOnTiles(manager, tiles, count, types, startIndex = 0, scal
 
   for (let i = 0; i < toPlace; i++) {
     const tile = shuffled[i];
-    const type = types[(startIndex + placed) % types.length];
+    const type = pickSpawnMonsterType(mapId);
     const { x, y } = tileToPixel(tile.x, tile.y);
     const monster = createMonster(type, x, y, scaleLevel);
     if (!MONSTER_TYPES[type]?.isBoss) {
@@ -167,7 +170,7 @@ export class MonsterManager {
   }
 
   spawnOnMap(map, count = defaultSpawnCount(map), options = {}) {
-    const types = REGULAR_MONSTER_TYPES;
+    const mapId = resolveMapId(map);
     const scaleLevel = resolveMonsterScaleLevel(map, options.players ?? []);
     const connected = getConnectedWalkableTiles(map);
     const candidates = filterSpawnCandidates(map, connected);
@@ -178,7 +181,7 @@ export class MonsterManager {
 
     if (isInstancedDungeonMap(map)) {
       const mobCandidates = candidates.filter((tile) => !isBossRoomTile(map, tile.x, tile.y));
-      const placed = placeMonstersOnTiles(this, mobCandidates, toPlace, types, 0, scaleLevel);
+      const placed = placeMonstersOnTiles(this, mobCandidates, toPlace, mapId, scaleLevel);
       this.spawnBossIfNeeded(map, Date.now(), scaleLevel);
       return placed;
     }
@@ -194,16 +197,14 @@ export class MonsterManager {
       this,
       wildernessCandidates,
       count,
-      types,
-      0,
+      mapId,
       scaleLevel
     );
     const bonusPlaced = placeMonstersOnTiles(
       this,
       dungeonCandidates,
       totalSpawnTarget(count) - count,
-      types,
-      basePlaced,
+      mapId,
       scaleLevel
     );
     return basePlaced + bonusPlaced;

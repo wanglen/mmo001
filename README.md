@@ -10,7 +10,7 @@ A browser-based MMORPG built with **HTML Canvas** and **Node.js**. Diablo-like a
 - Server-authoritative movement with collision detection and move-rate validation
 - Animated sprite sheets per class (idle, walk, attack) with class silhouettes, overhead HP bar, and nameplate
 - Per-template item icons on ground loot and inventory (sword, staff, bow, armor, potions, etc.)
-- Combat: click enemies to attack, 3 mob types with distinct pixel sprites, HP bars, monster chase AI, retaliate on hit, XP on kill; **monsters scale** with player level and zone depth (wilderness → forest → desert → dungeon)
+- Combat: click enemies to attack, **7 mob types** (goblins, skeletons, bats, wolves, wraiths, scorpions, ghouls) with distinct pixel sprites, HP bars, monster chase AI, retaliate on hit, XP on kill; **monsters scale** with player level and zone depth (wilderness → forest → desert → dungeon); each biome favors distinct types (e.g. wolves in wilderness, wraiths in forest, scorpions in desert, ghouls in dungeon)
 - Advanced combat: crits (DEX), dodge (DEX), elemental resistances, status effects (stun/slow/poison/bleed), elite modifiers (~12% spawn), boss phases with scaled damage and guaranteed loot
 - **Items:** Magic/Rare affixes, sockets + gems (right-click to socket or replace with confirm), item sets with worn bonuses, town shared stash (`B`) including gems and runes
 - Loot: per-item pixel icons on ground (rarity glow) and in inventory; click to pick up; chat message on successful pickup; potions usable from bag
