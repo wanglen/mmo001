@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.7.0] - 2026-07-09
+
+### Added
+
+- **Inventory sort** — Sort button in the inventory panel reorganizes backpack by equipment slot, rarity, and name (server-authoritative)
+- **Gems and runes in stash** — socketables can be stored in and retrieved from the town shared stash (right-click → Store in stash)
+- **Vendor potion stacks** — sell view groups potions by type with a quantity picker (partial sells across stacked bag slots)
+
 ## [3.6.3] - 2026-07-08
 
 ### Fixed

@@ -20,6 +20,7 @@ export class InventoryPanel {
     this.onDestroy = null;
     this.onStoreInStash = null;
     this.onSocketGem = null;
+    this.onSort = null;
     this.townFeaturesEnabled = false;
     this.player = null;
     this.inspectKey = '';
@@ -33,7 +34,10 @@ export class InventoryPanel {
     this.root.innerHTML = `
       <div class="inventory-header">
         <span class="inventory-title">Inventory</span>
-        <span class="inventory-hint">I or Esc close · Hover items for details · Right-click menu</span>
+        <div class="inventory-header-actions">
+          <button type="button" class="inventory-sort-btn" id="inventory-sort-btn" title="Sort by type and rarity">Sort</button>
+          <span class="inventory-hint">I or Esc close · Hover items for details · Right-click menu</span>
+        </div>
       </div>
       <div class="inventory-main">
         <section class="inventory-equipment-section" aria-label="Equipped items">
@@ -49,6 +53,11 @@ export class InventoryPanel {
 
     this.equipmentEl = this.root.querySelector('#equipment-slots');
     this.gridEl = this.root.querySelector('#inventory-grid');
+
+    this.root.querySelector('#inventory-sort-btn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.onSort?.();
+    });
 
     const hoverZone = this.root;
     hoverZone.addEventListener('mouseleave', (e) => {
@@ -138,6 +147,8 @@ export class InventoryPanel {
       return;
     }
 
+    if (isGem(item)) return;
+
     if (this.onEquip) this.onEquip(index);
   }
 
@@ -175,6 +186,9 @@ export class InventoryPanel {
 
     if (isGem(item)) {
       const actions = [{ id: 'destroy', label: 'Destroy' }];
+      if (this.townFeaturesEnabled && this.onStoreInStash) {
+        actions.unshift({ id: 'stash', label: 'Store in stash' });
+      }
       const targets = listSocketTargets(this.player ?? {});
       for (const target of targets) {
         actions.push({

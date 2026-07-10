@@ -8,6 +8,8 @@ export function registerEconomyClient(ctx) {
   const vendorPanel = new VendorPanel(document.getElementById('vendor-panel'));
   vendorPanel.onBuy = (npcId, templateKey) => socketClient.sendVendorBuy(npcId, templateKey);
   vendorPanel.onSell = (npcId, inventoryIndex) => socketClient.sendVendorSell(npcId, inventoryIndex);
+  vendorPanel.onSellPotions = (npcId, templateKey, rarity, quantity) =>
+    socketClient.sendVendorSellPotions(npcId, templateKey, rarity, quantity);
 
   const tradePanel = new TradePanel(document.getElementById('trade-panel'));
   tradePanel.onAccept = () => socketClient.sendTradeAccept();

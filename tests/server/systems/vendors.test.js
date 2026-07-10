@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { buyFromVendor, sellToVendor, validateVendorInteraction } from '../../../server/systems/vendors.js';
+import { sellPotionsToVendor } from '../../../shared/vendorSell.js';
 import { VENDOR_ID } from '../../../shared/vendors.js';
 import { createEmptyInventory } from '../../../shared/inventory.js';
 import { createPlayerStats } from '../../../shared/stats.js';
@@ -62,6 +63,21 @@ describe('vendors', () => {
     const result = sellToVendor(player, 0);
     assert.equal(result.ok, true);
     assert.equal(player.inventory[0], null);
+    assert.ok(player.gold > 0);
+  });
+
+  it('sells grouped potions by template and quantity', () => {
+    const player = createPlayer({ gold: 0 });
+    player.inventory[0] = createPotion(POTION_TEMPLATES[0], RARITY.COMMON);
+    player.inventory[0].stackCount = 4;
+    player.inventory[1] = createPotion(POTION_TEMPLATES[0], RARITY.COMMON);
+    player.inventory[1].stackCount = 3;
+
+    const result = sellPotionsToVendor(player, 'health_potion', 5, RARITY.COMMON);
+
+    assert.equal(result.ok, true);
+    assert.equal(player.inventory[0], null);
+    assert.equal(player.inventory[1]?.stackCount, 2);
     assert.ok(player.gold > 0);
   });
 });

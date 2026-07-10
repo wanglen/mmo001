@@ -4,6 +4,7 @@ import {
   sellToVendor,
   validateVendorInteraction,
 } from './vendors.js';
+import { sellPotionsToVendor } from '../../../shared/vendorSell.js';
 import { serializeEconomyPlayer } from './serialize.js';
 import { registerEconomyBusHandlers } from './bus.js';
 import { emitWorldEvent } from '../social/worldLog.js';
@@ -104,16 +105,11 @@ export function registerEconomyHandlers(socket, ctx) {
     broadcastAll();
   });
 
-  socket.on(EVENTS.VENDOR_SELL, async ({ npcId, inventoryIndex }) => {
+  socket.on(EVENTS.VENDOR_SELL, async ({ npcId, inventoryIndex, templateKey, quantity, rarity }) => {
     const player = playerManager.get(socket.id);
     const vendorNpcId = typeof npcId === 'string' ? npcId : player?.activeVendorNpcId;
-    const index = Number(inventoryIndex);
     if (!player || typeof vendorNpcId !== 'string') {
       socket.emit(EVENTS.ERROR, { message: 'Cannot sell to vendor' });
-      return;
-    }
-    if (!Number.isInteger(index) || index < 0) {
-      socket.emit(EVENTS.ERROR, { message: 'Invalid item slot' });
       return;
     }
 
@@ -129,12 +125,27 @@ export function registerEconomyHandlers(socket, ctx) {
       return;
     }
 
-    const result = sellToVendor(player, index);
+    let result;
+    if (typeof templateKey === 'string' && templateKey) {
+      const qty = Number(quantity);
+      result = sellPotionsToVendor(player, templateKey, qty, typeof rarity === 'string' ? rarity : 'common');
+    } else {
+      const index = Number(inventoryIndex);
+      if (!Number.isInteger(index) || index < 0) {
+        socket.emit(EVENTS.ERROR, { message: 'Invalid item slot' });
+        return;
+      }
+      result = sellToVendor(player, index);
+    }
+
     if (!result.ok) {
       const messages = {
         empty_slot: 'Item no longer in bag',
         unsellable: 'This item cannot be sold',
         invalid_index: 'Invalid item slot',
+        invalid_quantity: 'Invalid sell quantity',
+        invalid_template: 'Invalid item type',
+        not_enough: 'Not enough potions in bag',
       };
       socket.emit(EVENTS.ERROR, { message: messages[result.reason] ?? 'Cannot sell item' });
       return;

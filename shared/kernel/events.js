@@ -49,6 +49,7 @@ export const EVENTS = {
   TRADE_STATE: 'tradeState',
   STASH_STORE: 'stashStore',
   STASH_TAKE: 'stashTake',
+  SORT_INVENTORY: 'sortInventory',
   SOCKET_GEM: 'socketGem',
   OPEN_CHEST: 'openChest',
 };

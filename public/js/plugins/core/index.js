@@ -32,6 +32,7 @@ export function registerCoreClient(ctx) {
     socketClient.sendDestroyItem({ inventoryIndex, slot });
   inventoryPanel.onStoreInStash = (inventoryIndex) => socketClient.sendStashStore(inventoryIndex);
   inventoryPanel.onSocketGem = (payload) => socketClient.sendSocketGem(payload);
+  inventoryPanel.onSort = () => socketClient.sendSortInventory();
 
   const stashPanel = new StashPanel(document.getElementById('stash-panel'));
   stashPanel.onTake = (stashIndex) => socketClient.sendStashTake(stashIndex);

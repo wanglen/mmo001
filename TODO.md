@@ -12,9 +12,9 @@ Playtesting phase complete through v3.5.0. New work below comes from [PENDINGS.m
 
 ## Inventory & economy
 
-- [ ] **Gems and runes in stash** — allow socketables to be stored in the shared town stash
-- [ ] **Inventory sort** — sort button to organize bag slots (type, rarity, etc.)
-- [ ] **Vendor potion stacks** — group potions in sell view; choose how many to sell at once
+- [x] **Gems and runes in stash** — allow socketables to be stored in the shared town stash
+- [x] **Inventory sort** — sort button to organize bag slots (type, rarity, etc.)
+- [x] **Vendor potion stacks** — group potions in sell view; choose how many to sell at once
 
 ---
 
@@ -33,9 +33,9 @@ Playtesting phase complete through v3.5.0. New work below comes from [PENDINGS.m
 
 ## Next tasks (recommended order)
 
-1. [ ] **Inventory sort**
-2. [ ] **Gems and runes in stash**
-3. [ ] **Vendor potion stacks**
+1. [x] **Inventory sort**
+2. [x] **Gems and runes in stash**
+3. [x] **Vendor potion stacks**
 4. [ ] **More maps and zones**
 5. [ ] **More quests**
 

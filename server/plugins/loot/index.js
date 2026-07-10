@@ -6,6 +6,7 @@ import {
   useConsumableFromInventory,
   destroyFromInventory,
   destroyFromEquipment,
+  sortPlayerInventory,
 } from './inventory.js';
 import { stashStore, stashTake, socketGem } from './advancedItems.js';
 import { allocateStat } from './progression.js';
@@ -26,6 +27,7 @@ export const LOOT_EVENTS = [
   EVENTS.ALLOCATE_STAT,
   EVENTS.STASH_STORE,
   EVENTS.STASH_TAKE,
+  EVENTS.SORT_INVENTORY,
   EVENTS.SOCKET_GEM,
   EVENTS.OPEN_CHEST,
 ];
@@ -152,6 +154,20 @@ export function registerLootHandlers(socket, ctx) {
     const result = stashTake(player, map, stashIndex);
     if (!result.ok) {
       socket.emit(EVENTS.ERROR, { message: `Cannot take item: ${result.reason}` });
+      return;
+    }
+
+    await persistPlayer(characterStore, player);
+    broadcastAll();
+  });
+
+  socket.on(EVENTS.SORT_INVENTORY, async () => {
+    const player = getLivingPlayer(playerManager, socket.id);
+    if (!player) return;
+
+    const result = sortPlayerInventory(player);
+    if (!result.ok) {
+      socket.emit(EVENTS.ERROR, { message: `Cannot sort inventory: ${result.reason}` });
       return;
     }
 

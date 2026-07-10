@@ -212,6 +212,10 @@ export class SocketClient {
     this.socket.emit(EVENTS.VENDOR_SELL, { npcId, inventoryIndex });
   }
 
+  sendVendorSellPotions(npcId, templateKey, rarity, quantity) {
+    this.socket.emit(EVENTS.VENDOR_SELL, { npcId, templateKey, rarity, quantity });
+  }
+
   sendTradeRequest(targetName) {
     this.socket.emit(EVENTS.TRADE_REQUEST, { targetName });
   }
@@ -238,6 +242,10 @@ export class SocketClient {
 
   sendStashStore(inventoryIndex) {
     this.socket.emit(EVENTS.STASH_STORE, { inventoryIndex });
+  }
+
+  sendSortInventory() {
+    this.socket.emit(EVENTS.SORT_INVENTORY, {});
   }
 
   sendStashTake(stashIndex) {

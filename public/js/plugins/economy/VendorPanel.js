@@ -1,6 +1,12 @@
-import { getSellPrice } from '/shared/economy.js';
+import { buildVendorSellRows, buildVendorSellSignature } from '/shared/vendorSell.js';
 import { Panel } from '../../components/Panel.js';
-import { buildItemRowHtml, getItemTypeLabel } from '../../components/ItemRow.js';
+import {
+  buildItemRowHtml,
+  buildItemInfoHtml,
+  getItemTypeLabel,
+  escapeHtml,
+  escapeAttr,
+} from '../../components/ItemRow.js';
 
 export class VendorPanel extends Panel {
   constructor(rootEl) {
@@ -14,6 +20,7 @@ export class VendorPanel extends Panel {
     this.sellListSignature = '';
     this.onBuy = null;
     this.onSell = null;
+    this.onSellPotions = null;
 
     rootEl?.querySelector('[data-vendor-close]')?.addEventListener('click', () => this.hide());
     this.backdropEl?.addEventListener('click', () => this.hide());
@@ -27,6 +34,19 @@ export class VendorPanel extends Panel {
         e.stopPropagation();
         const key = buyBtn.getAttribute('data-buy');
         if (key && this.npcId) this.onBuy?.(this.npcId, key);
+        return;
+      }
+
+      const sellPotionBtn = e.target.closest('[data-sell-potion]');
+      if (sellPotionBtn) {
+        e.stopPropagation();
+        const templateKey = sellPotionBtn.getAttribute('data-sell-potion');
+        const rarity = sellPotionBtn.getAttribute('data-sell-rarity') ?? 'common';
+        const qtyInput = sellPotionBtn.closest('.vendor-row')?.querySelector('.vendor-qty-input');
+        const quantity = parseInt(qtyInput?.value ?? '1', 10);
+        if (templateKey && !Number.isNaN(quantity) && quantity > 0 && this.npcId) {
+          this.onSellPotions?.(this.npcId, templateKey, rarity, quantity);
+        }
         return;
       }
 
@@ -52,7 +72,7 @@ export class VendorPanel extends Panel {
   update(player) {
     this.player = player;
     if (this.goldEl && player) this.goldEl.textContent = String(player.gold ?? 0);
-    const signature = buildSellListSignature(player);
+    const signature = buildVendorSellSignature(player?.inventory ?? []);
     if (signature !== this.sellListSignature) {
       this.sellListSignature = signature;
       this.renderSellList(player);
@@ -82,42 +102,52 @@ export class VendorPanel extends Panel {
         .join('');
     }
 
-    this.sellListSignature = buildSellListSignature(player);
+    this.sellListSignature = buildVendorSellSignature(player?.inventory ?? []);
     this.renderSellList(player);
   }
 
   renderSellList(player) {
     if (!this.sellEl || !player?.inventory) return;
 
-    const rows = player.inventory
-      .map((item, index) => ({ item, index }))
-      .filter(({ item }) => item && getSellPrice(item) > 0);
+    const rows = buildVendorSellRows(player.inventory);
 
     this.sellEl.innerHTML =
       rows.length === 0
         ? '<li class="vendor-empty">No sellable items in bag</li>'
         : rows
-            .map(({ item, index }) =>
-              buildItemRowHtml({
-                name: item.name,
-                rarity: item.rarity ?? 'common',
-                typeLabel: getItemTypeLabel(item),
-                price: getSellPrice(item),
-                action: { attr: 'sell', value: index, label: 'Sell' },
-              })
+            .map((row) =>
+              row.kind === 'potion_stack' ? buildPotionSellRowHtml(row) : buildGearSellRowHtml(row)
             )
             .join('');
   }
 }
 
-/** Stable key so sell rows are not rebuilt every world-state tick (breaks button clicks). */
-function buildSellListSignature(player) {
-  if (!player?.inventory?.length) return '';
-  return player.inventory
-    .map((item, index) => {
-      if (!item || getSellPrice(item) <= 0) return '';
-      return `${index}:${item.id ?? item.name}:${item.rarity ?? 'common'}`;
-    })
-    .filter(Boolean)
-    .join('|');
+function buildGearSellRowHtml(row) {
+  const { item, index, unitPrice } = row;
+  return buildItemRowHtml({
+    name: item.name,
+    rarity: item.rarity ?? 'common',
+    typeLabel: getItemTypeLabel(item),
+    price: unitPrice,
+    action: { attr: 'sell', value: index, label: 'Sell' },
+  });
+}
+
+function buildPotionSellRowHtml(row) {
+  const label = `${row.name} ×${row.totalCount}`;
+  return `<li class="vendor-row vendor-row--stack">
+    ${buildItemInfoHtml(label, row.rarity, 'Consumable')}
+    <span class="vendor-item-price">${escapeHtml(String(row.unitPrice))}g ea</span>
+    <div class="vendor-sell-qty">
+      <input
+        type="number"
+        class="vendor-qty-input"
+        min="1"
+        max="${row.totalCount}"
+        value="1"
+        aria-label="Quantity to sell"
+      >
+      <button type="button" class="btn-inline" data-sell-potion="${escapeAttr(row.templateKey)}" data-sell-rarity="${escapeAttr(row.rarity)}">Sell</button>
+    </div>
+  </li>`;
 }

@@ -3,6 +3,7 @@ import {
   PICKUP_RANGE,
   refreshPlayerDerivedStats,
 } from '../../../shared/inventory.js';
+import { sortInventorySlots } from '../../../shared/inventorySort.js';
 import { isLootPickupInRange } from '../../../shared/plugins/core/anticheat.js';
 import { EQUIP_SLOTS } from '../../../shared/items.js';
 import { applyConsumable, getStackCount } from '../../../shared/consumables.js';
@@ -99,4 +100,14 @@ export function destroyFromEquipment(player, slot) {
   refreshPlayerDerivedStats(player, player.equipment);
 
   return { ok: true, source: 'equipment', slot };
+}
+
+/** Reorder backpack slots by type, rarity, and name. */
+export function sortPlayerInventory(player) {
+  if (!Array.isArray(player.inventory)) {
+    return { ok: false, reason: 'invalid_inventory' };
+  }
+
+  player.inventory = sortInventorySlots(player.inventory);
+  return { ok: true };
 }

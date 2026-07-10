@@ -384,6 +384,32 @@ html, body {
   border-bottom: 1px solid rgba(15, 52, 96, 0.85);
 }
 
+.inventory-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.inventory-sort-btn {
+  flex-shrink: 0;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid #2a6a9a;
+  border-radius: 6px;
+  background: rgba(20, 48, 82, 0.95);
+  color: #d4e4f8;
+  font-size: clamp(10px, 1.05vmin, 12px);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.inventory-sort-btn:hover {
+  background: rgba(34, 72, 118, 0.98);
+  border-color: #3d8fd4;
+}
+
 .inventory-title {
   font-size: clamp(14px, 1.6vmin, 18px);
   font-weight: 700;
@@ -1962,6 +1988,27 @@ html, body {
   gap: 0.35rem;
   align-items: center;
   font-size: 0.78rem;
+}
+
+.vendor-row--stack {
+  grid-template-columns: 1fr auto auto;
+}
+
+.vendor-sell-qty {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.vendor-qty-input {
+  width: 3rem;
+  padding: 0.1rem 0.25rem;
+  font-size: 0.72rem;
+  background: #1a2230;
+  border: 1px solid #3a4a5a;
+  color: #e8e0d0;
+  border-radius: 3px;
+  font-variant-numeric: tabular-nums;
 }
 
 .vendor-item-info {
