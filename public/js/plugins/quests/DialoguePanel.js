@@ -1,4 +1,8 @@
-import { getNpcQuestInteractions, normalizeQuestState } from '/shared/quests.js';
+import {
+  getNpcQuestInteractions,
+  normalizeQuestState,
+} from '/shared/quests.js';
+import { isQuestNpcId } from '/shared/content/questCatalog.js';
 
 export class DialoguePanel {
   constructor(rootEl) {
@@ -8,8 +12,11 @@ export class DialoguePanel {
     this.onClose = null;
     this.onAccept = null;
     this.onTurnIn = null;
+    this.onGenerate = null;
     this.currentNpc = null;
     this.activeInteraction = null;
+    this.playerSnapshot = null;
+    this.generating = false;
 
     this.nameEl = rootEl?.querySelector('[data-dialogue-name]');
     this.textEl = rootEl?.querySelector('[data-dialogue-text]');
@@ -18,11 +25,13 @@ export class DialoguePanel {
     this.closeBtn = rootEl?.querySelector('[data-dialogue-close]');
     this.acceptBtn = rootEl?.querySelector('[data-dialogue-accept]');
     this.turnInBtn = rootEl?.querySelector('[data-dialogue-turn-in]');
+    this.generateBtn = rootEl?.querySelector('[data-dialogue-generate]');
 
     this.nextBtn?.addEventListener('click', () => this.advance());
     this.closeBtn?.addEventListener('click', () => this.hide());
     this.acceptBtn?.addEventListener('click', () => this.handleAccept());
     this.turnInBtn?.addEventListener('click', () => this.handleTurnIn());
+    this.generateBtn?.addEventListener('click', () => this.handleGenerate());
   }
 
   isVisible() {
@@ -34,23 +43,50 @@ export class DialoguePanel {
 
     this.onAccept = handlers.onAccept ?? null;
     this.onTurnIn = handlers.onTurnIn ?? null;
+    this.onGenerate = handlers.onGenerate ?? null;
     this.currentNpc = npc;
+    this.playerSnapshot = player ?? null;
+    this.generating = false;
 
-    const state = normalizeQuestState(player?.quests);
-    const interactions = getNpcQuestInteractions(state, player?.inventory ?? [], npc.id);
+    this.refreshContent(player);
+    this.root.classList.remove('hidden');
+  }
+
+  /**
+   * Re-read quest interactions from the latest player snapshot (e.g. after generation).
+   * @param {object | null | undefined} [player]
+   */
+  refreshContent(player = this.playerSnapshot) {
+    if (!this.root || !this.currentNpc) return;
+    this.playerSnapshot = player ?? this.playerSnapshot;
+
+    // Keep the loading line while Ollama is working; still update action buttons.
+    if (this.generating) {
+      this.updateQuestActions();
+      return;
+    }
+
+    const state = normalizeQuestState(this.playerSnapshot?.quests);
+    const interactions = getNpcQuestInteractions(
+      state,
+      this.playerSnapshot?.inventory ?? [],
+      this.currentNpc.id
+    );
     this.activeInteraction = interactions[0] ?? null;
 
     if (this.activeInteraction) {
-      this.lines = [...this.activeInteraction.lines];
+      this.lines = [...(this.activeInteraction.lines ?? [])];
       if (this.activeInteraction.progressText && this.activeInteraction.status === 'active') {
         this.lines.push(this.activeInteraction.progressText);
       }
     } else {
-      this.lines = Array.isArray(npc.dialogue) ? [...npc.dialogue] : [];
+      this.lines = Array.isArray(this.currentNpc.dialogue)
+        ? [...this.currentNpc.dialogue]
+        : [];
     }
 
     this.lineIndex = 0;
-    if (this.nameEl) this.nameEl.textContent = npc.name ?? 'NPC';
+    if (this.nameEl) this.nameEl.textContent = this.currentNpc.name ?? 'NPC';
     if (this.questTitleEl) {
       this.questTitleEl.textContent = this.activeInteraction?.title ?? '';
       this.questTitleEl.classList.toggle('hidden', !this.activeInteraction?.title);
@@ -58,7 +94,6 @@ export class DialoguePanel {
 
     this.renderLine();
     this.updateQuestActions();
-    this.root.classList.remove('hidden');
   }
 
   hide() {
@@ -67,6 +102,9 @@ export class DialoguePanel {
     this.lineIndex = 0;
     this.currentNpc = null;
     this.activeInteraction = null;
+    this.playerSnapshot = null;
+    this.generating = false;
+    this.updateQuestActions();
     if (this.onClose) this.onClose();
   }
 
@@ -91,11 +129,37 @@ export class DialoguePanel {
     this.hide();
   }
 
+  handleGenerate() {
+    if (!this.onGenerate || !this.currentNpc || this.generating) return;
+    this.generating = true;
+    this.updateQuestActions();
+    if (this.textEl) this.textEl.textContent = 'Thinking of a task for you…';
+    this.onGenerate(this.currentNpc.id);
+  }
+
+  setGenerating(generating) {
+    this.generating = !!generating;
+    this.updateQuestActions();
+  }
+
   updateQuestActions() {
     const showAccept = !!this.activeInteraction?.canAccept;
     const showTurnIn = !!this.activeInteraction?.canTurnIn;
+    const canRequest =
+      !!this.onGenerate &&
+      !!this.currentNpc &&
+      isQuestNpcId(this.currentNpc.id) &&
+      !showAccept &&
+      !showTurnIn &&
+      !this.generating;
+
     this.acceptBtn?.classList.toggle('hidden', !showAccept);
     this.turnInBtn?.classList.toggle('hidden', !showTurnIn);
+    this.generateBtn?.classList.toggle('hidden', !canRequest);
+    if (this.generateBtn) {
+      this.generateBtn.disabled = this.generating;
+      this.generateBtn.textContent = this.generating ? 'Requesting…' : 'Request a task';
+    }
   }
 
   renderLine() {

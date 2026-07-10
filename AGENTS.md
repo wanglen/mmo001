@@ -1,6 +1,6 @@
 # Agent Instructions — MMO001
 
-Diablo-like MMORPG (Canvas + Node.js + Socket.IO). **v3.9.0** — work from [TODO.md](TODO.md) (promoted from PENDINGS).
+Diablo-like MMORPG (Canvas + Node.js + Socket.IO). **v4.0.0** — work from [TODO.md](TODO.md) (promoted from PENDINGS).
 
 ## Start here
 
@@ -35,4 +35,4 @@ npm test && npm start    # verify before merge; smoke test
 | `desert` | Scorched Desert | +2 monster level, dune biome |
 | `dungeon` | Dungeon | Instanced, boss, chests |
 
-Quest content: `shared/content/quests.json` (starter chain + zone follow-ups).
+Quest content: `shared/content/quests.json` (starter chain + zone follow-ups). Per-player generated quests use local Ollama (`server/llm/`, custom model `mmo001-quests`) and persist in character `questState.defs`.

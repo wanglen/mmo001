@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   validateGameContent,
+  validateQuestDef,
   validateQuests,
   validateSkills,
   validateVendors,
@@ -10,6 +11,7 @@ import { getQuestDef } from '../../../shared/quests.js';
 import { getSkill, getSkillBar } from '../../../shared/skills.js';
 import { getVendor } from '../../../shared/vendors.js';
 import { getDefaultVendorStock } from '../../../shared/economy.js';
+import { getQuestCatalog } from '../../../shared/content/questCatalog.js';
 
 describe('validateGameContent', () => {
   it('validates bundled JSON content packs', () => {
@@ -22,6 +24,24 @@ describe('validateGameContent', () => {
       bad: { id: 'other', title: 'Bad' },
     });
     assert.ok(result.length > 0);
+  });
+
+  it('validateQuestDef rejects unknown NPC and item keys', () => {
+    const errors = validateQuestDef(
+      {
+        id: 'gen-x',
+        title: 'Bad',
+        giverNpcId: 'not-an-npc',
+        turnInNpcId: 'guide-eldon',
+        prerequisites: [],
+        objectives: [{ type: 'fetch', itemKey: 'nope', count: 1 }],
+        dialogue: { offer: ['hi'], progress: ['p'], ready: ['r'], complete: ['c'] },
+      },
+      'generated',
+      { skipPrerequisiteCheck: true }
+    );
+    assert.ok(errors.some((msg) => msg.includes('giverNpcId')));
+    assert.ok(errors.some((msg) => msg.includes('itemKey')));
   });
 
   it('rejects skill bars referencing unknown skills', () => {
@@ -42,6 +62,13 @@ describe('validateGameContent', () => {
 describe('content pack wiring', () => {
   it('loads quest defs from JSON', () => {
     assert.equal(getQuestDef('goblin-menace')?.title, 'Goblin Menace');
+  });
+
+  it('exposes quest catalog for generation', () => {
+    const catalog = getQuestCatalog();
+    assert.ok(catalog.npcIds.includes('guide-eldon'));
+    assert.ok(catalog.monsterTypes.includes('goblin'));
+    assert.ok(catalog.itemKeys.includes('health_potion'));
   });
 
   it('loads skills from JSON', () => {

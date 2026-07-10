@@ -66,7 +66,8 @@ Promoted from [PENDINGS.md](PENDINGS.md) at **v3.9.0**. One item per feature bra
 ## DevOps & quality
 
 - [ ] **CI pipeline (GitHub Actions)** — `npm test` on PR/push
-- [ ] **Content validation hardening** — validate quest prerequisites, NPC ids, monster types, item keys in `validateContent.js`
+- [x] **Content validation hardening** — validate quest prerequisites, NPC ids, monster types, item keys in `validateContent.js`
+- [x] **Per-player Ollama quest generation** — runtime procedural quests via local `mmo001-quests` model; defs on character state
 - [ ] **Playwright smoke tests** — login → move → kill → loot → vendor (headless browser)
 - [ ] **Load test** — many concurrent sockets on one map; profile interest management
 - [ ] **Structured error reporting** — client breadcrumbs for path_failed / disconnect reasons

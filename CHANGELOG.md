@@ -7,9 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Documentation
+## [4.0.0] - 2026-07-10
 
-- README, TODO, AGENTS, and tests docs updated for v3.9.0 (zones, quests, inventory/economy features)
+### Added
+
+- **Per-player LLM quests** — talk to Mira or Eldon and **Request a task** to generate a procedural quest via local Ollama (`mmo001-quests` custom model on `llama3.2`); defs persist on the character and resolve alongside static `quests.json`
+- **Quest content catalog + validation hardening** — NPC ids, prerequisites, fetch/reward item keys, and kill counts validated in `validateContent.js`
+- **Quest generation audit log** — JSON lines at `data/quest-generation.log` (on by default; `QUEST_GEN_LOG=0` to disable); mirrored into `debug-events.log` when `DEBUG_EVENTS=1`
+- Setup script `scripts/ollama-setup-quest-model.sh` and env vars `OLLAMA_*` / `QUEST_GEN_*`
+
+### Fixed
+
+- **Duplicate generated quests** — rolling title/fingerprint history, diversity retry, and higher Modelfile temperature so back-to-back requests differ
+- **Hex suffixes in generated titles** — last-resort uniqueness no longer appends random hex to player-facing titles
 
 ## [3.12.0] - 2026-07-09
 

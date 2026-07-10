@@ -9,29 +9,66 @@ export const QUEST_OBJECTIVE = {
 
 /** @typedef {{ type: string, monsterType?: string, count?: number, itemKey?: string, npcId?: string, requiredMapId?: string }} QuestObjective */
 /** @typedef {{ xp?: number, gold?: number, items?: { templateKey: string, rarity?: string }[] }} QuestRewards */
+/** @typedef {{ id: string, title: string, giverNpcId: string, turnInNpcId: string, prerequisites?: string[], objectives: QuestObjective[], rewards?: QuestRewards, dialogue: object }} QuestDef */
+/** @typedef {{ active: Record<string, { progress: object }>, completed: string[], defs: Record<string, QuestDef>, lastGenAt?: number, recentTitles?: string[], recentFingerprints?: string[] }} QuestState */
 
 export const QUESTS = questsData;
 
 export function createEmptyQuestState() {
-  return { active: {}, completed: [] };
+  return { active: {}, completed: [], defs: {}, recentTitles: [], recentFingerprints: [] };
 }
 
+/**
+ * @param {unknown} state
+ * @returns {QuestState}
+ */
 export function normalizeQuestState(state) {
   if (!state || typeof state !== 'object') return createEmptyQuestState();
+  const defs =
+    state.defs && typeof state.defs === 'object'
+      ? Object.fromEntries(
+          Object.entries(state.defs).filter(([, def]) => def && typeof def === 'object')
+        )
+      : {};
   return {
     active: state.active && typeof state.active === 'object' ? { ...state.active } : {},
     completed: Array.isArray(state.completed) ? [...state.completed] : [],
+    defs,
+    lastGenAt: typeof state.lastGenAt === 'number' ? state.lastGenAt : undefined,
+    recentTitles: Array.isArray(state.recentTitles)
+      ? state.recentTitles.filter((t) => typeof t === 'string').slice(-12)
+      : [],
+    recentFingerprints: Array.isArray(state.recentFingerprints)
+      ? state.recentFingerprints.filter((t) => typeof t === 'string').slice(-12)
+      : [],
   };
 }
 
-export function getQuestDef(questId) {
-  return QUESTS[questId] ?? null;
+/**
+ * Resolve a quest definition from static content or per-player generated defs.
+ * @param {string} questId
+ * @param {QuestState | null | undefined} [state]
+ */
+export function getQuestDef(questId, state = null) {
+  return QUESTS[questId] ?? state?.defs?.[questId] ?? null;
 }
 
-export function questsForNpc(npcId) {
-  return Object.values(QUESTS).filter(
+/**
+ * @param {string} npcId
+ * @param {QuestState | null | undefined} [state]
+ */
+export function questsForNpc(npcId, state = null) {
+  const staticQuests = Object.values(QUESTS).filter(
     (quest) => quest.giverNpcId === npcId || quest.turnInNpcId === npcId
   );
+  if (!state?.defs) return staticQuests;
+
+  const seen = new Set(staticQuests.map((q) => q.id));
+  const generated = Object.values(state.defs).filter((quest) => {
+    if (!quest || seen.has(quest.id)) return false;
+    return quest.giverNpcId === npcId || quest.turnInNpcId === npcId;
+  });
+  return [...staticQuests, ...generated];
 }
 
 export function hasCompletedQuest(state, questId) {
@@ -47,7 +84,7 @@ export function prerequisitesMet(state, quest) {
 }
 
 export function canAcceptQuest(state, questId) {
-  const quest = getQuestDef(questId);
+  const quest = getQuestDef(questId, state);
   if (!quest) return false;
   if (hasCompletedQuest(state, questId) || isQuestActive(state, questId)) return false;
   return prerequisitesMet(state, quest);
@@ -101,7 +138,7 @@ export function isQuestReady(quest, state, inventory) {
 
 export function recordQuestKill(state, monsterType, mapId) {
   for (const questId of Object.keys(state.active)) {
-    const quest = getQuestDef(questId);
+    const quest = getQuestDef(questId, state);
     if (!quest) continue;
 
     const entry = state.active[questId];
@@ -117,7 +154,7 @@ export function recordQuestKill(state, monsterType, mapId) {
 
 export function recordQuestTalk(state, npcId) {
   for (const questId of Object.keys(state.active)) {
-    const quest = getQuestDef(questId);
+    const quest = getQuestDef(questId, state);
     if (!quest) continue;
 
     const entry = state.active[questId];
@@ -149,6 +186,34 @@ export function consumeFetchObjectives(quest, inventory) {
     }
   }
   return true;
+}
+
+/**
+ * Generated quest ids that are offered but not yet accepted or completed.
+ * @param {QuestState} state
+ * @returns {string[]}
+ */
+export function getPendingOfferIds(state) {
+  if (!state?.defs) return [];
+  return Object.keys(state.defs).filter(
+    (id) => !state.active[id] && !state.completed.includes(id)
+  );
+}
+
+/** Count active quests that came from generated defs. */
+export function countActiveGeneratedQuests(state) {
+  if (!state?.defs) return 0;
+  return Object.keys(state.active).filter((id) => !!state.defs[id]).length;
+}
+
+/**
+ * Remove pending (unaccepted) generated offers from defs.
+ * @param {QuestState} state
+ */
+export function clearPendingOffers(state) {
+  for (const id of getPendingOfferIds(state)) {
+    delete state.defs[id];
+  }
 }
 
 /**
@@ -184,7 +249,7 @@ export function questStatusForNpc(state, inventory, quest, npcId) {
 export function getNpcQuestInteractions(state, inventory, npcId) {
   const interactions = [];
 
-  for (const quest of questsForNpc(npcId)) {
+  for (const quest of questsForNpc(npcId, state)) {
     const status = questStatusForNpc(state, inventory, quest, npcId);
     if (status === 'unavailable') continue;
 
@@ -235,7 +300,7 @@ export function formatQuestProgress(quest, state, inventory) {
 export function getActiveQuestSummaries(state, inventory) {
   return Object.keys(state.active)
     .map((questId) => {
-      const quest = getQuestDef(questId);
+      const quest = getQuestDef(questId, state);
       if (!quest) return null;
       return {
         id: quest.id,
@@ -247,11 +312,31 @@ export function getActiveQuestSummaries(state, inventory) {
     .filter(Boolean);
 }
 
+/**
+ * Client/sync payload: active progress, completed ids, and defs needed for UI
+ * (active generated + pending offers).
+ * @param {QuestState} state
+ */
 export function questStateToJSON(state) {
+  const normalized = normalizeQuestState(state);
+  const defs = {};
+  for (const id of Object.keys(normalized.active)) {
+    if (normalized.defs[id]) defs[id] = normalized.defs[id];
+  }
+  for (const id of getPendingOfferIds(normalized)) {
+    defs[id] = normalized.defs[id];
+  }
   return {
     active: Object.fromEntries(
-      Object.entries(state.active).map(([questId, entry]) => [questId, { progress: entry.progress ?? {} }])
+      Object.entries(normalized.active).map(([questId, entry]) => [
+        questId,
+        { progress: entry.progress ?? {} },
+      ])
     ),
-    completed: [...state.completed],
+    completed: [...normalized.completed],
+    defs,
+    lastGenAt: normalized.lastGenAt,
+    recentTitles: [...(normalized.recentTitles ?? [])],
+    recentFingerprints: [...(normalized.recentFingerprints ?? [])],
   };
 }

@@ -1,6 +1,7 @@
 import { EVENTS } from '../../../shared/events.js';
 import {
   acceptQuestForPlayer,
+  generateQuestForPlayer,
   interactWithNpc,
   turnInQuestForPlayer,
 } from './quests.js';
@@ -15,7 +16,12 @@ import { registerQuestBusHandlers } from './bus.js';
 import { serializeQuestPlayer } from './serialize.js';
 import { emitWorldEvent } from '../social/worldLog.js';
 
-export const QUEST_EVENTS = [EVENTS.NPC_INTERACT, EVENTS.QUEST_ACCEPT, EVENTS.QUEST_TURN_IN];
+export const QUEST_EVENTS = [
+  EVENTS.NPC_INTERACT,
+  EVENTS.QUEST_ACCEPT,
+  EVENTS.QUEST_TURN_IN,
+  EVENTS.QUEST_GENERATE,
+];
 
 /** @param {import('socket.io').Socket} socket @param {import('../../../shared/plugins/types.js').ServerContext} ctx */
 export function registerQuestHandlers(socket, ctx) {
@@ -44,7 +50,7 @@ export function registerQuestHandlers(socket, ctx) {
       return;
     }
 
-    const quest = getQuestDef(questId);
+    const quest = getQuestDef(questId, player.questState);
     if (quest) {
       emitWorldEvent(ctx.io, player.id, formatQuestAcceptedEvent({ questTitle: quest.title }));
     }
@@ -63,7 +69,7 @@ export function registerQuestHandlers(socket, ctx) {
       return;
     }
 
-    const quest = getQuestDef(questId);
+    const quest = getQuestDef(questId, player.questState);
     if (quest) {
       emitWorldEvent(io, player.id, formatQuestCompletedEvent({ questTitle: quest.title }));
     }
@@ -80,6 +86,30 @@ export function registerQuestHandlers(socket, ctx) {
 
     await persistPlayer(characterStore, player);
     broadcastAll();
+  });
+
+  socket.on(EVENTS.QUEST_GENERATE, async ({ npcId }) => {
+    const player = getLivingPlayer(playerManager, socket.id);
+    if (!player || typeof npcId !== 'string') return;
+
+    const { map } = getPlayerContext(world, player);
+    const npcs = map.npcs ?? map.npcsJson ?? [];
+    const result = await generateQuestForPlayer(player, npcs, npcId);
+
+    if (!result.ok) {
+      socket.emit(EVENTS.ERROR, { message: result.message ?? 'Cannot generate quest' });
+      socket.emit(EVENTS.QUEST_GENERATED, { ok: false, reason: result.reason });
+      return;
+    }
+
+    await persistPlayer(characterStore, player);
+    broadcastAll();
+    socket.emit(EVENTS.QUEST_GENERATED, {
+      ok: true,
+      questId: result.quest.id,
+      npcId,
+      quest: result.quest,
+    });
   });
 }
 

@@ -101,7 +101,7 @@ export function getQuestKillNotifications(player, monsterType) {
 
   const events = [];
   for (const questId of Object.keys(active)) {
-    const quest = getQuestDef(questId);
+    const quest = getQuestDef(questId, player.questState);
     if (!quest) continue;
 
     const entry = active[questId];

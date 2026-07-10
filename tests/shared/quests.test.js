@@ -9,6 +9,7 @@ import {
   getQuestDef,
   isQuestReady,
   killObjectiveMatchesMap,
+  questStateToJSON,
   recordQuestKill,
   recordQuestTalk,
 } from '../../shared/quests.js';
@@ -167,5 +168,53 @@ describe('quests', () => {
     acceptQuest(state, 'forest-patrol');
     recordQuestKill(state, 'skeleton', MAP_ID.FOREST);
     assert.match(formatQuestProgress(getQuestDef('forest-patrol'), state, []), /Dark Forest/);
+  });
+
+  it('getQuestDef resolves generated defs from state', () => {
+    const state = createEmptyQuestState();
+    const generated = {
+      id: 'gen-abcd',
+      title: 'Generated Hunt',
+      giverNpcId: 'guide-eldon',
+      turnInNpcId: 'guide-eldon',
+      prerequisites: [],
+      objectives: [
+        { type: 'kill', monsterType: 'goblin', count: 2, requiredMapId: MAP_ID.WILDERNESS },
+      ],
+      rewards: { xp: 20, gold: 10 },
+      dialogue: {
+        offer: ['Hunt goblins.'],
+        progress: ['Still hunting.'],
+        ready: ['Done.'],
+        complete: ['Thanks.'],
+      },
+    };
+    state.defs[generated.id] = generated;
+
+    assert.equal(getQuestDef(generated.id), null);
+    assert.equal(getQuestDef(generated.id, state)?.title, 'Generated Hunt');
+    assert.equal(canAcceptQuest(state, generated.id), true);
+    acceptQuest(state, generated.id);
+    recordQuestKill(state, 'goblin', MAP_ID.WILDERNESS);
+    recordQuestKill(state, 'goblin', MAP_ID.WILDERNESS);
+    assert.equal(isQuestReady(generated, state, []), true);
+
+    const interactions = getNpcQuestInteractions(state, [], 'guide-eldon');
+    assert.ok(interactions.some((row) => row.questId === generated.id && row.canTurnIn));
+  });
+
+  it('questStateToJSON includes pending offer defs', () => {
+    const state = createEmptyQuestState();
+    state.defs['gen-offer'] = {
+      id: 'gen-offer',
+      title: 'Offer',
+      giverNpcId: 'innkeeper-mira',
+      turnInNpcId: 'innkeeper-mira',
+      objectives: [{ type: 'fetch', itemKey: 'health_potion', count: 1 }],
+      dialogue: { offer: ['Bring a potion.'] },
+    };
+    const json = questStateToJSON(state);
+    assert.ok(json.defs['gen-offer']);
+    assert.deepEqual(json.completed, []);
   });
 });

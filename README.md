@@ -1,6 +1,6 @@
 # MMO001
 
-A browser-based MMORPG built with **HTML Canvas** and **Node.js**. Diablo-like action RPG with real-time multiplayer — currently at **v3.9.0**.
+A browser-based MMORPG built with **HTML Canvas** and **Node.js**. Diablo-like action RPG with real-time multiplayer — currently at **v4.0.0**.
 
 ## Features (current)
 
@@ -24,7 +24,7 @@ A browser-based MMORPG built with **HTML Canvas** and **Node.js**. Diablo-like a
 - Map fog of war: translucent grey veil on unexplored terrain only; monsters and loot hidden until explored; explored areas stay clear; top-right minimap shows revealed terrain, portals, and player position
 - World zones: **town** safe hub; **wilderness** (default outdoor map); **Dark Forest** and **Scorched Desert** (biome maps via wilderness portals, +1/+2 monster level); **dungeon** (instanced rooms, boss, chests); wilderness **dungeon pocket** with stone arch; zone name in HUD and biome-specific minimap/rendering on forest and desert
 - Zone transitions: click glowing portals to travel between town, wilderness, dungeon, Dark Forest, and Scorched Desert (loading overlay on travel)
-- Town hub: full HP/MP recovery in town; NPC dialogue and **quests** (Mira & Eldon — starter chain plus forest/desert/frontier follow-ups); press **T** for interruptible 6s recall to town
+- Town hub: full HP/MP recovery in town; NPC dialogue and **quests** (Mira & Eldon — starter chain plus forest/desert/frontier follow-ups; **Request a task** for local Ollama-generated per-player quests); press **T** for interruptible 6s recall to town
 - **Solo management pause:** when you are the only player online, opening inventory, stash, stat points, or skill tree pauses gameplay until you close the panel
 - Multiplayer sync: other players on the same map are visible in real time (position, walk/attack animation, HP) with class-colored nameplate badges
 - Social: global/zone chat, whispers (`/w Name msg`), party chat (`/p msg`), online player list, party invites, and shared XP within party range
@@ -77,6 +77,25 @@ cp .env.example .env
 | `DEBUG_LOG_FILE` | Custom path for the debug event log |
 | `DEBUG_LOG_MAX_BYTES` | Rotate when the active log exceeds this size (default `5242880`, 5 MiB) |
 | `DEBUG_LOG_MAX_FILES` | Archived logs to keep: `log.1` … `log.N` (default `5`) |
+| `OLLAMA_ENABLED` | Enable per-player quest generation (default on; set `0` to disable) |
+| `OLLAMA_URL` | Ollama base URL (default `http://127.0.0.1:11434`) |
+| `OLLAMA_MODEL` | Model name (default `mmo001-quests`) |
+| `QUEST_GEN_COOLDOWN_MS` | Cooldown between generate requests (default `60000`) |
+| `QUEST_GEN_MAX_ACTIVE` | Max concurrent active generated quests (default `3`) |
+| `QUEST_GEN_LOG` | Write quest generation attempts to a dedicated log (default on; set `0` to disable) |
+| `QUEST_GEN_LOG_FILE` | Path for quest generation JSON log (default `data/quest-generation.log`) |
+
+### Ollama quest generation (optional)
+
+Procedural quests call a **local** Ollama instance on the game server:
+
+```bash
+ollama pull llama3.2
+./scripts/ollama-setup-quest-model.sh   # creates mmo001-quests from server/llm/Modelfile
+# ensure `ollama serve` is running, then npm start
+```
+
+Talk to Mira or Eldon with no pending accept/turn-in, then click **Request a task**. Each attempt is appended as a JSON line to `data/quest-generation.log` (success/fail, title, objective fingerprint, duration). When `DEBUG_EVENTS=1`, the same event is also mirrored into `data/debug-events.log`.
 
 With `DEBUG_EVENTS=1`, the server also enables client-side debug reporting in the browser console and merges client events into the same log file.
 
@@ -89,6 +108,7 @@ With `DEBUG_EVENTS=1`, the server also enables client-side debug reporting in th
 | `move_blocked` | server | Move hit collision (throttled 1/s) |
 | `path_failed` | client | A* could not reach target (`no_path`, `no_walkable_target`) |
 | `attack_target_lost` | client | Chase target missing or dead |
+| `quest_generate` | server | LLM quest request (also in `quest-generation.log`) |
 
 Character data is stored in `data/game.db`. On first run, existing `data/characters/*.json` files are imported into the legacy account.
 

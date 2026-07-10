@@ -40,6 +40,16 @@ export const DEBUG_LOG_FILE = process.env.DEBUG_LOG_FILE;
 export const DEBUG_LOG_MAX_BYTES = process.env.DEBUG_LOG_MAX_BYTES;
 export const DEBUG_LOG_MAX_FILES = process.env.DEBUG_LOG_MAX_FILES;
 
+/** Local Ollama for per-player quest generation. */
+export const OLLAMA_URL = process.env.OLLAMA_URL ?? 'http://127.0.0.1:11434';
+export const OLLAMA_MODEL = process.env.OLLAMA_MODEL ?? 'mmo001-quests';
+export const OLLAMA_ENABLED = envFlag(process.env.OLLAMA_ENABLED, true);
+export const OLLAMA_TIMEOUT_MS = Number(process.env.OLLAMA_TIMEOUT_MS) || 60_000;
+export const QUEST_GEN_COOLDOWN_MS = Number(process.env.QUEST_GEN_COOLDOWN_MS) || 60_000;
+export const QUEST_GEN_MAX_ACTIVE = Number(process.env.QUEST_GEN_MAX_ACTIVE) || 3;
+export const QUEST_GEN_LOG = envFlag(process.env.QUEST_GEN_LOG, true);
+export const QUEST_GEN_LOG_FILE = process.env.QUEST_GEN_LOG_FILE;
+
 /** Log production misconfiguration warnings once at startup. */
 export function warnProductionConfig() {
   if (shouldWarnMissingSessionSecret(NODE_ENV, SESSION_SECRET)) {

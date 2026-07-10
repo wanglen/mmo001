@@ -20,6 +20,7 @@ export class SocketClient {
     this.onSessionEndCallback = null;
     this.onVendorCatalogCallback = null;
     this.onTradeStateCallback = null;
+    this.onQuestGeneratedCallback = null;
 
     this.socket.on(EVENTS.WORLD_STATE, (state) => {
       if (this.onWorldStateCallback) this.onWorldStateCallback(state);
@@ -67,6 +68,10 @@ export class SocketClient {
 
     this.socket.on(EVENTS.TRADE_STATE, (state) => {
       if (this.onTradeStateCallback) this.onTradeStateCallback(state);
+    });
+
+    this.socket.on(EVENTS.QUEST_GENERATED, (payload) => {
+      if (this.onQuestGeneratedCallback) this.onQuestGeneratedCallback(payload);
     });
   }
 
@@ -178,6 +183,14 @@ export class SocketClient {
 
   sendQuestTurnIn(questId, npcId) {
     this.socket.emit(EVENTS.QUEST_TURN_IN, { questId, npcId });
+  }
+
+  sendQuestGenerate(npcId) {
+    this.socket.emit(EVENTS.QUEST_GENERATE, { npcId });
+  }
+
+  onQuestGenerated(callback) {
+    this.onQuestGeneratedCallback = callback;
   }
 
   sendChat({ text, channel }) {

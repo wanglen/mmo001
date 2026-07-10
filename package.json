@@ -1,6 +1,6 @@
 {
   "name": "mmo001",
-  "version": "3.12.0",
+  "version": "4.0.0",
   "description": "Simple MMORPG MVP",
   "type": "module",
   "engines": {
@@ -10,7 +10,8 @@
     "start": "node server/index.js",
     "dev": "node --watch server/index.js",
     "test": "node scripts/run-tests.mjs",
-    "test:watch": "node --test --watch tests/shared/pathfinding.test.js tests/server/map/collision.test.js tests/server/map/MapGenerator.test.js tests/server/players/PlayerManager.test.js"
+    "test:watch": "node --test --watch tests/shared/pathfinding.test.js tests/server/map/collision.test.js tests/server/map/MapGenerator.test.js tests/server/players/PlayerManager.test.js",
+    "ollama:setup": "./scripts/ollama-setup-quest-model.sh"
   },
   "dependencies": {
     "better-sqlite3": "^12.11.1",

@@ -158,7 +158,10 @@ export class GameLoop {
         const npc = (state.npcs ?? []).find(
           (entry) => entry.id === game.dialoguePanel.currentNpc.id
         );
-        if (npc) game.openNpcDialogue(npc, state.player);
+        if (npc) {
+          game.dialoguePanel.currentNpc = npc;
+          game.dialoguePanel.refreshContent(state.player);
+        }
       }
     }
   }

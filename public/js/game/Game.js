@@ -184,12 +184,28 @@ export class Game {
     return {
       onAccept: (questId) => this.socketClient.sendQuestAccept(questId, npc.id),
       onTurnIn: (questId) => this.socketClient.sendQuestTurnIn(questId, npc.id),
+      onGenerate: (npcId) => this.socketClient.sendQuestGenerate(npcId),
     };
   }
 
   openNpcDialogue(npc, player = this.worldState?.player) {
     if (!npc || !player) return;
     this.dialoguePanel?.show(npc, player, this.npcDialogueHandlers(npc));
+  }
+
+  onQuestGenerated(payload) {
+    this.dialoguePanel?.setGenerating(false);
+    if (!payload?.ok) return;
+    if (!this.dialoguePanel?.isVisible()) return;
+    const npc = this.dialoguePanel.currentNpc;
+    if (!npc || (payload.npcId && npc.id !== payload.npcId)) return;
+    // World state may arrive slightly after QUEST_GENERATED; merge offer def locally.
+    const player = this.worldState?.player;
+    if (player && payload.quest) {
+      player.quests = player.quests ?? { active: {}, completed: [], defs: {} };
+      player.quests.defs = { ...(player.quests.defs ?? {}), [payload.quest.id]: payload.quest };
+    }
+    this.dialoguePanel.refreshContent(player ?? this.worldState?.player);
   }
 
   beginNpcInteraction(npc) {

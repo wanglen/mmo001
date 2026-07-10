@@ -3,11 +3,154 @@ import skillsData from './skills.json' with { type: 'json' };
 import vendorsData from './vendors.json' with { type: 'json' };
 import { WORLD_MAP_IDS } from '../worldMaps.js';
 import { REGULAR_MONSTER_TYPES } from '../monsters.js';
+import {
+  QUEST_FETCH_ITEM_KEYS,
+  QUEST_NPC_IDS,
+  QUEST_OBJECTIVE_TYPES,
+  QUEST_REWARD_TEMPLATE_KEYS,
+} from './questCatalog.js';
 
-const QUEST_OBJECTIVE_TYPES = new Set(['kill', 'fetch', 'talk']);
+const QUEST_OBJECTIVE_TYPE_SET = new Set(QUEST_OBJECTIVE_TYPES);
 const SKILL_TYPES = new Set(['melee_aoe', 'dash', 'projectile', 'ground_aoe', 'single_target']);
 const AOE_SHAPES = new Set(['arc', 'spin', 'self_pulse']);
 const DAMAGE_STATS = new Set(['str', 'dex', 'int']);
+const QUEST_NPC_SET = new Set(QUEST_NPC_IDS);
+const FETCH_ITEM_SET = new Set(QUEST_FETCH_ITEM_KEYS);
+const REWARD_TEMPLATE_SET = new Set(QUEST_REWARD_TEMPLATE_KEYS);
+
+const DIALOGUE_KEYS = ['offer', 'progress', 'ready', 'complete'];
+
+/**
+ * Validate a single quest definition.
+ * @param {unknown} quest
+ * @param {string} [prefix='quest']
+ * @param {{ questIds?: Set<string>, skipPrerequisiteCheck?: boolean }} [options]
+ * @returns {string[]}
+ */
+export function validateQuestDef(quest, prefix = 'quest', options = {}) {
+  const errors = [];
+  if (!quest || typeof quest !== 'object') {
+    return [`${prefix}: expected object`];
+  }
+
+  if (typeof quest.id !== 'string' || !quest.id) {
+    errors.push(`${prefix}: missing id`);
+  }
+  if (typeof quest.title !== 'string' || !quest.title.trim()) {
+    errors.push(`${prefix}: missing title`);
+  }
+  if (typeof quest.giverNpcId !== 'string' || !QUEST_NPC_SET.has(quest.giverNpcId)) {
+    errors.push(`${prefix}: invalid giverNpcId`);
+  }
+  if (typeof quest.turnInNpcId !== 'string' || !QUEST_NPC_SET.has(quest.turnInNpcId)) {
+    errors.push(`${prefix}: invalid turnInNpcId`);
+  }
+
+  if (quest.prerequisites != null) {
+    if (!Array.isArray(quest.prerequisites)) {
+      errors.push(`${prefix}: prerequisites must be an array`);
+    } else if (!options.skipPrerequisiteCheck) {
+      const known = options.questIds;
+      for (const [index, prereq] of quest.prerequisites.entries()) {
+        if (typeof prereq !== 'string') {
+          errors.push(`${prefix}.prerequisites[${index}]: expected string`);
+        } else if (known && !known.has(prereq)) {
+          errors.push(`${prefix}.prerequisites[${index}]: unknown quest "${prereq}"`);
+        }
+      }
+    }
+  }
+
+  if (!Array.isArray(quest.objectives) || quest.objectives.length === 0) {
+    errors.push(`${prefix}: objectives required`);
+  } else {
+    for (const [index, objective] of quest.objectives.entries()) {
+      const op = `${prefix}.objectives[${index}]`;
+      if (!QUEST_OBJECTIVE_TYPE_SET.has(objective?.type)) {
+        errors.push(`${op}: invalid type`);
+        continue;
+      }
+      if (
+        objective.requiredMapId != null &&
+        (typeof objective.requiredMapId !== 'string' ||
+          !WORLD_MAP_IDS.includes(objective.requiredMapId))
+      ) {
+        errors.push(`${op}: invalid requiredMapId`);
+      }
+
+      if (objective.type === 'kill') {
+        if (!REGULAR_MONSTER_TYPES.includes(objective.monsterType)) {
+          errors.push(`${op}: unknown monsterType`);
+        }
+        if (
+          objective.count != null &&
+          (!Number.isInteger(objective.count) || objective.count < 1 || objective.count > 20)
+        ) {
+          errors.push(`${op}: count must be 1–20`);
+        }
+      }
+      if (objective.type === 'fetch') {
+        if (!FETCH_ITEM_SET.has(objective.itemKey)) {
+          errors.push(`${op}: unknown itemKey`);
+        }
+        if (
+          objective.count != null &&
+          (!Number.isInteger(objective.count) || objective.count < 1 || objective.count > 20)
+        ) {
+          errors.push(`${op}: count must be 1–20`);
+        }
+      }
+      if (objective.type === 'talk') {
+        if (!QUEST_NPC_SET.has(objective.npcId)) {
+          errors.push(`${op}: unknown npcId`);
+        }
+      }
+    }
+  }
+
+  if (!quest.dialogue || typeof quest.dialogue !== 'object') {
+    errors.push(`${prefix}: dialogue required`);
+  } else {
+    for (const key of DIALOGUE_KEYS) {
+      const lines = quest.dialogue[key];
+      if (lines != null && (!Array.isArray(lines) || lines.some((line) => typeof line !== 'string'))) {
+        errors.push(`${prefix}.dialogue.${key}: expected string[]`);
+      }
+    }
+  }
+
+  if (quest.rewards != null) {
+    if (typeof quest.rewards !== 'object') {
+      errors.push(`${prefix}: rewards must be an object`);
+    } else {
+      if (
+        quest.rewards.xp != null &&
+        (typeof quest.rewards.xp !== 'number' || quest.rewards.xp < 0)
+      ) {
+        errors.push(`${prefix}.rewards.xp: invalid`);
+      }
+      if (
+        quest.rewards.gold != null &&
+        (typeof quest.rewards.gold !== 'number' || quest.rewards.gold < 0)
+      ) {
+        errors.push(`${prefix}.rewards.gold: invalid`);
+      }
+      if (quest.rewards.items != null) {
+        if (!Array.isArray(quest.rewards.items)) {
+          errors.push(`${prefix}.rewards.items: expected array`);
+        } else {
+          for (const [index, item] of quest.rewards.items.entries()) {
+            if (!REWARD_TEMPLATE_SET.has(item?.templateKey)) {
+              errors.push(`${prefix}.rewards.items[${index}]: unknown templateKey`);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return errors;
+}
 
 /**
  * @param {unknown} quests
@@ -19,6 +162,8 @@ export function validateQuests(quests) {
     return ['quests: expected object'];
   }
 
+  const questIds = new Set(Object.keys(quests));
+
   for (const [key, quest] of Object.entries(quests)) {
     const prefix = `quests.${key}`;
     if (!quest || typeof quest !== 'object') {
@@ -26,35 +171,7 @@ export function validateQuests(quests) {
       continue;
     }
     if (quest.id !== key) errors.push(`${prefix}: id must match key`);
-    if (typeof quest.title !== 'string') errors.push(`${prefix}: missing title`);
-    if (typeof quest.giverNpcId !== 'string') errors.push(`${prefix}: missing giverNpcId`);
-    if (typeof quest.turnInNpcId !== 'string') errors.push(`${prefix}: missing turnInNpcId`);
-    if (!Array.isArray(quest.objectives) || quest.objectives.length === 0) {
-      errors.push(`${prefix}: objectives required`);
-    } else {
-      for (const [index, objective] of quest.objectives.entries()) {
-        if (!QUEST_OBJECTIVE_TYPES.has(objective?.type)) {
-          errors.push(`${prefix}.objectives[${index}]: invalid type`);
-        }
-        if (
-          objective?.requiredMapId != null &&
-          (typeof objective.requiredMapId !== 'string' ||
-            !WORLD_MAP_IDS.includes(objective.requiredMapId))
-        ) {
-          errors.push(`${prefix}.objectives[${index}]: invalid requiredMapId`);
-        }
-        if (
-          objective?.type === 'kill' &&
-          objective.monsterType != null &&
-          !REGULAR_MONSTER_TYPES.includes(objective.monsterType)
-        ) {
-          errors.push(`${prefix}.objectives[${index}]: unknown monsterType`);
-        }
-      }
-    }
-    if (!quest.dialogue || typeof quest.dialogue !== 'object') {
-      errors.push(`${prefix}: dialogue required`);
-    }
+    errors.push(...validateQuestDef(quest, prefix, { questIds }));
   }
 
   return errors;

@@ -23,6 +23,8 @@ export const EVENTS = {
   NPC_INTERACT: 'npcInteract',
   QUEST_ACCEPT: 'questAccept',
   QUEST_TURN_IN: 'questTurnIn',
+  QUEST_GENERATE: 'questGenerate',
+  QUEST_GENERATED: 'questGenerated',
   WORLD_STATE: 'worldState',
   DEBUG_LOG: 'debugLog',
   ERROR: 'error',
