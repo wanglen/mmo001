@@ -124,7 +124,16 @@ docker compose up --build
 
 Debug logging is **on by default** in Docker (`DEBUG_EVENTS=1`). Disable with `DEBUG_EVENTS=0 docker compose up`.
 
-Quest generation expects **Ollama on the host**. Compose reaches it via `host.docker.internal:11434` (override with `OLLAMA_URL` if needed). Run `./scripts/ollama-setup-quest-model.sh` (or `./scripts/update-server.sh`) on the host before relying on **Request a task**.
+Quest generation expects **Ollama on the host**. Compose reaches it via `host.docker.internal:11434` (override with `OLLAMA_URL` if needed).
+
+**Important (Linux / VPS):** Ollama defaults to `127.0.0.1` only, so Docker cannot connect. Expose it once:
+
+```bash
+sudo ./scripts/ollama-expose-for-docker.sh
+# sets OLLAMA_HOST=0.0.0.0 on the ollama systemd unit and restarts it
+```
+
+`./scripts/update-server.sh` runs model setup, this expose step, and a container→Ollama reachability check. Run `./scripts/ollama-setup-quest-model.sh` on the host before relying on **Request a task**.
 
 Open [http://localhost:3000](http://localhost:3000). Stop with `Ctrl+C`, or run detached:
 

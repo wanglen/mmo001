@@ -6,7 +6,8 @@
 # Env:
 #   BRANCH=main          — git branch to deploy
 #   COMPOSE="docker compose"
-#   SKIP_OLLAMA=1        — skip ./scripts/ollama-setup-quest-model.sh
+#   SKIP_OLLAMA=1        — skip Ollama model setup + expose + reachability check
+#   SKIP_OLLAMA_EXPOSE=1 — skip OLLAMA_HOST=0.0.0.0 systemd override
 
 set -euo pipefail
 
@@ -45,10 +46,12 @@ git pull --ff-only origin "$BRANCH"
 mkdir -p data/characters
 
 if [[ "${SKIP_OLLAMA:-0}" == "1" ]]; then
-  log "Skipping Ollama quest model setup (SKIP_OLLAMA=1)"
+  log "Skipping Ollama setup (SKIP_OLLAMA=1)"
 elif command -v ollama >/dev/null 2>&1; then
   log "Ensuring Ollama quest model is up to date..."
   ./scripts/ollama-setup-quest-model.sh
+  log "Ensuring Ollama is reachable from Docker..."
+  ./scripts/ollama-expose-for-docker.sh || true
 else
   log "WARNING: ollama not in PATH — skip quest model setup (install Ollama or set SKIP_OLLAMA=1)"
 fi
@@ -59,6 +62,25 @@ $COMPOSE up -d --remove-orphans
 
 log "Pruning dangling images..."
 docker image prune -f >/dev/null 2>&1 || true
+
+if [[ "${SKIP_OLLAMA:-0}" != "1" ]]; then
+  log "Checking Ollama reachability from the game container..."
+  if $COMPOSE exec -T mmo001 node --input-type=module -e '
+const base = (process.env.OLLAMA_URL || "http://host.docker.internal:11434").replace(/\/$/, "");
+const res = await fetch(`${base}/api/tags`);
+if (!res.ok) throw new Error(`HTTP ${res.status}`);
+const body = await res.json();
+const names = (body.models || []).map((m) => m.name).join(", ") || "(none)";
+console.log(`reachable models: ${names}`);
+' ; then
+    log "Ollama is reachable from the container"
+  else
+    log "WARNING: container cannot reach Ollama (quest generation will fail)."
+    log "  Usual cause: Ollama only listens on 127.0.0.1."
+    log "  Fix:  sudo ./scripts/ollama-expose-for-docker.sh"
+    log "  Or:   OLLAMA_HOST=0.0.0.0  in the ollama systemd unit, then restart ollama"
+  fi
+fi
 
 log "Done. Service status:"
 $COMPOSE ps
