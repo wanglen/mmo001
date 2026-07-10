@@ -152,7 +152,7 @@ After cloning the repo on a server, pull and redeploy with:
 ./scripts/update-server.sh
 ```
 
-The script fast-forwards `main`, rebuilds the image, and restarts Compose. Character data in `./data` is preserved. Override the branch with `BRANCH=feature/foo ./scripts/update-server.sh` if needed.
+The script fast-forwards `main`, refreshes the Ollama quest model (`mmo001-quests`) when `ollama` is on PATH, rebuilds the image, and restarts Compose. Character data in `./data` is preserved. Override the branch with `BRANCH=feature/foo ./scripts/update-server.sh` if needed. Skip model setup with `SKIP_OLLAMA=1`.
 
 ### Cloud / VPS deployment
 

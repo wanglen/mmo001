@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
-# Pull latest code, rebuild the Docker image, and restart the MMO001 server.
+# Pull latest code, ensure the Ollama quest model exists, rebuild the Docker image,
+# and restart the MMO001 server.
 # Run from the repo root on a remote host, e.g. ./scripts/update-server.sh
+#
+# Env:
+#   BRANCH=main          — git branch to deploy
+#   COMPOSE="docker compose"
+#   SKIP_OLLAMA=1        — skip ./scripts/ollama-setup-quest-model.sh
 
 set -euo pipefail
 
@@ -37,6 +43,15 @@ git checkout "$BRANCH"
 git pull --ff-only origin "$BRANCH"
 
 mkdir -p data/characters
+
+if [[ "${SKIP_OLLAMA:-0}" == "1" ]]; then
+  log "Skipping Ollama quest model setup (SKIP_OLLAMA=1)"
+elif command -v ollama >/dev/null 2>&1; then
+  log "Ensuring Ollama quest model is up to date..."
+  ./scripts/ollama-setup-quest-model.sh
+else
+  log "WARNING: ollama not in PATH — skip quest model setup (install Ollama or set SKIP_OLLAMA=1)"
+fi
 
 log "Building image and restarting containers..."
 $COMPOSE build --pull
