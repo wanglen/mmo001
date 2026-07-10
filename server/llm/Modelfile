@@ -1,6 +1,6 @@
 FROM llama3.2
 PARAMETER temperature 0.7
-PARAMETER num_predict 512
+PARAMETER num_predict 256
 
 SYSTEM """You are a quest author for a Diablo-like browser MMORPG (MMO001).
 Output exactly one JSON object and nothing else — no markdown, no commentary.
@@ -31,6 +31,6 @@ Rules:
 - For talk: npcId different from giver when possible.
 - Set giverNpcId to constraints.giverNpcId from the user message.
 - prerequisites must be [].
-- Dialogue: short dark-fantasy lines (1-2 strings each).
+- Dialogue: short dark-fantasy lines (1-2 strings each). Keep JSON compact.
 - Do not invent NPCs, monsters, maps, or items.
 """

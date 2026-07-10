@@ -17,8 +17,9 @@ export async function ollamaChat({
   baseUrl,
   model,
   messages,
-  timeoutMs = 60_000,
+  timeoutMs = 180_000,
   format = 'json',
+  numPredict = 256,
   fetchImpl = globalThis.fetch,
 }) {
   if (typeof fetchImpl !== 'function') {
@@ -34,6 +35,10 @@ export async function ollamaChat({
       model,
       messages,
       stream: false,
+      options: {
+        num_predict: numPredict,
+        temperature: 0.7,
+      },
     };
     if (format) body.format = format;
 

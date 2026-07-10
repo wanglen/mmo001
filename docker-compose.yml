@@ -22,6 +22,7 @@ services:
       # Host network: loopback is the host. Do not interpolate ${OLLAMA_URL} from .env alone.
       OLLAMA_URL: ${DOCKER_OLLAMA_URL:-http://127.0.0.1:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-mmo001-quests}
+      OLLAMA_TIMEOUT_MS: ${OLLAMA_TIMEOUT_MS:-180000}
       QUEST_GEN_COOLDOWN_MS: ${QUEST_GEN_COOLDOWN_MS:-60000}
       QUEST_GEN_MAX_ACTIVE: ${QUEST_GEN_MAX_ACTIVE:-3}
       QUEST_GEN_LOG: ${QUEST_GEN_LOG:-1}

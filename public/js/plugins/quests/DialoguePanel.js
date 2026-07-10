@@ -133,7 +133,9 @@ export class DialoguePanel {
     if (!this.onGenerate || !this.currentNpc || this.generating) return;
     this.generating = true;
     this.updateQuestActions();
-    if (this.textEl) this.textEl.textContent = 'Thinking of a task for you…';
+    if (this.textEl) {
+      this.textEl.textContent = 'Thinking of a task for you… (may take up to a couple of minutes on CPU)';
+    }
     this.onGenerate(this.currentNpc.id);
   }
 
