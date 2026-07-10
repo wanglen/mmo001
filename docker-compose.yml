@@ -2,13 +2,14 @@ services:
   mmo001:
     build: .
     image: mmo001:latest
-    ports:
-      - "${PORT:-3000}:3000"
+    # Share the host network so the container can reach host Ollama at 127.0.0.1.
+    # Bridge + host.docker.internal (172.17.0.1) is often EHOSTUNREACH on Linux VPSes.
+    network_mode: host
     env_file:
       - path: .env
         required: false
     environment:
-      PORT: 3000
+      PORT: ${PORT:-3000}
       NODE_ENV: production
       SESSION_SECRET: ${SESSION_SECRET:-}
       LEGACY_ACCOUNT_USERNAME: ${LEGACY_ACCOUNT_USERNAME:-legacy}
@@ -18,17 +19,13 @@ services:
       DEBUG_LOG_MAX_BYTES: ${DEBUG_LOG_MAX_BYTES:-5242880}
       DEBUG_LOG_MAX_FILES: ${DEBUG_LOG_MAX_FILES:-5}
       OLLAMA_ENABLED: ${OLLAMA_ENABLED:-1}
-      # Never interpolate ${OLLAMA_URL} here — host .env often sets 127.0.0.1 for `npm start`,
-      # which is the container loopback and makes quest gen fail. Use DOCKER_OLLAMA_URL to override.
-      OLLAMA_URL: ${DOCKER_OLLAMA_URL:-http://host.docker.internal:11434}
+      # Host network: loopback is the host. Do not interpolate ${OLLAMA_URL} from .env alone.
+      OLLAMA_URL: ${DOCKER_OLLAMA_URL:-http://127.0.0.1:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-mmo001-quests}
       QUEST_GEN_COOLDOWN_MS: ${QUEST_GEN_COOLDOWN_MS:-60000}
       QUEST_GEN_MAX_ACTIVE: ${QUEST_GEN_MAX_ACTIVE:-3}
       QUEST_GEN_LOG: ${QUEST_GEN_LOG:-1}
       QUEST_GEN_LOG_FILE: ${QUEST_GEN_LOG_FILE:-/app/data/quest-generation.log}
-    extra_hosts:
-      # Linux Docker: resolve host.docker.internal to the host gateway
-      - "host.docker.internal:host-gateway"
     volumes:
       - ./data:/app/data
     restart: unless-stopped

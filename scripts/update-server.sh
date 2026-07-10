@@ -58,7 +58,8 @@ fi
 
 log "Building image and restarting containers..."
 $COMPOSE build --pull
-$COMPOSE up -d --remove-orphans
+# network_mode / env changes require recreate (plain `up -d` may leave an old container)
+$COMPOSE up -d --force-recreate --remove-orphans
 
 log "Pruning dangling images..."
 docker image prune -f >/dev/null 2>&1 || true
@@ -67,12 +68,12 @@ if [[ "${SKIP_OLLAMA:-0}" != "1" ]]; then
   log "Checking Ollama reachability from the game container..."
   CONTAINER_OLLAMA_URL="$($COMPOSE exec -T mmo001 printenv OLLAMA_URL 2>/dev/null || true)"
   log "Container OLLAMA_URL=${CONTAINER_OLLAMA_URL:-unknown}"
-  if [[ "${CONTAINER_OLLAMA_URL}" == *"127.0.0.1"* ]] || [[ "${CONTAINER_OLLAMA_URL}" == *"localhost"* ]]; then
-    log "WARNING: OLLAMA_URL points at loopback inside the container — quest gen cannot reach host Ollama."
-    log "  Compose should use host.docker.internal (set DOCKER_OLLAMA_URL, not OLLAMA_URL=127.0.0.1)."
+  if [[ "${CONTAINER_OLLAMA_URL}" == *"host.docker.internal"* ]] || [[ "${CONTAINER_OLLAMA_URL}" == *"172.17."* ]]; then
+    log "WARNING: bridge/host.docker.internal URLs often fail on Linux (EHOSTUNREACH)."
+    log "  Compose should use host networking + http://127.0.0.1:11434"
   fi
   if $COMPOSE exec -T mmo001 node --input-type=module -e '
-const base = (process.env.OLLAMA_URL || "http://host.docker.internal:11434").replace(/\/$/, "");
+const base = (process.env.OLLAMA_URL || "http://127.0.0.1:11434").replace(/\/$/, "");
 console.error("probing", base);
 const res = await fetch(`${base}/api/tags`);
 if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -83,11 +84,10 @@ console.log(`reachable models: ${names}`);
     log "Ollama is reachable from the container"
   else
     log "WARNING: container cannot reach Ollama (quest generation will fail)."
-    log "  1) Confirm container URL is host.docker.internal (not 127.0.0.1):"
+    log "  1) Confirm container URL is http://127.0.0.1:11434 (host network):"
     log "       docker compose exec mmo001 printenv OLLAMA_URL"
     log "  2) From the host: curl -sS http://127.0.0.1:11434/api/tags | head"
-    log "  3) If Ollama is localhost-only: sudo ./scripts/ollama-expose-for-docker.sh"
-    log "  4) Override Compose URL with: DOCKER_OLLAMA_URL=http://host.docker.internal:11434"
+    log "  3) Confirm compose uses network_mode: host, then: docker compose up -d --force-recreate"
   fi
 fi
 

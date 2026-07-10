@@ -116,6 +116,8 @@ Character data is stored in `data/game.db`. On first run, existing `data/charact
 
 Build and run with Docker Compose (database and saves persist in the local `data/` directory). The image uses a multi-stage **bookworm-slim** build that compiles `better-sqlite3` when no ARM64 prebuild is available.
 
+Compose uses **`network_mode: host`** so the game process can call host Ollama at `http://127.0.0.1:11434` (bridge/`host.docker.internal` often returns `EHOSTUNREACH` on Linux VPSes). The app listens on host port `PORT` (default `3000`).
+
 ```bash
 cp .env.example .env   # optional — set SESSION_SECRET for production
 mkdir -p data/characters
@@ -124,16 +126,14 @@ docker compose up --build
 
 Debug logging is **on by default** in Docker (`DEBUG_EVENTS=1`). Disable with `DEBUG_EVENTS=0 docker compose up`.
 
-Quest generation expects **Ollama on the host**. Compose sets the container `OLLAMA_URL` to `http://host.docker.internal:11434` (override with `DOCKER_OLLAMA_URL` — do **not** put `OLLAMA_URL=http://127.0.0.1:11434` in `.env` for Docker; that is the container loopback).
-
-Your Ollama unit may already use `OLLAMA_HOST=0.0.0.0:11434` (good). If quest gen still fails, check what the **container** sees:
+Quest generation expects **Ollama on the host**. With host networking, the container uses `OLLAMA_URL=http://127.0.0.1:11434` (override with `DOCKER_OLLAMA_URL`).
 
 ```bash
 docker compose exec mmo001 printenv OLLAMA_URL
 curl -sS http://127.0.0.1:11434/api/tags | head
 ```
 
-`./scripts/update-server.sh` runs model setup, optional expose helper, and a container→Ollama reachability check.
+`./scripts/update-server.sh` recreates the container, refreshes the quest model, and probes Ollama from inside the container.
 
 Open [http://localhost:3000](http://localhost:3000). Stop with `Ctrl+C`, or run detached:
 
