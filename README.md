@@ -23,7 +23,7 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 - Death at 0 HP: blocked actions, respawn button restores HP/MP at spawn
 - Map fog of war: translucent grey veil on unexplored terrain only; monsters and loot hidden until explored; explored areas stay clear; top-right minimap shows revealed terrain, portals, and player position
 - World zones: town safe hub, wilderness (default), instanced dungeon (scattered rooms + branching corridors + boss room, with wall/door/chest landmarks), and wilderness dungeon pocket; zone name shown in HUD
-- Zone transitions: click glowing portals to travel between separate town, wilderness, and dungeon maps (loading overlay on travel)
+- Zone transitions: click glowing portals to travel between town, wilderness, dungeon, dark forest, and scorched desert maps (loading overlay on travel)
 - Town hub: full HP/MP recovery in town, NPC dialogue and quests (Mira & Eldon), press **T** for interruptible 6s recall to town
 - Multiplayer sync: other players on the same map are visible in real time (position, walk/attack animation, HP) with class-colored nameplate badges
 - Social: global/zone chat, whispers (`/w Name msg`), party chat (`/p msg`), online player list, party invites, and shared XP within party range

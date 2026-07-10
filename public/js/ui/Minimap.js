@@ -48,7 +48,7 @@ export class Minimap {
           MINIMAP_MAX_HEIGHT
         );
 
-        ctx.fillStyle = minimapTileColor(tile);
+        ctx.fillStyle = minimapTileColor(tile, map.mapId);
         ctx.fillRect(tileRect.x, tileRect.y, tileRect.width, tileRect.height);
       }
     } else {
@@ -64,7 +64,7 @@ export class Minimap {
             MINIMAP_MAX_WIDTH,
             MINIMAP_MAX_HEIGHT
           );
-          ctx.fillStyle = minimapTileColor(map.tiles[row][col]);
+          ctx.fillStyle = minimapTileColor(map.tiles[row][col], map.mapId);
           ctx.fillRect(tileRect.x, tileRect.y, tileRect.width, tileRect.height);
         }
       }

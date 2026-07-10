@@ -1,25 +1,63 @@
 import { TILE } from '/shared/constants.js';
+import { MAP_ID } from '/shared/worldMaps.js';
 import { TILE_SIZE } from '../config.js';
 import { TownRenderer } from './TownRenderer.js';
 import { DungeonRenderer } from './DungeonRenderer.js';
+import { ForestRenderer } from './ForestRenderer.js';
+import { DesertRenderer, isMapEdge } from './DesertRenderer.js';
 import { LandmarkRenderer } from './LandmarkRenderer.js';
 
 const VOID_COLOR = '#0c0e14';
-const GRASS = '#4a7c3f';
-const GRASS_DARK = '#3a6634';
-const CLIFF_DARK = '#2a2520';
-const CLIFF_MID = '#4a4038';
-const CLIFF_LIGHT = '#6b5d52';
 
-const TILE_COLORS = {
-  [TILE.GRASS]: GRASS,
-  [TILE.WATER]: '#3a7bd5',
-  [TILE.TREE]: '#2d5016',
-  [TILE.ROCK]: CLIFF_MID,
-  [TILE.WALL]: '#2a2430',
-  [TILE.DOOR]: '#3d3548',
-  [TILE.CHEST]: GRASS,
+const DEFAULT_PALETTE = {
+  grass: '#4a7c3f',
+  grassDark: '#3a6634',
+  water: '#3a7bd5',
+  tree: '#2d5016',
+  treeDark: '#1a3310',
+  cliffDark: '#2a2520',
+  cliffMid: '#4a4038',
+  cliffLight: '#6b5d52',
 };
+
+const BIOME_PALETTES = {
+  [MAP_ID.FOREST]: {
+    grass: '#183820',
+    grassDark: '#0f2412',
+    water: '#1a4a5a',
+    tree: '#0a2810',
+    treeDark: '#051808',
+    cliffDark: '#142018',
+    cliffMid: '#2a4030',
+    cliffLight: '#3a5840',
+  },
+  [MAP_ID.DESERT]: {
+    grass: '#d4b868',
+    grassDark: '#b89848',
+    water: '#4a90a8',
+    tree: '#6b5a30',
+    treeDark: '#4a4020',
+    cliffDark: '#8a6838',
+    cliffMid: '#c4a868',
+    cliffLight: '#e8d898',
+  },
+};
+
+function getPalette(map) {
+  return BIOME_PALETTES[map?.mapId] ?? DEFAULT_PALETTE;
+}
+
+function tileColorsForPalette(palette) {
+  return {
+    [TILE.GRASS]: palette.grass,
+    [TILE.WATER]: palette.water,
+    [TILE.TREE]: palette.tree,
+    [TILE.ROCK]: palette.cliffMid,
+    [TILE.WALL]: '#2a2430',
+    [TILE.DOOR]: '#3d3548',
+    [TILE.CHEST]: palette.grass,
+  };
+}
 
 function tileAt(map, col, row) {
   if (col < 0 || row < 0 || col >= map.width || row >= map.height) return TILE.ROCK;
@@ -59,7 +97,7 @@ function drawWorldVoid(ctx, map, camera, canvasWidth, canvasHeight) {
 }
 
 /** Worn grass strip when a walkable tile borders a cliff. */
-function drawCliffAdjacentGrass(ctx, screen, tileSize, map, col, row) {
+function drawCliffAdjacentGrass(ctx, screen, tileSize, map, col, row, palette) {
   const w = tileSize.width;
   const h = tileSize.height;
   const x = screen.x;
@@ -74,7 +112,7 @@ function drawCliffAdjacentGrass(ctx, screen, tileSize, map, col, row) {
   ];
 
   let nearCliff = false;
-  ctx.fillStyle = GRASS_DARK;
+  ctx.fillStyle = palette.grassDark;
   for (const n of neighbors) {
     if (isCliff(map, col + n.dc, row + n.dr)) {
       n.draw();
@@ -113,7 +151,7 @@ function drawCliffStrata(ctx, x, y, w, h, seed, vertical) {
 }
 
 /** Directional cliff face: grass rim inward, stone and void outward. */
-function drawCliffTile(ctx, screen, tileSize, map, col, row) {
+function drawCliffTile(ctx, screen, tileSize, map, col, row, palette) {
   const w = tileSize.width;
   const h = tileSize.height;
   const x = screen.x;
@@ -125,79 +163,79 @@ function drawCliffTile(ctx, screen, tileSize, map, col, row) {
   const onWest = col === 0;
   const onEast = col === map.width - 1;
 
-  fillTileRect(ctx, x, y, w, h, CLIFF_MID);
+  fillTileRect(ctx, x, y, w, h, palette.cliffMid);
 
   if (onNorth && onWest) {
     const grad = ctx.createRadialGradient(x, y, 0, x, y, Math.max(w, h));
     grad.addColorStop(0, VOID_COLOR);
-    grad.addColorStop(0.55, CLIFF_DARK);
-    grad.addColorStop(1, CLIFF_MID);
+    grad.addColorStop(0.55, palette.cliffDark);
+    grad.addColorStop(1, palette.cliffMid);
     ctx.fillStyle = grad;
     ctx.fillRect(x, y, w, h);
-    fillTileRect(ctx, x + w - rim, y + h - rim, rim, rim, GRASS);
+    fillTileRect(ctx, x + w - rim, y + h - rim, rim, rim, palette.grass);
   } else if (onNorth && onEast) {
     const grad = ctx.createRadialGradient(x + w, y, 0, x + w, y, Math.max(w, h));
     grad.addColorStop(0, VOID_COLOR);
-    grad.addColorStop(0.55, CLIFF_DARK);
-    grad.addColorStop(1, CLIFF_MID);
+    grad.addColorStop(0.55, palette.cliffDark);
+    grad.addColorStop(1, palette.cliffMid);
     ctx.fillStyle = grad;
     ctx.fillRect(x, y, w, h);
-    fillTileRect(ctx, x, y + h - rim, rim, rim, GRASS);
+    fillTileRect(ctx, x, y + h - rim, rim, rim, palette.grass);
   } else if (onSouth && onWest) {
     const grad = ctx.createRadialGradient(x, y + h, 0, x, y + h, Math.max(w, h));
     grad.addColorStop(0, VOID_COLOR);
-    grad.addColorStop(0.55, CLIFF_DARK);
-    grad.addColorStop(1, CLIFF_MID);
+    grad.addColorStop(0.55, palette.cliffDark);
+    grad.addColorStop(1, palette.cliffMid);
     ctx.fillStyle = grad;
     ctx.fillRect(x, y, w, h);
-    fillTileRect(ctx, x + w - rim, y, rim, rim, GRASS);
+    fillTileRect(ctx, x + w - rim, y, rim, rim, palette.grass);
   } else if (onSouth && onEast) {
     const grad = ctx.createRadialGradient(x + w, y + h, 0, x + w, y + h, Math.max(w, h));
     grad.addColorStop(0, VOID_COLOR);
-    grad.addColorStop(0.55, CLIFF_DARK);
-    grad.addColorStop(1, CLIFF_MID);
+    grad.addColorStop(0.55, palette.cliffDark);
+    grad.addColorStop(1, palette.cliffMid);
     ctx.fillStyle = grad;
     ctx.fillRect(x, y, w, h);
-    fillTileRect(ctx, x, y, rim, rim, GRASS);
+    fillTileRect(ctx, x, y, rim, rim, palette.grass);
   } else if (onNorth) {
     const grad = ctx.createLinearGradient(x, y, x, y + h);
     grad.addColorStop(0, VOID_COLOR);
-    grad.addColorStop(0.4, CLIFF_DARK);
-    grad.addColorStop(0.85, CLIFF_MID);
+    grad.addColorStop(0.4, palette.cliffDark);
+    grad.addColorStop(0.85, palette.cliffMid);
     grad.addColorStop(1, 'rgba(74, 64, 56, 0)');
     ctx.fillStyle = grad;
     ctx.fillRect(x, y, w, h);
-    fillTileRect(ctx, x, y + h - rim, w, rim, GRASS);
+    fillTileRect(ctx, x, y + h - rim, w, rim, palette.grass);
   } else if (onSouth) {
     const grad = ctx.createLinearGradient(x, y + h, x, y);
     grad.addColorStop(0, VOID_COLOR);
-    grad.addColorStop(0.4, CLIFF_DARK);
-    grad.addColorStop(0.85, CLIFF_MID);
+    grad.addColorStop(0.4, palette.cliffDark);
+    grad.addColorStop(0.85, palette.cliffMid);
     grad.addColorStop(1, 'rgba(74, 64, 56, 0)');
     ctx.fillStyle = grad;
     ctx.fillRect(x, y, w, h);
-    fillTileRect(ctx, x, y, w, rim, GRASS);
+    fillTileRect(ctx, x, y, w, rim, palette.grass);
   } else if (onWest) {
     const grad = ctx.createLinearGradient(x, y, x + w, y);
     grad.addColorStop(0, VOID_COLOR);
-    grad.addColorStop(0.4, CLIFF_DARK);
-    grad.addColorStop(0.85, CLIFF_MID);
+    grad.addColorStop(0.4, palette.cliffDark);
+    grad.addColorStop(0.85, palette.cliffMid);
     grad.addColorStop(1, 'rgba(74, 64, 56, 0)');
     ctx.fillStyle = grad;
     ctx.fillRect(x, y, w, h);
-    fillTileRect(ctx, x + w - rim, y, rim, h, GRASS);
+    fillTileRect(ctx, x + w - rim, y, rim, h, palette.grass);
   } else if (onEast) {
     const grad = ctx.createLinearGradient(x + w, y, x, y);
     grad.addColorStop(0, VOID_COLOR);
-    grad.addColorStop(0.4, CLIFF_DARK);
-    grad.addColorStop(0.85, CLIFF_MID);
+    grad.addColorStop(0.4, palette.cliffDark);
+    grad.addColorStop(0.85, palette.cliffMid);
     grad.addColorStop(1, 'rgba(74, 64, 56, 0)');
     ctx.fillStyle = grad;
     ctx.fillRect(x, y, w, h);
-    fillTileRect(ctx, x, y, rim, h, GRASS);
+    fillTileRect(ctx, x, y, rim, h, palette.grass);
   }
 
-  ctx.fillStyle = CLIFF_LIGHT;
+  ctx.fillStyle = palette.cliffLight;
   if (onSouth) ctx.fillRect(x + w * 0.1, y + h - Math.max(2, h * 0.07), w * 0.8, Math.max(2, h * 0.05));
   if (onEast) ctx.fillRect(x + w - Math.max(2, w * 0.07), y + h * 0.12, Math.max(2, w * 0.05), h * 0.76);
 
@@ -208,12 +246,19 @@ export class MapRenderer {
   constructor() {
     this.townRenderer = new TownRenderer();
     this.dungeonRenderer = new DungeonRenderer();
+    this.forestRenderer = new ForestRenderer();
+    this.desertRenderer = new DesertRenderer();
     this.landmarkRenderer = new LandmarkRenderer();
   }
 
   draw(ctx, map, camera, canvasWidth, canvasHeight, openedChestKeys = []) {
     drawWorldVoid(ctx, map, camera, canvasWidth, canvasHeight);
 
+    const palette = getPalette(map);
+    const tileColors = tileColorsForPalette(palette);
+    const biomeMapId = map?.mapId;
+    const useBiomeTrees = biomeMapId === MAP_ID.FOREST;
+    const useDesertDunes = biomeMapId === MAP_ID.DESERT;
     const bounds = camera.getViewBounds();
     const tileSize = camera.getScaledTileSize(TILE_SIZE);
 
@@ -229,14 +274,14 @@ export class MapRenderer {
         const worldY = row * TILE_SIZE;
         const screen = camera.worldToScreen(worldX, worldY);
 
-        fillTileRect(ctx, screen.x, screen.y, tileSize.width, tileSize.height, TILE_COLORS[tile] || '#333');
+        fillTileRect(ctx, screen.x, screen.y, tileSize.width, tileSize.height, tileColors[tile] || '#333');
 
         if (tile === TILE.GRASS) {
-          drawCliffAdjacentGrass(ctx, screen, tileSize, map, col, row);
+          drawCliffAdjacentGrass(ctx, screen, tileSize, map, col, row, palette);
         }
 
-        if (tile === TILE.TREE) {
-          ctx.fillStyle = '#1a3310';
+        if (tile === TILE.TREE && !useBiomeTrees) {
+          ctx.fillStyle = palette.treeDark;
           ctx.beginPath();
           ctx.arc(
             screen.x + tileSize.width / 2,
@@ -248,12 +293,14 @@ export class MapRenderer {
           ctx.fill();
         }
 
-        if (tile === TILE.ROCK) {
-          drawCliffTile(ctx, screen, tileSize, map, col, row);
+        if (tile === TILE.ROCK && !(useDesertDunes && !isMapEdge(map, col, row))) {
+          drawCliffTile(ctx, screen, tileSize, map, col, row, palette);
         }
       }
     }
 
+    this.forestRenderer.draw(ctx, map, camera, tileSize, startCol, startRow, endCol, endRow);
+    this.desertRenderer.draw(ctx, map, camera, tileSize, startCol, startRow, endCol, endRow);
     this.townRenderer.draw(ctx, map, camera, tileSize, startCol, startRow, endCol, endRow);
     this.dungeonRenderer.draw(ctx, map, camera, tileSize, startCol, startRow, endCol, endRow);
     this.landmarkRenderer.draw(

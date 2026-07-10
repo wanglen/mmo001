@@ -5,7 +5,7 @@ import {
 } from '../../shared/zones.js';
 
 const MAX_GENERATION_ATTEMPTS = 10;
-const VALID_ZONE_LAYOUTS = ['town-only', 'wilderness-only'];
+const VALID_ZONE_LAYOUTS = ['town-only', 'wilderness-only', 'forest-only', 'desert-only'];
 
 /** Minimum walkable region size scales with map area (~35% of interior). */
 export function minConnectedTiles(width, height) {
@@ -59,6 +59,46 @@ function placeObstacleClusters(tiles, width, height) {
     const y = Math.floor(Math.random() * height);
     const size = Math.floor((12 + Math.random() * 15) * scale);
     placeCluster(tiles, width, height, TILE.TREE, x, y, size);
+  }
+}
+
+function placeForestClusters(tiles, width, height) {
+  const scale = mapDimScale(width);
+  const treeClusters = Math.floor((12 + Math.random() * 6) * scale);
+  const waterClusters = Math.floor((2 + Math.random() * 2) * scale);
+
+  for (let i = 0; i < waterClusters; i++) {
+    const x = Math.floor(Math.random() * width);
+    const y = Math.floor(Math.random() * height);
+    const size = Math.floor((10 + Math.random() * 12) * scale);
+    placeCluster(tiles, width, height, TILE.WATER, x, y, size);
+  }
+
+  for (let i = 0; i < treeClusters; i++) {
+    const x = Math.floor(Math.random() * width);
+    const y = Math.floor(Math.random() * height);
+    const size = Math.floor((16 + Math.random() * 18) * scale);
+    placeCluster(tiles, width, height, TILE.TREE, x, y, size);
+  }
+}
+
+function placeDesertClusters(tiles, width, height) {
+  const scale = mapDimScale(width);
+  const rockClusters = Math.floor((10 + Math.random() * 5) * scale);
+  const waterClusters = Math.floor(1 + Math.random() * 2);
+
+  for (let i = 0; i < waterClusters; i++) {
+    const x = Math.floor(Math.random() * width);
+    const y = Math.floor(Math.random() * height);
+    const size = Math.floor((8 + Math.random() * 10) * scale);
+    placeCluster(tiles, width, height, TILE.WATER, x, y, size);
+  }
+
+  for (let i = 0; i < rockClusters; i++) {
+    const x = Math.floor(Math.random() * width);
+    const y = Math.floor(Math.random() * height);
+    const size = Math.floor((14 + Math.random() * 16) * scale);
+    placeCluster(tiles, width, height, TILE.ROCK, x, y, size);
   }
 }
 
@@ -182,7 +222,13 @@ function buildMap(width, height, zoneLayout) {
     return { tiles, width, height, spawn, connectedSize, zones };
   }
 
-  placeObstacleClusters(tiles, width, height);
+  if (zoneLayout === 'forest-only') {
+    placeForestClusters(tiles, width, height);
+  } else if (zoneLayout === 'desert-only') {
+    placeDesertClusters(tiles, width, height);
+  } else {
+    placeObstacleClusters(tiles, width, height);
+  }
   const spawnClear = Math.max(4, Math.floor(4 * mapDimScale(width)));
   clearArea(tiles, centerX, centerY, spawnClear);
 

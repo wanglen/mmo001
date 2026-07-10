@@ -1,4 +1,5 @@
 import { TILE } from './constants.js';
+import { MAP_ID } from './worldMaps.js';
 
 export const MINIMAP_MAX_WIDTH = 168;
 export const MINIMAP_MAX_HEIGHT = 126;
@@ -45,8 +46,25 @@ export function minimapTileRect(mapWidth, mapHeight, tileX, tileY, panelX, panel
   };
 }
 
+const MINIMAP_BIOME_COLORS = {
+  [MAP_ID.FOREST]: {
+    [TILE.GRASS]: '#183820',
+    [TILE.WATER]: '#1a4a5a',
+    [TILE.TREE]: '#0a2810',
+    [TILE.ROCK]: '#2a4030',
+  },
+  [MAP_ID.DESERT]: {
+    [TILE.GRASS]: '#c4a35a',
+    [TILE.WATER]: '#4a90a8',
+    [TILE.TREE]: '#6b5a30',
+    [TILE.ROCK]: '#b89858',
+  },
+};
+
 /** Distinct colors for terrain and dungeon landmarks on the minimap. */
-export function minimapTileColor(tile) {
+export function minimapTileColor(tile, mapId) {
+  const biomeColors = mapId ? MINIMAP_BIOME_COLORS[mapId]?.[tile] : null;
+  if (biomeColors) return biomeColors;
   switch (tile) {
     case TILE.GRASS:
       return '#4a7c3f';

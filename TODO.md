@@ -20,7 +20,7 @@ Playtesting phase complete through v3.5.0. New work below comes from [PENDINGS.m
 
 ## World & content
 
-- [ ] **More maps and zones** — add new areas (e.g. desert, forest) with portals and spawns
+- [x] **More maps and zones** — add new areas (e.g. desert, forest) with portals and spawns
 - [ ] **More quests** — additional quest lines tied to new or existing zones
 
 ---
@@ -36,7 +36,7 @@ Playtesting phase complete through v3.5.0. New work below comes from [PENDINGS.m
 1. [x] **Inventory sort**
 2. [x] **Gems and runes in stash**
 3. [x] **Vendor potion stacks**
-4. [ ] **More maps and zones**
+4. [x] **More maps and zones**
 5. [ ] **More quests**
 
 ---

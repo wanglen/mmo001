@@ -108,3 +108,64 @@ export function placeWildernessDungeonGate(map) {
   map.zones = [...(map.zones ?? []), createDungeonZone(center, radius, { gateTile })];
   return gateTile;
 }
+
+/**
+ * Place a wilderness portal gate far from spawn and other gates.
+ * @param {{ tiles: number[][], spawn: { x: number, y: number }, width: number, height: number }} map
+ * @param {{ excludeTiles?: Array<{ x: number, y: number }>, preferCorner?: 'nw' | 'ne' | 'sw' | 'se', minDistance?: number }} [options]
+ */
+export function pickWildernessPortalGate(map, options = {}) {
+  const { excludeTiles = [], preferCorner = 'nw', minDistance = 24 } = options;
+  const margin = 8;
+  const w = map.width;
+  const h = map.height;
+
+  let minX = margin;
+  let maxX = w - margin - 1;
+  let minY = margin;
+  let maxY = h - margin - 1;
+
+  if (preferCorner === 'nw') {
+    maxX = Math.floor(w * 0.42);
+    maxY = Math.floor(h * 0.42);
+  } else if (preferCorner === 'ne') {
+    minX = Math.floor(w * 0.58);
+    maxY = Math.floor(h * 0.42);
+  } else if (preferCorner === 'sw') {
+    maxX = Math.floor(w * 0.42);
+    minY = Math.floor(h * 0.58);
+  } else if (preferCorner === 'se') {
+    minX = Math.floor(w * 0.58);
+    minY = Math.floor(h * 0.58);
+  }
+
+  let best = null;
+  let bestScore = -1;
+  const step = 3;
+
+  for (let y = minY; y <= maxY; y += step) {
+    for (let x = minX; x <= maxX; x += step) {
+      if (!TILE_WALKABLE[map.tiles[y]?.[x]]) continue;
+      if (excludeTiles.some((tile) => Math.hypot(tile.x - x, tile.y - y) < 14)) continue;
+
+      const dist = Math.hypot(x - map.spawn.x, y - map.spawn.y);
+      if (dist < minDistance) continue;
+
+      if (dist > bestScore) {
+        bestScore = dist;
+        best = { x, y };
+      }
+    }
+  }
+
+  if (!best) {
+    best = {
+      x: Math.max(margin, Math.min(w - margin - 1, map.spawn.x)),
+      y: Math.max(margin, Math.min(h - margin - 1, h - margin - 2)),
+    };
+  }
+
+  clearTile(map.tiles, best.x, best.y, w, h);
+  carveGatePath(map, best);
+  return best;
+}

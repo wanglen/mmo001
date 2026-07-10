@@ -18,6 +18,8 @@ export const MAP_LABELS = {
   [MAP_ID.TOWN]: 'Town',
   [MAP_ID.WILDERNESS]: 'Wilderness',
   [MAP_ID.DUNGEON]: 'Dungeon',
+  [MAP_ID.FOREST]: 'Dark Forest',
+  [MAP_ID.DESERT]: 'Scorched Desert',
 };
 
 export function sanitizeChatText(text) {

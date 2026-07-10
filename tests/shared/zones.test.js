@@ -39,6 +39,16 @@ describe('zones', () => {
     assert.ok(!isTileInZone(zone, 8, 8));
   });
 
+  it('getZoneAt uses map biome label on instanced forest and desert maps', () => {
+    const forest = getZoneAt({ mapId: 'forest', zones: [] }, 10, 10);
+    assert.equal(forest.label, 'Dark Forest');
+    assert.equal(forest.id, 'forest');
+
+    const desert = getZoneAt({ mapId: 'desert', zones: [] }, 5, 5);
+    assert.equal(desert.label, 'Scorched Desert');
+    assert.equal(desert.id, 'desert');
+  });
+
   it('getZoneAt defaults to wilderness outside marked regions', () => {
     const map = {
       zones: [createTownZone({ x: 5, y: 5 }, 40)],

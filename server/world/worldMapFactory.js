@@ -4,7 +4,12 @@ import { MAP_ID, WORLD_MAP_SIZES } from '../../shared/worldMaps.js';
 import { createPortal } from '../../shared/portals.js';
 import { buildTownNpcs } from './townNpcs.js';
 import { npcToJSON } from '../../shared/npcs.js';
-import { pickTownWildernessGate, ensurePortalReachable, placeWildernessDungeonGate } from './portalPlacement.js';
+import {
+  pickTownWildernessGate,
+  ensurePortalReachable,
+  placeWildernessDungeonGate,
+  pickWildernessPortalGate,
+} from './portalPlacement.js';
 
 export function generateTownMap() {
   const { width, height } = WORLD_MAP_SIZES[MAP_ID.TOWN];
@@ -18,6 +23,18 @@ export function generateWildernessMap() {
   const map = generateMap(width, height, { zoneLayout: 'wilderness-only' });
   const dungeonGate = placeWildernessDungeonGate(map);
   return { ...map, mapId: MAP_ID.WILDERNESS, portals: [], dungeonGateTile: dungeonGate };
+}
+
+export function generateForestMap() {
+  const { width, height } = WORLD_MAP_SIZES[MAP_ID.FOREST];
+  const map = generateMap(width, height, { zoneLayout: 'forest-only' });
+  return { ...map, mapId: MAP_ID.FOREST, portals: [] };
+}
+
+export function generateDesertMap() {
+  const { width, height } = WORLD_MAP_SIZES[MAP_ID.DESERT];
+  const map = generateMap(width, height, { zoneLayout: 'desert-only' });
+  return { ...map, mapId: MAP_ID.DESERT, portals: [] };
 }
 
 export function generateDungeonMap() {
@@ -34,9 +51,18 @@ export function pickWildernessDungeonGate(map) {
   return map.dungeonGateTile;
 }
 
-export function attachWorldPortals(town, wilderness, dungeon) {
+export function attachWorldPortals(town, wilderness, dungeon, forest, desert) {
   const dungeonGate = pickWildernessDungeonGate(wilderness);
   const townGate = pickTownWildernessGate(town);
+
+  const forestGate = pickWildernessPortalGate(wilderness, {
+    excludeTiles: [dungeonGate],
+    preferCorner: 'nw',
+  });
+  const desertGate = pickWildernessPortalGate(wilderness, {
+    excludeTiles: [dungeonGate, forestGate],
+    preferCorner: 'ne',
+  });
 
   town.portals = [
     createPortal({
@@ -63,6 +89,20 @@ export function attachWorldPortals(town, wilderness, dungeon) {
       targetMapId: MAP_ID.DUNGEON,
       targetTile: { ...dungeon.spawn },
     }),
+    createPortal({
+      id: 'wilderness-forest',
+      label: 'Dark Forest',
+      tile: forestGate,
+      targetMapId: MAP_ID.FOREST,
+      targetTile: { ...forest.spawn },
+    }),
+    createPortal({
+      id: 'wilderness-desert',
+      label: 'Scorched Desert',
+      tile: desertGate,
+      targetMapId: MAP_ID.DESERT,
+      targetTile: { ...desert.spawn },
+    }),
   ];
 
   dungeon.portals = [
@@ -78,5 +118,33 @@ export function attachWorldPortals(town, wilderness, dungeon) {
     }),
   ];
 
+  forest.portals = [
+    createPortal({
+      id: 'forest-wilderness',
+      label: 'Wilderness',
+      tile: ensurePortalReachable(forest, {
+        x: forest.spawn.x,
+        y: Math.min(forest.spawn.y + 2, forest.height - 2),
+      }),
+      targetMapId: MAP_ID.WILDERNESS,
+      targetTile: forestGate,
+    }),
+  ];
+
+  desert.portals = [
+    createPortal({
+      id: 'desert-wilderness',
+      label: 'Wilderness',
+      tile: ensurePortalReachable(desert, {
+        x: desert.spawn.x,
+        y: Math.min(desert.spawn.y + 2, desert.height - 2),
+      }),
+      targetMapId: MAP_ID.WILDERNESS,
+      targetTile: desertGate,
+    }),
+  ];
+
   wilderness.dungeonGateTile = dungeonGate;
+  wilderness.forestGateTile = forestGate;
+  wilderness.desertGateTile = desertGate;
 }

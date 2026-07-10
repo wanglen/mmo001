@@ -97,4 +97,31 @@ describe('MapGenerator', () => {
     assert.ok(!isWalkable(map, width - 1, height - 1));
     assert.ok(isWalkable(map, map.spawn.x, map.spawn.y));
   });
+
+  it('generates forest and desert layouts with connected walkable regions', () => {
+    for (const zoneLayout of ['forest-only', 'desert-only']) {
+      const map = generateMap(90, 70, { zoneLayout });
+      const connected = countWalkableFromSpawn(map);
+      const minConnected = minConnectedTiles(map.width, map.height);
+      assert.ok(
+        connected >= minConnected,
+        `${zoneLayout}: expected >= ${minConnected} walkable tiles, got ${connected}`
+      );
+      assert.deepEqual(map.zones, []);
+    }
+  });
+
+  it('forest maps contain more trees than desert maps on average', () => {
+    const countTrees = (map) =>
+      map.tiles.flat().filter((tile) => tile === TILE.TREE).length;
+
+    let forestTrees = 0;
+    let desertTrees = 0;
+    for (let i = 0; i < 6; i++) {
+      forestTrees += countTrees(generateMap(90, 70, { zoneLayout: 'forest-only' }));
+      desertTrees += countTrees(generateMap(90, 70, { zoneLayout: 'desert-only' }));
+    }
+
+    assert.ok(forestTrees > desertTrees);
+  });
 });

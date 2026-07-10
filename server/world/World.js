@@ -3,7 +3,9 @@ import { LootManager } from '../entities/LootManager.js';
 import { MAP_ID, WORLD_MAP_IDS } from '../../shared/worldMaps.js';
 import {
   attachWorldPortals,
+  generateDesertMap,
   generateDungeonMap,
+  generateForestMap,
   generateTownMap,
   generateWildernessMap,
 } from './worldMapFactory.js';
@@ -30,12 +32,16 @@ export class World {
     const town = generateTownMap();
     const wilderness = generateWildernessMap();
     const dungeon = generateDungeonMap();
-    attachWorldPortals(town, wilderness, dungeon);
+    const forest = generateForestMap();
+    const desert = generateDesertMap();
+    attachWorldPortals(town, wilderness, dungeon, forest, desert);
 
     const mapsById = new Map([
       [MAP_ID.TOWN, town],
       [MAP_ID.WILDERNESS, wilderness],
       [MAP_ID.DUNGEON, dungeon],
+      [MAP_ID.FOREST, forest],
+      [MAP_ID.DESERT, desert],
     ]);
 
     return new World(mapsById);

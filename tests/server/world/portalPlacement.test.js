@@ -54,4 +54,26 @@ describe('portalPlacement', () => {
     );
     assert.ok(path.length > 0);
   });
+
+  it('wilderness map includes forest and desert portal gates reachable from spawn', () => {
+    const world = createWorld();
+    const wilderness = world.getMap(MAP_ID.WILDERNESS);
+
+    for (const portalId of ['wilderness-forest', 'wilderness-desert']) {
+      const portal = wilderness.portals.find((entry) => entry.id === portalId);
+      assert.ok(portal, portalId);
+      const path = findPath(
+        wilderness,
+        wilderness.spawn.x,
+        wilderness.spawn.y,
+        portal.tile.x,
+        portal.tile.y
+      );
+      assert.ok(path.length > 0, `${portalId} should be reachable`);
+    }
+
+    assert.ok(wilderness.forestGateTile);
+    assert.ok(wilderness.desertGateTile);
+    assert.notDeepEqual(wilderness.forestGateTile, wilderness.desertGateTile);
+  });
 });

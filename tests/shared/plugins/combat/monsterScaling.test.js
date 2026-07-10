@@ -25,8 +25,12 @@ describe('monsterScaling', () => {
       { mapId: MAP_ID.WILDERNESS },
       [{ level: 5 }]
     );
+    const forest = resolveMonsterScaleLevel({ mapId: MAP_ID.FOREST }, [{ level: 5 }]);
+    const desert = resolveMonsterScaleLevel({ mapId: MAP_ID.DESERT }, [{ level: 5 }]);
     const dungeon = resolveMonsterScaleLevel({ mapId: MAP_ID.DUNGEON }, [{ level: 5 }]);
     assert.equal(wilderness, 5);
+    assert.equal(forest, 6);
+    assert.equal(desert, 7);
     assert.equal(dungeon, 8);
   });
 

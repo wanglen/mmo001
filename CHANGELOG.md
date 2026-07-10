@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.8.0] - 2026-07-09
+
+### Added
+
+- **Dark Forest and Scorched Desert** — two new instanced zones reachable from wilderness portals; dense forest and dune biomes with tougher scaled monster spawns; distinct HUD labels, minimap colors, and biome rendering
+
+### Fixed
+
+- **Dark Forest biome** — forest map no longer shows the wilderness zone badge or default green palette
+
 ## [3.7.0] - 2026-07-09
 
 ### Added

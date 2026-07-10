@@ -3,6 +3,8 @@ import { MAP_ID } from '../../worldMaps.js';
 /** Extra effective levels by instanced map (zone depth). */
 export const ZONE_LEVEL_BONUS = {
   [MAP_ID.WILDERNESS]: 0,
+  [MAP_ID.FOREST]: 1,
+  [MAP_ID.DESERT]: 2,
   [MAP_ID.DUNGEON]: 3,
 };
 

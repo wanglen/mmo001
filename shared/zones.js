@@ -1,6 +1,7 @@
 import { TILE_SIZE } from './constants.js';
 import { BOSS_ROOM_META, BOSS_ROOM_ZONE_ID } from './dungeon.js';
 import { isTownHubMap } from './townHub.js';
+import { getMapBiomeMeta } from './worldMaps.js';
 
 /** Zone identifiers — used by map data and future zone systems. */
 export const ZONE_ID = {
@@ -120,6 +121,16 @@ export function isInSafeZone(map, pixelX, pixelY) {
 
 /** Resolve zone at a tile; wilderness is the default outside marked regions. */
 export function getZoneAt(map, tileX, tileY) {
+  const biome = getMapBiomeMeta(map?.mapId);
+  if (biome) {
+    return {
+      id: map.mapId,
+      label: biome.label,
+      color: biome.color,
+      safe: false,
+    };
+  }
+
   for (const zone of map.zones ?? []) {
     if (isTileInZone(zone, tileX, tileY)) {
       const meta =
