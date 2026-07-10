@@ -1,6 +1,6 @@
 # MMO001
 
-A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal is a Diablo-like action RPG with real-time multiplayer, starting from a simple playable prototype.
+A browser-based MMORPG built with **HTML Canvas** and **Node.js**. Diablo-like action RPG with real-time multiplayer — currently at **v3.9.0**.
 
 ## Features (current)
 
@@ -10,21 +10,22 @@ A browser-based MMORPG MVP built with **HTML Canvas** and **Node.js**. The goal 
 - Server-authoritative movement with collision detection and move-rate validation
 - Animated sprite sheets per class (idle, walk, attack) with class silhouettes, overhead HP bar, and nameplate
 - Per-template item icons on ground loot and inventory (sword, staff, bow, armor, potions, etc.)
-- Combat: click enemies to attack, 3 mob types with distinct pixel sprites, HP bars, monster chase AI, retaliate on hit, XP on kill
+- Combat: click enemies to attack, 3 mob types with distinct pixel sprites, HP bars, monster chase AI, retaliate on hit, XP on kill; **monsters scale** with player level and zone depth (wilderness → forest → desert → dungeon)
 - Advanced combat: crits (DEX), dodge (DEX), elemental resistances, status effects (stun/slow/poison/bleed), elite modifiers (~12% spawn), boss phases with scaled damage and guaranteed loot
-- **Items:** Magic/Rare affixes, sockets + gems, item sets with worn bonuses, town stash (`B`)
-- Loot: per-item pixel icons on ground (rarity glow) and in inventory; click to pick up; potions usable from bag
-- Inventory: 10×4 grid, 7 equip slots, stat bonuses from gear (server-side); floating tooltips with equip comparison, potions stack up to 20 per slot, right-click for actions
+- **Items:** Magic/Rare affixes, sockets + gems (right-click to socket or replace with confirm), item sets with worn bonuses, town shared stash (`B`) including gems and runes
+- Loot: per-item pixel icons on ground (rarity glow) and in inventory; click to pick up; chat message on successful pickup; potions usable from bag
+- Inventory: 10×4 grid, 7 equip slots, stat bonuses from gear (server-side); **Sort** button (type/rarity); floating tooltips with equip comparison; potions stack up to 20 per slot; right-click for equip/use/stash/destroy/socket
 - Leveling: XP curve, +5 stat points per level-up, allocation UI (reopen with C), JSON character save; quest rewards grant XP, gold, and items
 - Login spawn: characters always enter at **town spawn** when you connect (inventory, quests, and progress are restored from save)
-- **Economy:** gold from quests and monster kills; vendor NPC Brok in town (buy/sell); player trade via online list (⇄)
+- **Economy:** gold from quests and monster kills; vendor NPC Brok in town (buy/sell; **grouped potion stacks** with quantity picker when selling); player trade via online list (⇄)
 - **Loot rules:** party-shared pickup lock for 30s after a kill, then free-for-all
 - Skills: skill tree per class (**K**), hotbar keys 1–7 (player-assigned), HP/MP potions 8/9, cooldowns, server-authoritative damage
 - Death at 0 HP: blocked actions, respawn button restores HP/MP at spawn
 - Map fog of war: translucent grey veil on unexplored terrain only; monsters and loot hidden until explored; explored areas stay clear; top-right minimap shows revealed terrain, portals, and player position
-- World zones: town safe hub, wilderness (default), instanced dungeon (scattered rooms + branching corridors + boss room, with wall/door/chest landmarks), and wilderness dungeon pocket; zone name shown in HUD
-- Zone transitions: click glowing portals to travel between town, wilderness, dungeon, dark forest, and scorched desert maps (loading overlay on travel)
-- Town hub: full HP/MP recovery in town, NPC dialogue and quests (Mira & Eldon), press **T** for interruptible 6s recall to town
+- World zones: **town** safe hub; **wilderness** (default outdoor map); **Dark Forest** and **Scorched Desert** (biome maps via wilderness portals, +1/+2 monster level); **dungeon** (instanced rooms, boss, chests); wilderness **dungeon pocket** with stone arch; zone name in HUD and biome-specific minimap/rendering on forest and desert
+- Zone transitions: click glowing portals to travel between town, wilderness, dungeon, Dark Forest, and Scorched Desert (loading overlay on travel)
+- Town hub: full HP/MP recovery in town; NPC dialogue and **quests** (Mira & Eldon — starter chain plus forest/desert/frontier follow-ups); press **T** for interruptible 6s recall to town
+- **Solo management pause:** when you are the only player online, opening inventory, stash, stat points, or skill tree pauses gameplay until you close the panel
 - Multiplayer sync: other players on the same map are visible in real time (position, walk/attack animation, HP) with class-colored nameplate badges
 - Social: global/zone chat, whispers (`/w Name msg`), party chat (`/p msg`), online player list, party invites, and shared XP within party range
 - Socket.IO broadcasts world state at **20 Hz** with interest-filtered entities and delta patches between full snapshots
@@ -185,15 +186,15 @@ Tests use Node.js built-in test runner. See [`tests/README.md`](tests/README.md)
 - **1**–**7** — skills on your hotbar (MP cost, cooldowns)
 - **8** / **9** — use health / mana potion from bag (dimmed when none or resource full)
 - **WASD** / **Arrow keys** — move including diagonals (e.g. W+D); cancels click path
-- **I** / **Esc** — toggle character inventory (modal sheet, dimmed world)
+- **I** / **Esc** — toggle character inventory (modal sheet, dimmed world); **Sort** reorganizes the bag (server-authoritative)
 - **O** / **Esc** — settings (audio volume, mute, keybind reference)
-- **B** (town only) — shared stash; right-click bag items to store, stash items to take
-- **Inventory** — left-click equip; right-click equip/use/unequip/destroy; hover for floating item tooltips (compare vs equipped)
+- **B** (town only) — shared stash; right-click bag items to store (including gems/runes), stash items to take
+- **Inventory** — left-click equip; right-click equip/use/unequip/**store in stash**/destroy/**socket gem**; hover for floating item tooltips (compare vs equipped)
 - **T** (outside town) — start 6s recall cast to town; interrupted by movement, combat, or damage
 - **Enter** — focus chat; **Esc** blurs chat while typing
 - **Chat** — Global / Zone channels; `/w Name message` whisper; `/p message` party chat (left column, above resource orbs)
 - **Online panel** (top-left) — player list, invite to party (+), trade (⇄), accept/decline invites
-- **Vendor** — click Brok in town to buy potions/gear or sell items from your bag
+- **Vendor** — click Brok in town to buy potions/gear or sell items; potions are **grouped by type** with a quantity field for partial sells
 - **Trade** — stand near the other player on the same map, then request from the online list (⇄); both mark ready to exchange items and gold (chat shows a hint if you are too far)
 - **Resource orbs** (bottom corners) — Life (left) and Mana (right) globes with XP bar between; press **C** for full stats
 
@@ -241,7 +242,7 @@ mmo001/
 
 ## Roadmap
 
-See [TODO.md](TODO.md) for the full Diablo-like MMORPG roadmap (combat, loot, skills, zones, multiplayer, and more).
+Recommended roadmap items through **v3.9.0** are complete. See [TODO.md](TODO.md) for the optional backlog (e.g. CI pipeline) and [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ## Development
 
