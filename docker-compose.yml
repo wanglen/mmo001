@@ -18,8 +18,9 @@ services:
       DEBUG_LOG_MAX_BYTES: ${DEBUG_LOG_MAX_BYTES:-5242880}
       DEBUG_LOG_MAX_FILES: ${DEBUG_LOG_MAX_FILES:-5}
       OLLAMA_ENABLED: ${OLLAMA_ENABLED:-1}
-      # Host Ollama (not 127.0.0.1 — that is the container loopback). Override if needed.
-      OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
+      # Never interpolate ${OLLAMA_URL} here — host .env often sets 127.0.0.1 for `npm start`,
+      # which is the container loopback and makes quest gen fail. Use DOCKER_OLLAMA_URL to override.
+      OLLAMA_URL: ${DOCKER_OLLAMA_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-mmo001-quests}
       QUEST_GEN_COOLDOWN_MS: ${QUEST_GEN_COOLDOWN_MS:-60000}
       QUEST_GEN_MAX_ACTIVE: ${QUEST_GEN_MAX_ACTIVE:-3}
