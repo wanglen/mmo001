@@ -97,4 +97,40 @@ describe('quests', () => {
     const afterTalk = getNpcQuestInteractions(state, [], 'guide-eldon')[0];
     assert.equal(afterTalk.canTurnIn, true);
   });
+
+  it('zone quest chain requires starter completion and tracks skeleton/bat kills', () => {
+    const state = createEmptyQuestState();
+    state.completed.push('goblin-menace', 'healing-supplies', 'report-to-eldon');
+
+    assert.equal(canAcceptQuest(state, 'forest-patrol'), true);
+    assert.equal(canAcceptQuest(state, 'desert-scourge'), false);
+
+    acceptQuest(state, 'forest-patrol');
+    for (let i = 0; i < 5; i++) recordQuestKill(state, 'skeleton');
+    assert.equal(isQuestReady(getQuestDef('forest-patrol'), state, []), true);
+
+    state.completed.push('forest-patrol');
+    delete state.active['forest-patrol'];
+    acceptQuest(state, 'desert-scourge');
+    for (let i = 0; i < 5; i++) recordQuestKill(state, 'bat');
+    assert.equal(isQuestReady(getQuestDef('desert-scourge'), state, []), true);
+  });
+
+  it('frontier-resupply fetch quest follows desert-scourge', () => {
+    const state = createEmptyQuestState();
+    state.completed.push(
+      'goblin-menace',
+      'healing-supplies',
+      'report-to-eldon',
+      'forest-patrol',
+      'desert-scourge'
+    );
+
+    assert.equal(canAcceptQuest(state, 'frontier-resupply'), true);
+    acceptQuest(state, 'frontier-resupply');
+
+    const inventory = createEmptyInventory();
+    inventory[0] = createPotion(POTION_TEMPLATES[1]);
+    assert.equal(isQuestReady(getQuestDef('frontier-resupply'), state, inventory), true);
+  });
 });

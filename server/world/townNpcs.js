@@ -52,6 +52,7 @@ export function buildTownNpcs(town) {
       questIds: questIdsForNpc('guide-eldon'),
       dialogue: [
         'The wilderness lies beyond the southern gate.',
+        'Dark Forest and Scorched Desert portals lie northwest and northeast in the wilderness.',
         'Monsters grow bolder in the dungeon — venture there only when ready.',
       ],
     },

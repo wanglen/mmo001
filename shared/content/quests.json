@@ -57,5 +57,63 @@
       "ready": ["Eldon knows the news. Here is a little something for the errand."],
       "complete": ["The town council appreciates reliable couriers."]
     }
+  },
+  "forest-patrol": {
+    "id": "forest-patrol",
+    "title": "Forest Patrol",
+    "giverNpcId": "guide-eldon",
+    "turnInNpcId": "guide-eldon",
+    "prerequisites": ["report-to-eldon"],
+    "objectives": [{ "type": "kill", "monsterType": "skeleton", "count": 5 }],
+    "rewards": { "xp": 60, "gold": 40 },
+    "dialogue": {
+      "offer": [
+        "Skeletons gather in the Dark Forest beyond the wilderness.",
+        "Take the northwest portal and slay five of them."
+      ],
+      "progress": ["The forest still crawls with skeletons."],
+      "ready": ["The patrol route is clear. Well fought."],
+      "complete": ["Haven sleeps easier with the forest thinned."]
+    }
+  },
+  "desert-scourge": {
+    "id": "desert-scourge",
+    "title": "Desert Scourge",
+    "giverNpcId": "guide-eldon",
+    "turnInNpcId": "guide-eldon",
+    "prerequisites": ["forest-patrol"],
+    "objectives": [{ "type": "kill", "monsterType": "bat", "count": 5 }],
+    "rewards": { "xp": 70, "gold": 50 },
+    "dialogue": {
+      "offer": [
+        "Bats nest in the Scorched Desert to the northeast.",
+        "Cull five before they spread toward the wilderness."
+      ],
+      "progress": ["The desert still swarms with bats."],
+      "ready": ["The scourge is beaten back. Take your pay."],
+      "complete": ["Travelers can cross the dunes more safely now."]
+    }
+  },
+  "frontier-resupply": {
+    "id": "frontier-resupply",
+    "title": "Frontier Resupply",
+    "giverNpcId": "innkeeper-mira",
+    "turnInNpcId": "innkeeper-mira",
+    "prerequisites": ["desert-scourge"],
+    "objectives": [{ "type": "fetch", "itemKey": "mana_potion", "count": 1 }],
+    "rewards": {
+      "xp": 50,
+      "gold": 55,
+      "items": [{ "templateKey": "health_potion", "rarity": "common" }]
+    },
+    "dialogue": {
+      "offer": [
+        "Scouts heading into the wilderness need mana potions.",
+        "Bring me one — buy from Brok or loot it from the frontier."
+      ],
+      "progress": ["I still need a mana potion for the frontier kits."],
+      "ready": ["This will keep the patrols casting. Thank you."],
+      "complete": ["Rest up before you push deeper toward the dungeon."]
+    }
   }
 }

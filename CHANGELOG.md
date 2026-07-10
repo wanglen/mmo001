@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.9.0] - 2026-07-09
+
+### Added
+
+- **Zone quest line** — after the starter chain, Eldon sends you to clear skeletons in the Dark Forest and bats in the Scorched Desert; Mira requests a mana potion for frontier patrols
+
 ## [3.8.0] - 2026-07-09
 
 ### Added
